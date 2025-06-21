@@ -873,7 +873,7 @@ const Dashboard: React.FC = () => {
           <Card elevation={8} sx={{ mb: 4, borderRadius: 2, background: alpha(theme.palette.background.paper, 0.95), backdropFilter: 'blur(20px)', border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
             <CardContent sx={{ p: 4, textAlign: 'center' }}>
               <CircularProgress size={40} sx={{ mb: 2 }} />
-              <Typography variant="h6" fontWeight={700} gutterBottom>
+              <Typography variant="h6" component="div" fontWeight={700} gutterBottom>
                 Checking Plaid account status...
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -887,7 +887,7 @@ const Dashboard: React.FC = () => {
         {isPlaidLinked === false && (
           <Card elevation={8} sx={{ mb: 4, borderRadius: 2, background: alpha(theme.palette.background.paper, 0.95), backdropFilter: 'blur(20px)', border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
             <CardContent sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h5" fontWeight={700} gutterBottom>
+              <Typography variant="h6" component="div" fontWeight={700} gutterBottom>
                 Link your bank account to get started
               </Typography>
               <Typography variant="body1" color="text.secondary" gutterBottom>
@@ -959,7 +959,7 @@ const Dashboard: React.FC = () => {
                           {isBalancesLoading ? (
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
-                            <Typography variant="h5" fontWeight={700} gutterBottom color="primary.main">
+                            <Typography variant="h6" component="div" fontWeight={700} gutterBottom color="primary.main">
                               {balances && balances.accounts
                                 ? formatCurrency(balances.accounts.reduce((sum: number, acc: any) => sum + (acc.balances?.current || 0), 0))
                                 : '--'}
@@ -1001,7 +1001,7 @@ const Dashboard: React.FC = () => {
                           {isLoading ? (
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
-                            <Typography variant="h5" fontWeight={700} gutterBottom color="success.main">
+                            <Typography variant="h6" component="div" fontWeight={700} gutterBottom color="success.main">
                               {formatCurrency(monthlySummary.income)}
                             </Typography>
                           )}
@@ -1042,7 +1042,7 @@ const Dashboard: React.FC = () => {
                           {isLoading ? (
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
-                            <Typography variant="h5" fontWeight={700} gutterBottom color="warning.main">
+                            <Typography variant="h6" component="div" fontWeight={700} gutterBottom color="warning.main">
                               {formatCurrency(monthlySummary.expenses)}
                             </Typography>
                           )}
@@ -1084,7 +1084,8 @@ const Dashboard: React.FC = () => {
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
                             <Typography 
-                              variant="h5" 
+                              variant="h6" 
+                              component="div"
                               fontWeight={700} 
                               gutterBottom 
                               color={monthlySummary.netChange >= 0 ? "success.main" : "error.main"}
@@ -1114,7 +1115,7 @@ const Dashboard: React.FC = () => {
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
                         Spending by Category
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -1206,7 +1207,7 @@ const Dashboard: React.FC = () => {
                 >
                   <CardContent sx={{ p: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6" fontWeight={600}>
+                      <Typography variant="h6" component="div" fontWeight={600}>
                         Recent Activity
                       </Typography>
                       <Button
@@ -1434,7 +1435,7 @@ const Dashboard: React.FC = () => {
                               {goal.icon || '💰'}
                             </Box>
                             <Box sx={{ flex: 1 }}>
-                              <Typography variant="h6" fontWeight={600} gutterBottom>
+                              <Typography variant="h6" component="div" fontWeight={700}>
                                 {goal.title}
                               </Typography>
                               <Chip
@@ -1501,7 +1502,7 @@ const Dashboard: React.FC = () => {
                               <Typography variant="body2" color="text.secondary">
                                 Saved
                               </Typography>
-                              <Typography variant="h6" fontWeight={700} color={goal.color || '#FAC984'}>
+                              <Typography variant="h6" component="div" fontWeight={700} color={goal.color || '#FAC984'}>
                                 {formatCurrency(goal.current_amount)}
                               </Typography>
                             </Box>
@@ -1509,7 +1510,7 @@ const Dashboard: React.FC = () => {
                               <Typography variant="body2" color="text.secondary">
                                 Target
                               </Typography>
-                              <Typography variant="h6" fontWeight={700}>
+                              <Typography variant="h6" component="div" fontWeight={700}>
                                 {formatCurrency(goal.amount)}
                               </Typography>
                             </Box>
@@ -1540,7 +1541,7 @@ const Dashboard: React.FC = () => {
                     }}
                   >
                     <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                      <Typography variant="h6" component="div" color="text.secondary" gutterBottom>
                         No savings goals yet
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -1643,7 +1644,7 @@ const Dashboard: React.FC = () => {
                               <MonetizationOn sx={{ fontSize: 25 }} />
                             </Avatar>
                             <Box sx={{ flex: 1 }}>
-                              <Typography variant="h6" fontWeight={600} gutterBottom>
+                              <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
                                 {account.name}
                               </Typography>
                               <Chip
@@ -1676,7 +1677,7 @@ const Dashboard: React.FC = () => {
                               <Typography variant="body2" color="text.secondary" gutterBottom>
                                 Current Balance
                               </Typography>
-                              <Typography variant="h6" fontWeight={700} color="success.main">
+                              <Typography variant="h6" component="div" fontWeight={700} color="success.main">
                                 {formatCurrency(account.balances?.current || 0)}
                               </Typography>
                             </Box>
@@ -1684,7 +1685,7 @@ const Dashboard: React.FC = () => {
                               <Typography variant="body2" color="text.secondary" gutterBottom>
                                 Available Balance
                               </Typography>
-                              <Typography variant="h6" fontWeight={700} color="info.main">
+                              <Typography variant="h6" component="div" fontWeight={700} color="info.main">
                                 {formatCurrency(account.balances?.available || 0)}
                               </Typography>
                             </Box>
@@ -1719,7 +1720,7 @@ const Dashboard: React.FC = () => {
                     }}
                   >
                     <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                      <Typography variant="h6" component="div" color="text.secondary" gutterBottom>
                         No accounts found
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -1773,7 +1774,7 @@ const Dashboard: React.FC = () => {
               }
             }}
           />
-          <Typography variant="h6" color="text.primary" textAlign="center">
+          <Typography variant="h6" component="div" color="text.primary" textAlign="center">
             Capy is thinking...
           </Typography>
           <CircularProgress size={40} thickness={4} />
@@ -1813,7 +1814,7 @@ const Dashboard: React.FC = () => {
                   {selectedGoal.icon}
                 </Box>
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="h5" fontWeight={700}>
+                  <Typography variant="h6" component="div" fontWeight={700}>
                     {selectedGoal.title}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
@@ -1848,10 +1849,10 @@ const Dashboard: React.FC = () => {
               {/* Progress Section */}
               <Box sx={{ mb: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="h6" fontWeight={600}>
+                  <Typography variant="h6" component="div" fontWeight={600}>
                     Progress
                   </Typography>
-                  <Typography variant="h6" fontWeight={700} color={selectedGoal.color || '#FAC984'}>
+                  <Typography variant="h6" component="div" fontWeight={700} color={selectedGoal.color || '#FAC984'}>
                     {getProgressPercentage(selectedGoal.current_amount, selectedGoal.amount).toFixed(1)}%
                   </Typography>
                 </Box>
@@ -1884,7 +1885,7 @@ const Dashboard: React.FC = () => {
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Current Amount
                     </Typography>
-                    <Typography variant="h5" fontWeight={700} color="success.main">
+                    <Typography variant="h6" component="div" fontWeight={700} color="success.main">
                       {formatCurrency(selectedGoal.current_amount)}
                     </Typography>
                   </CardContent>
@@ -1902,7 +1903,7 @@ const Dashboard: React.FC = () => {
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Target Amount
                     </Typography>
-                    <Typography variant="h5" fontWeight={700} color="info.main">
+                    <Typography variant="h6" component="div" fontWeight={700} color="info.main">
                       {formatCurrency(selectedGoal.amount)}
                     </Typography>
                   </CardContent>
@@ -1923,7 +1924,7 @@ const Dashboard: React.FC = () => {
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     Remaining to Save
                   </Typography>
-                  <Typography variant="h5" fontWeight={700} color="warning.main">
+                  <Typography variant="h6" component="div" fontWeight={700} color="warning.main">
                     {formatCurrency(selectedGoal.amount - selectedGoal.current_amount)}
                   </Typography>
                 </CardContent>
@@ -1982,7 +1983,7 @@ const Dashboard: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" component="div" fontWeight={700}>
             Create New Financial Goal
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -1991,7 +1992,7 @@ const Dashboard: React.FC = () => {
         </DialogTitle>
         
         <DialogContent sx={{ pt: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mt: 2 }}>
             {/* Basic Information */}
             <Box sx={{ flex: 1 }}>
               <TextField
@@ -2130,7 +2131,7 @@ const Dashboard: React.FC = () => {
               }}
             >
               <CardContent>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
+                <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
                   🤖 Automation Suggestions
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -2189,7 +2190,7 @@ const Dashboard: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h6" component="div" fontWeight={700}>
             Edit Financial Goal
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -2198,7 +2199,7 @@ const Dashboard: React.FC = () => {
         </DialogTitle>
         
         <DialogContent sx={{ pt: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mt: 2 }}>
             {/* Basic Information */}
             <Box sx={{ flex: 1 }}>
               <TextField
@@ -2337,7 +2338,7 @@ const Dashboard: React.FC = () => {
               }}
             >
               <CardContent>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
+                <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
                   🤖 Automation Suggestions
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
