@@ -60,14 +60,14 @@ async function generateAIResponse(userMessage, userContext = {}, userId = null) 
         personalityDescription = `You should be GENTLE and ENCOURAGING in your financial advice. 
 Be supportive and understanding about financial mistakes. Use softer language like "consider" and "might want to" instead of direct commands.
 Focus on small, achievable steps and celebrate any progress the user makes.
-Be empathetic about financial stress and provide reassurance along with advice.`;
+Be empathetic about financial stress and provide reassurance along with advice. Your first message should be very welcoming and friendly.`;
         break;
       case 1:
         personalityDescription = `You should be MORE DIRECT and ASSERTIVE in your financial advice.
 Use stronger language and be more firm about financial decisions that need to be made.
 Point out financial mistakes clearly and provide direct action items.
 Be more urgent about addressing poor financial habits, but remain helpful and supportive.
-Use phrases like "you need to" and "you should immediately" when appropriate.`;
+Use phrases like "you need to" and "you should immediately" when appropriate. Your first message should have a strong call to action.`;
         break;
       case 0:
       default:
