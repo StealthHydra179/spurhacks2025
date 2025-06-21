@@ -33,6 +33,7 @@ import {
   Settings as SettingsIcon,
   CalendarToday as CalendarIcon
 } from '@mui/icons-material';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import capyImage from '../assets/capy.png';
 import { useNavigate } from 'react-router-dom';
 
@@ -96,6 +97,7 @@ const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
+  const [categoryData, setCategoryData] = useState<Array<{ name: string; value: number; color: string }>>([]);
 
   // Get current month's date range
   const getCurrentMonthRange = () => {
@@ -122,10 +124,12 @@ const Dashboard: React.FC = () => {
     let expenses = 0;
     
     transactions.forEach(transaction => {
-      if (transaction.amount > 0) {
-        income += transaction.amount;
+      if (transaction.amount < 0) {
+        // Negative amounts are deposits (money coming into account)
+        income += Math.abs(transaction.amount);
       } else {
-        expenses += Math.abs(transaction.amount);
+        // Positive amounts are expenses (money going out of account)
+        expenses += transaction.amount;
       }
     });
     
@@ -137,6 +141,36 @@ const Dashboard: React.FC = () => {
       month: monthName,
       year
     };
+  };
+
+  // Process category data for pie chart
+  const processCategoryData = (transactions: PlaidTransaction[]) => {
+    const categoryMap = new Map<string, number>();
+    const colors = [
+      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+      '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
+    ];
+    
+    // Only process expense transactions (positive amounts)
+    transactions.forEach(transaction => {
+      if (transaction.amount > 0) {
+        const category = transaction.personal_finance_category?.primary || 
+                        transaction.category?.[0] || 
+                        'Uncategorized';
+        categoryMap.set(category, (categoryMap.get(category) || 0) + transaction.amount);
+      }
+    });
+    
+    const categoryData = Array.from(categoryMap.entries())
+      .map(([name, value], index) => ({
+        name,
+        value,
+        color: colors[index % colors.length]
+      }))
+      .sort((a, b) => b.value - a.value); // Sort by value descending
+    
+    setCategoryData(categoryData);
   };
 
   // Fetch transactions for current month
@@ -175,6 +209,9 @@ const Dashboard: React.FC = () => {
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 5);
       setRecentTransactions(recent);
+      
+      // Process category data for pie chart
+      processCategoryData(transactions);
       
     } catch (err: any) {
       console.error('❌ Failed to fetch monthly data:', err);
@@ -413,7 +450,7 @@ const Dashboard: React.FC = () => {
           }}
         >
           <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar
                   sx={{
@@ -451,8 +488,217 @@ const Dashboard: React.FC = () => {
                 {isLoading ? 'Refreshing...' : 'Refresh'}
               </Button>
             </Box>
+
+            {/* Stats Grid */}
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Card
+                elevation={4}
+                sx={{
+                  flex: '1 1 200px',
+                  borderRadius: 2,
+                  background: alpha(theme.palette.background.paper, 0.95),
+                  backdropFilter: 'blur(20px)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[12]
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                  <Avatar
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
+                      mx: 'auto',
+                      mb: 2
+                    }}
+                  >
+                    <TrendingUp sx={{ fontSize: 25 }} />
+                  </Avatar>
+                  {isLoading ? (
+                    <CircularProgress size={30} sx={{ mb: 2 }} />
+                  ) : (
+                    <Typography variant="h5" fontWeight={700} gutterBottom color="success.main">
+                      {formatCurrency(monthlySummary.income)}
+                    </Typography>
+                  )}
+                  <Typography variant="body2" color="text.secondary">
+                    Total Income
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              <Card
+                elevation={4}
+                onClick={() => navigate('/transactions')}
+                sx={{
+                  flex: '1 1 200px',
+                  borderRadius: 2,
+                  background: alpha(theme.palette.background.paper, 0.95),
+                  backdropFilter: 'blur(20px)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[12]
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                  <Avatar
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.light} 100%)`,
+                      mx: 'auto',
+                      mb: 2
+                    }}
+                  >
+                    <Receipt sx={{ fontSize: 25 }} />
+                  </Avatar>
+                  {isLoading ? (
+                    <CircularProgress size={30} sx={{ mb: 2 }} />
+                  ) : (
+                    <Typography variant="h5" fontWeight={700} gutterBottom color="warning.main">
+                      {formatCurrency(monthlySummary.expenses)}
+                    </Typography>
+                  )}
+                  <Typography variant="body2" color="text.secondary">
+                    Total Expenses
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              <Card
+                elevation={4}
+                sx={{
+                  flex: '1 1 200px',
+                  borderRadius: 2,
+                  background: alpha(theme.palette.background.paper, 0.95),
+                  backdropFilter: 'blur(20px)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[12]
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                  <Avatar
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
+                      mx: 'auto',
+                      mb: 2
+                    }}
+                  >
+                    <MonetizationOn sx={{ fontSize: 25 }} />
+                  </Avatar>
+                  {isLoading ? (
+                    <CircularProgress size={30} sx={{ mb: 2 }} />
+                  ) : (
+                    <Typography 
+                      variant="h5" 
+                      fontWeight={700} 
+                      gutterBottom 
+                      color={monthlySummary.netChange >= 0 ? "success.main" : "error.main"}
+                    >
+                      {formatCurrency(monthlySummary.netChange)}
+                    </Typography>
+                  )}
+                  <Typography variant="body2" color="text.secondary">
+                    Net Change
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Box>
           </CardContent>
         </Card>
+
+        {/* Spending by Category Pie Chart */}
+        {categoryData.length > 0 && (
+          <Card
+            elevation={4}
+            sx={{
+              mb: 3,
+              borderRadius: 2,
+              background: alpha(theme.palette.background.paper, 0.95),
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight={600} gutterBottom>
+                Spending by Category
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Breakdown of your expenses this month
+              </Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'center' }}>
+                <Box sx={{ width: { xs: '100%', md: '50%' }, height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip 
+                        formatter={(value: number) => [formatCurrency(value), 'Amount']}
+                        labelFormatter={(label) => `Category: ${label}`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+                
+                <Box sx={{ flex: 1, width: { xs: '100%', md: '50%' } }}>
+                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                    Category Breakdown
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {categoryData.slice(0, 8).map((category, index) => (
+                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: category.color,
+                            flexShrink: 0
+                          }}
+                        />
+                        <Typography variant="body2" sx={{ flex: 1 }}>
+                          {category.name}
+                        </Typography>
+                        <Typography variant="body2" fontWeight={600}>
+                          {formatCurrency(category.value)}
+                        </Typography>
+                      </Box>
+                    ))}
+                    {categoryData.length > 8 && (
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                        +{categoryData.length - 8} more categories
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Error Alert */}
         {error && (
@@ -464,133 +710,6 @@ const Dashboard: React.FC = () => {
             {error}
           </Alert>
         )}
-
-        {/* Stats Grid */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-          <Card
-            elevation={4}
-            sx={{
-              flex: '1 1 300px',
-              borderRadius: 2,
-              background: alpha(theme.palette.background.paper, 0.95),
-              backdropFilter: 'blur(20px)',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: theme.shadows[12]
-              }
-            }}
-          >
-            <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <Avatar
-                sx={{
-                  width: 60,
-                  height: 60,
-                  background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
-                  mx: 'auto',
-                  mb: 2
-                }}
-              >
-                <TrendingUp sx={{ fontSize: 30 }} />
-              </Avatar>
-              {isLoading ? (
-                <CircularProgress size={40} sx={{ mb: 2 }} />
-              ) : (
-                <Typography variant="h4" fontWeight={700} gutterBottom color="success.main">
-                  {formatCurrency(monthlySummary.income)}
-                </Typography>
-              )}
-              <Typography variant="body2" color="text.secondary">
-                Total Income
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card
-            elevation={4}
-            onClick={() => navigate('/transactions')}
-            sx={{
-              flex: '1 1 300px',
-              borderRadius: 2,
-              background: alpha(theme.palette.background.paper, 0.95),
-              backdropFilter: 'blur(20px)',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              cursor: 'pointer',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: theme.shadows[12]
-              }
-            }}
-          >
-            <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <Avatar
-                sx={{
-                  width: 60,
-                  height: 60,
-                  background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.light} 100%)`,
-                  mx: 'auto',
-                  mb: 2
-                }}
-              >
-                <Receipt sx={{ fontSize: 30 }} />
-              </Avatar>
-              {isLoading ? (
-                <CircularProgress size={40} sx={{ mb: 2 }} />
-              ) : (
-                <Typography variant="h4" fontWeight={700} gutterBottom color="warning.main">
-                  {formatCurrency(monthlySummary.expenses)}
-                </Typography>
-              )}
-              <Typography variant="body2" color="text.secondary">
-                Total Expenses
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card
-            elevation={4}
-            sx={{
-              flex: '1 1 300px',
-              borderRadius: 2,
-              background: alpha(theme.palette.background.paper, 0.95),
-              backdropFilter: 'blur(20px)',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: theme.shadows[12]
-              }
-            }}
-          >
-            <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <Avatar
-                sx={{
-                  width: 60,
-                  height: 60,
-                  background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
-                  mx: 'auto',
-                  mb: 2
-                }}
-              >
-                <MonetizationOn sx={{ fontSize: 30 }} />
-              </Avatar>
-              {isLoading ? (
-                <CircularProgress size={40} sx={{ mb: 2 }} />
-              ) : (
-                <Typography 
-                  variant="h4" 
-                  fontWeight={700} 
-                  gutterBottom 
-                  color={monthlySummary.netChange >= 0 ? "success.main" : "error.main"}
-                >
-                  {formatCurrency(monthlySummary.netChange)}
-                </Typography>
-              )}
-              <Typography variant="body2" color="text.secondary">
-                Net Change
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
 
         {/* Recent Activity */}
         <Card
@@ -640,24 +759,47 @@ const Dashboard: React.FC = () => {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {recentTransactions.map((transaction) => (
                   <Box key={transaction.transaction_id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" fontWeight={500}>
-                        {transaction.merchant_name || transaction.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {transaction.personal_finance_category?.primary || transaction.category?.join(', ') || 'Uncategorized'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDate(transaction.date)}
-                      </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                      {transaction.logo_url ? (
+                        <Avatar
+                          src={transaction.logo_url}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1)
+                          }}
+                        />
+                      ) : (
+                        <Avatar
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1),
+                            color: transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main
+                          }}
+                        >
+                          {transaction.personal_finance_category?.primary?.charAt(0) || transaction.name.charAt(0)}
+                        </Avatar>
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body1" fontWeight={500}>
+                          {transaction.merchant_name || transaction.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {transaction.personal_finance_category?.primary || transaction.category?.join(', ') || 'Uncategorized'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatDate(transaction.date)}
+                        </Typography>
+                      </Box>
                     </Box>
                     <Box sx={{ textAlign: 'right' }}>
                       <Typography 
                         variant="body1" 
-                        color={transaction.amount > 0 ? "success.main" : "error.main"} 
+                        color={transaction.amount < 0 ? "success.main" : "error.main"} 
                         fontWeight={600}
                       >
-                        {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                        {transaction.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
                       </Typography>
                       {transaction.pending && (
                         <Chip 
