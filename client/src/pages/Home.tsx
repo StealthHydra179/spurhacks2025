@@ -53,21 +53,7 @@ const Home: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
-            radial-gradient(circle at 20% 50%, ${alpha(theme.palette.primary.light, 0.3)} 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, ${alpha(theme.palette.secondary.light, 0.3)} 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, ${alpha(theme.palette.info.light, 0.3)} 0%, transparent 50%)
-          `,
-          animation: 'gradientShift 15s ease infinite'
-        }
+        position: 'relative'
       }}
     >
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
@@ -274,15 +260,6 @@ const Home: React.FC = () => {
           </Typography>
         </Box>
       </Container>
-
-      <style>
-        {`
-          @keyframes gradientShift {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-          }
-        `}
-      </style>
     </Box>
   );
 };

@@ -152,6 +152,15 @@ const Dashboard: React.FC = () => {
       '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
       '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
     ];
+
+    // Function to format category names for better display
+    const formatCategoryName = (category: string): string => {
+      return category
+        .toLowerCase()
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
     
     // Only process expense transactions (positive amounts)
     transactions.forEach(transaction => {
@@ -159,7 +168,8 @@ const Dashboard: React.FC = () => {
         const category = transaction.personal_finance_category?.primary || 
                         transaction.category?.[0] || 
                         'Uncategorized';
-        categoryMap.set(category, (categoryMap.get(category) || 0) + transaction.amount);
+        const formattedCategory = formatCategoryName(category);
+        categoryMap.set(formattedCategory, (categoryMap.get(formattedCategory) || 0) + transaction.amount);
       }
     });
     
@@ -247,7 +257,11 @@ const Dashboard: React.FC = () => {
   };
   const handleSearchSubmit = async (e: React.FormEvent | React.KeyboardEvent) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      // If no input, navigate to chat page
+      navigate('/chat');
+      return;
+    }
 
     try {
       // Call the ask-capy API to create a new conversation
@@ -258,6 +272,16 @@ const Dashboard: React.FC = () => {
       console.error('Error creating conversation:', error);
       // Fallback: just navigate to chat page
       navigate('/chat');
+    }
+  };
+
+  const handleSearchButtonClick = () => {
+    if (!searchQuery.trim()) {
+      // If no input, navigate to chat page
+      navigate('/chat');
+    } else {
+      // If there's input, submit the search
+      handleSearchSubmit({ preventDefault: () => {} } as React.FormEvent);
     }
   };
 
@@ -287,11 +311,12 @@ const Dashboard: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.secondary.light} 100%)`,
-        py: 4
+        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+        py: 4,
+        position: 'relative'
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -316,8 +341,9 @@ const Dashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
-              <form onSubmit={handleSearchSubmit} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'center' }}>
                 <TextField
                   variant="outlined"
                   placeholder="ask capy a question"
@@ -351,15 +377,32 @@ const Dashboard: React.FC = () => {
                       },
                     },
                   }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon color="action" />
-                      </InputAdornment>
-                    ),
-                  }}
                 />
-              </form>
+                <Button
+                  variant="outlined"
+                  onClick={handleSearchButtonClick}
+                  sx={{
+                    minWidth: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    px: 0,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                    border: `2px solid ${theme.palette.primary.main}`,
+                    color: theme.palette.primary.main,
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.primary.contrastText,
+                      border: `2px solid ${theme.palette.primary.dark}`,
+                      transform: 'scale(1.05)',
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                    },
+                    transition: 'all 0.2s ease',
+                    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,
+                  }}
+                >
+                  <SearchIcon sx={{ fontSize: 20 }} />
+                </Button>
+              </Box>
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -394,6 +437,7 @@ const Dashboard: React.FC = () => {
                 open={Boolean(profileMenuAnchor)}
                 onClose={handleProfileMenuClose}
                 onMouseLeave={handleProfileMenuClose}
+                disableScrollLock={true}
                 anchorOrigin={{
                   vertical: 'bottom',
                   horizontal: 'right',
@@ -415,7 +459,7 @@ const Dashboard: React.FC = () => {
               >
                 {/* User Info Section */}
                 <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar
                       sx={{
                         width: 40,
@@ -433,20 +477,6 @@ const Dashboard: React.FC = () => {
                         {user?.email}
                       </Typography>
                     </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 0.5 }}>
-                    <Chip
-                      label={user?.mode === 0 ? 'Light Mode' : 'Dark Mode'}
-                      color="primary"
-                      size="small"
-                      sx={{ fontSize: '0.7rem' }}
-                    />
-                    <Chip
-                      label="Active User"
-                      color="success"
-                      size="small"
-                      sx={{ fontSize: '0.7rem' }}
-                    />
                   </Box>
                 </Box>
                 

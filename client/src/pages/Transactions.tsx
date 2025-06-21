@@ -351,7 +351,8 @@ const Transactions: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        py: 4
+        py: 4,
+        position: 'relative'
       }}
     >
       <Container maxWidth="lg">

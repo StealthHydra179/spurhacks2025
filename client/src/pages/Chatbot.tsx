@@ -326,7 +326,7 @@ const Chatbot: React.FC = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.secondary.light} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
           position: 'relative'
         }}
       >

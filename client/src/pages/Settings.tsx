@@ -151,10 +151,11 @@ const Settings: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        py: 4
+        py: 4,
+        position: 'relative'
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
