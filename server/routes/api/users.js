@@ -2,12 +2,8 @@ var express = require('express'),
     router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-    
-const { sql } = require('../../db/db');    
 const { logger } = require('../../logger');
-
-const userDb = require('../../db/users'); 
-
+const userDb = require('../../db/users');
 const TAG = 'api_users';
 
 router.get('/', function (req, res) {
@@ -41,7 +37,6 @@ router.post('/register', async (req, res) => {
     if (!req.body || !req.body.username || !req.body.password || !req.body.email) {
         logger.warn(`${TAG} Registration failed: Username, email, and password are required`);
         return res.status(400).json({ message: 'Username, email, and password are required' });
-        //TODO ADD EMAIL VerIFICATION? (LIKE MAKE SURE THERE IS A @ IN THE EMAIL)
     }
     const { username, password } = req.body;
 
@@ -86,7 +81,9 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const userID = user.id
+
+    const token = jwt.sign({ username, userID }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
     logger.info(`${TAG} User ${username} logged in successfully`);
 });
@@ -96,19 +93,5 @@ router.post('/login', async (req, res) => {
 //   res.json({ message: `Welcome, ${req.user.username}` });
 // });
 //
-// // Middleware to validate JWT
-// function authenticateToken(req, res, next) {
-//   const authHeader = req.headers['authorization'];
-//   const token = authHeader?.split(' ')[1];
-//
-//   if (!token) return res.sendStatus(401);
-//
-//   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-//     if (err) return res.sendStatus(403);
-//     req.user = user;
-//     next();
-//   });
-// }
-// // TODO end temp code
 
 module.exports = router;

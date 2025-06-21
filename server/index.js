@@ -14,10 +14,12 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-var apiUsers = require('./routes/api/users');
+const apiUsers = require('./routes/api/users');
 app.use('/api/users', apiUsers);
-var apiTransactions = require('./routes/api/transactions');
+const apiTransactions = require('./routes/api/transactions');
 app.use('/api/transactions', apiTransactions);
+const apiBotConversations = require('./routes/api/bot_conversations');
+app.use('/api/bot_conversations', apiBotConversations)
 
 app.listen(port, () => {
   logger.info(`${TAG} Server listening on port ${port}`)
