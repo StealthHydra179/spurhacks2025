@@ -3,6 +3,7 @@ const OpenAI = require("openai");
 const { logger } = require("../logger");
 const usersDb = require("./users");
 const plaid = require("../plaid/plaid");
+const savingsGoalsDb = require("./savings_goals");
 
 const TAG = "bot_conversations";
 
@@ -55,6 +56,44 @@ function formatAccountBalances(accountsData) {
     });
 }
 
+function formatSavingsGoals(goalsData) {
+    // Format savings goals data for AI context
+    if (!goalsData || goalsData.length === 0) {
+        return [];
+    }
+    
+    logger.info(`${TAG} goalsData: ${JSON.stringify(goalsData)}`);
+    return goalsData.map((goal) => {
+        const progressPercentage = goal.amount > 0 ? ((goal.current_amount || 0) / goal.amount * 100).toFixed(1) : 0;
+        const remainingAmount = Math.max(0, goal.amount - (goal.current_amount || 0));
+        
+        // Calculate days until deadline
+        let daysUntilDeadline = null;
+        if (goal.deadline) {
+            const deadlineDate = new Date(goal.deadline);
+            const today = new Date();
+            const diffTime = deadlineDate.getTime() - today.getTime();
+            daysUntilDeadline = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+        
+        return {
+            title: goal.title || "Untitled Goal",
+            description: goal.description || "",
+            target_amount: goal.amount || 0,
+            current_amount: goal.current_amount || 0,
+            progress_percentage: progressPercentage,
+            remaining_amount: remainingAmount,
+            deadline: goal.deadline || null,
+            days_until_deadline: daysUntilDeadline,
+            category: goal.category || "savings",
+            priority: goal.priority || "medium",
+            status: goal.status || "active",
+            icon: goal.icon || "💰",
+            color: goal.color || "#4CAF50"
+        };
+    });
+}
+
 /**
  * Generate AI response using OpenAI GPT-4 mini
  */
@@ -74,9 +113,7 @@ async function generateAIResponse(userMessage, userContext = {}, userId = null) 
         logger.warn(`${TAG} Could not fetch personality for user ${userId}: ${error.message}`);
         personalityMode = 0;
       }
-    }
-
-    // Fetch account balance data if user has connected accounts
+    }    // Fetch account balance data if user has connected accounts
     let accountBalances = [];
     if (userId && userContext.hasPlaidData) {
       try {
@@ -87,6 +124,20 @@ async function generateAIResponse(userMessage, userContext = {}, userId = null) 
       } catch (error) {
         logger.warn(`${TAG} Could not fetch account balances for user ${userId}: ${error.message}`);
         accountBalances = [];
+      }
+    }
+
+    // Fetch savings goals data if user is available
+    let savingsGoals = [];
+    if (userId) {
+      try {
+        logger.info(`${TAG} Fetching savings goals for user ${userId}`);
+        const goalsData = await savingsGoalsDb.getByUserId(userId);
+        savingsGoals = formatSavingsGoals(goalsData);
+        logger.info(`${TAG} Retrieved ${savingsGoals.length} savings goals`);
+      } catch (error) {
+        logger.warn(`${TAG} Could not fetch savings goals for user ${userId}: ${error.message}`);
+        savingsGoals = [];
       }
     }
 
@@ -153,8 +204,26 @@ TRANSACTION DATA FORMATTING RULES:
 - When analyzing spending patterns, focus on positive values (outflows)
 - When discussing income, focus on negative values (inflows)
 
+${accountBalances.length > 0 ? `
+Current Account Balances:
+${JSON.stringify(accountBalances, null, 2)}
+` : 'No account balance data available.'}
+
+${savingsGoals.length > 0 ? `
+User's Savings Goals and Progress:
+${JSON.stringify(savingsGoals, null, 2)}
+
+GOALS GUIDANCE:
+- Use the progress_percentage to understand how close the user is to their goals
+- Consider days_until_deadline when giving advice about urgency
+- Mention specific goal progress when relevant to their questions
+- Suggest practical steps to reach their goals based on their spending patterns
+- Celebrate progress they've made on their goals
+- Help them adjust goals if they seem unrealistic based on their financial situation
+` : 'No savings goals set up yet. Consider suggesting they create financial goals.'}
+
 Recent Transaction Data:
-${JSON.stringify(format(userContext.transactionData))}
+${userContext.transactionData ? JSON.stringify(format(userContext.transactionData), null, 2) : 'No transaction data available.'}
 `;
 
     // const formatTransactionData = (transactions) => {
@@ -195,6 +264,11 @@ Please provide a helpful response.`;    logger.info(
     if (accountBalances && accountBalances.length > 0) {
       logger.info(
         `${TAG} Using ${accountBalances.length} account balances for context`
+      );
+    }
+    if (savingsGoals && savingsGoals.length > 0) {
+      logger.info(
+        `${TAG} Using ${savingsGoals.length} savings goals for context`
       );
     }
     logger.info(`${TAG} systemPrompt: ${systemPrompt}`);
