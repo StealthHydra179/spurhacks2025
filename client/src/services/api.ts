@@ -5,7 +5,10 @@ import type {
   CreateTransactionRequest, 
   UpdateTransactionRequest,
   ConversationSummary,
-  Conversation
+  Conversation,
+  SavingsGoal,
+  CreateSavingsGoalRequest,
+  UpdateSavingsGoalRequest
 } from '../types';
 
 // Create axios instance with base configuration
@@ -184,6 +187,33 @@ export const botConversationService = {
   deleteConversation: async (conversationId: string): Promise<{ message: string; status: string }> => {
     const response = await api.delete<{ message: string; status: string }>(`/api/bot_conversations/deleteConversation/${conversationId}`);
     return response.data;
+  },
+};
+
+export const savingsGoalsService = {
+  getSavingsGoals: async (): Promise<SavingsGoal[]> => {
+    const response = await api.get<{ status: string; data: SavingsGoal[]; message: string }>('/api/savings_goals');
+    return response.data.data;
+  },
+
+  getSavingsGoalById: async (id: string): Promise<SavingsGoal> => {
+    const response = await api.get<{ status: string; data: SavingsGoal }>(`/api/savings_goals/${id}`);
+    return response.data.data;
+  },
+
+  createSavingsGoal: async (goalData: CreateSavingsGoalRequest): Promise<SavingsGoal> => {
+    const response = await api.post<{ status: string; data: SavingsGoal; message: string }>('/api/savings_goals', goalData);
+    return response.data.data;
+  },
+
+  updateSavingsGoal: async (id: string, goalData: UpdateSavingsGoalRequest): Promise<SavingsGoal> => {
+    const response = await api.put<{ status: string; data: SavingsGoal; message: string }>(`/api/savings_goals/${id}`, goalData);
+    return response.data.data;
+  },
+
+  deleteSavingsGoal: async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ status: string; message: string }>(`/api/savings_goals/${id}`);
+    return { message: response.data.message };
   },
 };
 
