@@ -227,14 +227,8 @@ const Chatbot: React.FC = () => {
       await botConversationService.addMessage(currentConversationId, messageToSend, 'user');
       await fetchConversation(currentConversationId);
       
-      // Keep thinking for 2 seconds, then start talking and response generation
-      setTimeout(() => {
-        setBotThinking(false);
-        setBotTalking(true); // Start talking immediately
-        
-        // Start bot response generation
-        addBotResponse(messageToSend);
-      }, 2000); // Show thinking for 2 seconds
+      // Start bot response generation immediately - thinking continues until response is ready
+      addBotResponse(messageToSend);
       
     } catch (error) {
       console.error('Error sending message:', error);
@@ -256,6 +250,10 @@ const Chatbot: React.FC = () => {
       const response = await plaidService.getChatResponse(parseInt(currentConversationId), userMessage);
       console.log('✅ Chat response received:', response);
       
+      // Switch from thinking to talking when response is received
+      setBotThinking(false);
+      setBotTalking(true);
+      
       // Wait a moment for the server to process the response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -272,7 +270,9 @@ const Chatbot: React.FC = () => {
       
     } catch (error) {
       console.error('❌ Error adding bot response:', error);
-      // Even if there's an error, keep talking for a bit then stop
+      // Even if there's an error, stop thinking and keep talking for a bit then stop
+      setBotThinking(false);
+      setBotTalking(true);
       setTimeout(() => {
         setBotTalking(false);
       }, 3000);
@@ -769,8 +769,9 @@ const Chatbot: React.FC = () => {
                     alignItems: 'flex-start',
                     gap: 2,
                     width: '100%',
-                    justifyContent: 'flex-end',
+                    justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
                     flexDirection: 'row',
+                    ml: message.sender === 'bot' ? { xs: '150px', sm: '200px', md: '250px' } : 0,
                   }}
                 >
                   {/* For bot: Avatar left, Paper right. For user: Paper left, Avatar right. */}
@@ -800,7 +801,7 @@ const Chatbot: React.FC = () => {
                         : theme.palette.text.primary,
                       boxShadow: message.sender === 'user' ? '0 2px 8px 0 rgba(0,0,0,0.08)' : undefined,
                       ml: 0,
-                      mr: 0,
+                      mr: message.sender === 'user' ? 0 : 'auto',
                       mb: message.sender === 'bot' ? { xs: 2, sm: 3, md: 4} : 0,
                     }}
                   >
