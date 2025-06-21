@@ -9,12 +9,15 @@ CREATE TABLE users (
 );
 
 CREATE TABLE plaid_users (
-    id SERIAL PRIMARY KEY
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    access_token VARCHAR,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-ALTER TABLE users
-ADD CONSTRAINT fk_users_plaid_id
-FOREIGN KEY (plaid_id) REFERENCES plaid_users(id);
+-- ALTER TABLE users
+-- ADD CONSTRAINT fk_users_plaid_id
+-- FOREIGN KEY (plaid_id) REFERENCES plaid_users(id);
 
 CREATE TABLE follows (
     following_user_id INTEGER,

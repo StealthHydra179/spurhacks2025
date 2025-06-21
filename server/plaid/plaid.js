@@ -2,6 +2,7 @@ const { Configuration, PlaidApi, PlaidEnvironments} = require('plaid');
 const { logger } = require('../logger');
 const dotenv = require('dotenv');
 const path = require('path');
+const plaidUsersDb = require('../db/plaid_users');
 
 // Load environment variables from the root directory
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
@@ -23,6 +24,30 @@ const client = new PlaidApi(configuration);
 
 // Store access tokens temporarily (in production, use a proper database)
 const accessTokens = new Map();
+
+/**
+ * Helper function to get user access tokens from database
+ */
+async function getUserAccessTokens(userId) {
+  try {
+    const plaidUsers = await plaidUsersDb.getByUserID(userId);
+    if (!plaidUsers || plaidUsers.length === 0) {
+      throw new Error('No access tokens found for user');
+    }
+    
+    // For backward compatibility, return the first access token in the expected format
+    // TODO: Update functions to handle multiple access tokens per user
+    logger.info(`${TAG} Found ${plaidUsers.length} access tokens for user ${userId}`);
+    logger.info(`${TAG} Using access token: ${plaidUsers[0].access_token}`);
+    return {
+      accessToken: plaidUsers[0].access_token,
+      itemId: null // We might need to store item_id in plaid_users table later
+    };
+  } catch (error) {
+    logger.error(`${TAG} Error getting access tokens for user ${userId}: ${error.message}`);
+    throw error;
+  }
+}
 
 /**
  * Helper function to log Plaid API errors comprehensively
@@ -131,10 +156,7 @@ async function exchangePublicToken(publicToken, userId) {
  */
 async function getAccounts(userId) {
   try {
-    const userTokens = accessTokens.get(userId);
-    if (!userTokens) {
-      throw new Error('No access token found for user');
-    }
+    const userTokens = await getUserAccessTokens(userId);
 
     const accountsResponse = await client.accountsGet({
       access_token: userTokens.accessToken,
@@ -153,17 +175,14 @@ async function getAccounts(userId) {
  */
 async function getTransactions(userId, startDate, endDate) {
   try {
-    const userTokens = accessTokens.get(userId);
-    if (!userTokens) {
-      throw new Error('No access token found for user');
-    }
+    const userTokens = await getUserAccessTokens(userId);
 
     const request = {
       access_token: userTokens.accessToken,
       start_date: startDate || '2020-01-01',
       end_date: endDate || new Date().toISOString().split('T')[0],
     };
-
+    
     const transactionsResponse = await client.transactionsSync(request);
     logger.info(`${TAG} Retrieved transactions for user ${userId}`);
     return transactionsResponse.data;
@@ -178,10 +197,7 @@ async function getTransactions(userId, startDate, endDate) {
  */
 async function getBalances(userId) {
   try {
-    const userTokens = accessTokens.get(userId);
-    if (!userTokens) {
-      throw new Error('No access token found for user');
-    }
+    const userTokens = await getUserAccessTokens(userId);
 
     const balanceResponse = await client.accountsBalanceGet({
       access_token: userTokens.accessToken,
@@ -200,10 +216,7 @@ async function getBalances(userId) {
  */
 async function getIdentity(userId) {
   try {
-    const userTokens = accessTokens.get(userId);
-    if (!userTokens) {
-      throw new Error('No access token found for user');
-    }
+    const userTokens = await getUserAccessTokens(userId);
 
     const identityResponse = await client.identityGet({
       access_token: userTokens.accessToken,
@@ -222,17 +235,14 @@ async function getIdentity(userId) {
  */
 async function removeItem(userId) {
   try {
-    const userTokens = accessTokens.get(userId);
-    if (!userTokens) {
-      throw new Error('No access token found for user');
-    }
+    const userTokens = await getUserAccessTokens(userId);
 
     await client.itemRemove({
       access_token: userTokens.accessToken,
     });
 
-    // Remove from local storage
-    accessTokens.delete(userId);
+    // Remove from database
+    await plaidUsersDb.deleteByUserID(userId);
 
     logger.info(`${TAG} Item removed for user ${userId}`);
     return { message: 'Item removed successfully' };
@@ -249,14 +259,20 @@ async function fetchPlaidInfo() {
   try {
     logger.info(`${TAG} Starting to fetch Plaid information for all users`);
     
-    if (accessTokens.size === 0) {
+    // Get all plaid users from database
+    const allPlaidUsers = await plaidUsersDb.getByUserID(); // This might need adjustment
+    
+    if (!allPlaidUsers || allPlaidUsers.length === 0) {
       logger.info(`${TAG} No connected users found`);
       return { message: 'No connected users found' };
     }
 
     const results = {};
     
-    for (const [userId, tokenData] of accessTokens.entries()) {
+    // Get unique user IDs from plaid_users
+    const uniqueUserIds = [...new Set(allPlaidUsers.map(pu => pu.user_id))];
+    
+    for (const userId of uniqueUserIds) {
       try {
         logger.info(`${TAG} Fetching data for user ${userId}`);
         
@@ -426,16 +442,27 @@ async function getPlaidSummary() {
 /**
  * Check if a user has a linked Plaid Item
  */
-function hasLinkedItem(userId) {
-  return accessTokens.has(userId);
+async function hasLinkedItem(userId) {
+  try {
+    const plaidUsers = await plaidUsersDb.getByUserID(userId);
+    return plaidUsers && plaidUsers.length > 0;
+  } catch (error) {
+    logger.error(`${TAG} Error checking linked item for user ${userId}: ${error.message}`);
+    return false;
+  }
 }
 
 /**
  * Get the item ID for a user
  */
-function getItemId(userId) {
-  const userTokens = accessTokens.get(userId);
-  return userTokens ? userTokens.itemId : null;
+async function getItemId(userId) {
+  try {
+    const userTokens = await getUserAccessTokens(userId);
+    return userTokens ? userTokens.itemId : null;
+  } catch (error) {
+    logger.error(`${TAG} Error getting item ID for user ${userId}: ${error.message}`);
+    return null;
+  }
 }
 
 /**
