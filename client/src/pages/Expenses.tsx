@@ -25,17 +25,17 @@ import {
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
+  TrendingDown as TrendingDownIcon,
   TrendingUp as TrendingUpIcon,
   Refresh as RefreshIcon,
-  MonetizationOn as MoneyIcon,
-  AccountBalance as BankIcon,
-  Timeline as TimelineIcon,
-  TrendingDown as TrendingDownIcon
+  Receipt as ReceiptIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Timeline as TimelineIcon
 } from '@mui/icons-material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import capyImage from '../assets/capy.png';
 
-interface IncomeTransaction {
+interface ExpenseTransaction {
   transaction_id: string;
   account_id: string;
   amount: number;
@@ -55,20 +55,20 @@ interface IncomeTransaction {
   transaction_type: string;
 }
 
-interface IncomeSummary {
-  totalIncome: number;
-  averageIncome: number;
-  incomeCount: number;
-  topSource: string;
+interface ExpenseSummary {
+  totalExpenses: number;
+  averageExpense: number;
+  expenseCount: number;
+  topCategory: string;
   monthlyTrend: number;
 }
 
-const Income: React.FC = () => {
+const Expenses: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const theme = useTheme();
-  const [incomeTransactions, setIncomeTransactions] = useState<IncomeTransaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<IncomeTransaction[]>([]);
+  const [expenseTransactions, setExpenseTransactions] = useState<ExpenseTransaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<ExpenseTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -76,7 +76,7 @@ const Income: React.FC = () => {
   const [endDate, setEndDate] = useState('');
   const [appliedStartDate, setAppliedStartDate] = useState('');
   const [appliedEndDate, setAppliedEndDate] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('all');
+  const [merchantFilter, setMerchantFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Set default date range (last 6 months)
@@ -95,8 +95,8 @@ const Income: React.FC = () => {
     setAppliedEndDate(formatDateForInput(today));
   }, []);
 
-  // Fetch income transactions from Plaid
-  const fetchIncomeData = async (start?: string, end?: string) => {
+  // Fetch expense transactions from Plaid
+  const fetchExpenseData = async (start?: string, end?: string) => {
     if (!user?.id) return;
     
     try {
@@ -108,14 +108,14 @@ const Income: React.FC = () => {
       
       const response = await plaidService.getTransactions(user.id.toString(), startToUse, endToUse);
       
-      // Filter for income transactions (negative amounts are deposits/income)
-      const incomeData = (response.transactions || []).filter(transaction => transaction.amount < 0);
+      // Filter for expense transactions (positive amounts are expenses)
+      const expenseData = (response.transactions || []).filter(transaction => transaction.amount > 0);
       
-      setIncomeTransactions(incomeData);
-      setFilteredTransactions(incomeData);
+      setExpenseTransactions(expenseData);
+      setFilteredTransactions(expenseData);
     } catch (err: any) {
-      console.error('Failed to fetch income data:', err);
-      setError(err.response?.data?.message || 'Failed to fetch income data');
+      console.error('Failed to fetch expense data:', err);
+      setError(err.response?.data?.message || 'Failed to fetch expense data');
     } finally {
       setIsLoading(false);
     }
@@ -124,17 +124,17 @@ const Income: React.FC = () => {
   // Initial fetch
   useEffect(() => {
     if (appliedStartDate && appliedEndDate) {
-      fetchIncomeData();
+      fetchExpenseData();
     }
   }, [appliedStartDate, appliedEndDate, user?.id]);
 
   // Filter transactions
   useEffect(() => {
-    let filtered = incomeTransactions;
+    let filtered = expenseTransactions;
 
-    if (sourceFilter !== 'all') {
+    if (merchantFilter !== 'all') {
       filtered = filtered.filter(transaction => 
-        transaction.merchant_name === sourceFilter || transaction.name === sourceFilter
+        transaction.merchant_name === merchantFilter || transaction.name === merchantFilter
       );
     }
 
@@ -151,11 +151,11 @@ const Income: React.FC = () => {
     }
 
     setFilteredTransactions(filtered);
-  }, [incomeTransactions, sourceFilter, categoryFilter]);
+  }, [expenseTransactions, merchantFilter, categoryFilter]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    fetchIncomeData().finally(() => setIsRefreshing(false));
+    fetchExpenseData().finally(() => setIsRefreshing(false));
   };
 
   const setQuickDateRange = (months: number) => {
@@ -187,68 +187,71 @@ const Income: React.FC = () => {
       .join(' ');
   };
 
-  // Calculate income summary
-  const calculateIncomeSummary = (): IncomeSummary => {
-    const totalIncome = filteredTransactions.reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
-    const averageIncome = filteredTransactions.length > 0 ? totalIncome / filteredTransactions.length : 0;
+  // Calculate expense summary
+  const calculateExpenseSummary = (): ExpenseSummary => {
+    const totalExpenses = filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+    const averageExpense = filteredTransactions.length > 0 ? totalExpenses / filteredTransactions.length : 0;
     
-    // Find top income source
-    const sourceMap = new Map<string, number>();
+    // Find top expense category
+    const categoryMap = new Map<string, number>();
     filteredTransactions.forEach(transaction => {
-      const source = transaction.merchant_name || transaction.name;
-      sourceMap.set(source, (sourceMap.get(source) || 0) + Math.abs(transaction.amount));
+      const category = transaction.personal_finance_category?.primary || 
+                      transaction.category?.[0] || 
+                      'Uncategorized';
+      const formattedCategory = formatCategoryName(category);
+      categoryMap.set(formattedCategory, (categoryMap.get(formattedCategory) || 0) + transaction.amount);
     });
     
-    const topSource = Array.from(sourceMap.entries())
+    const topCategory = Array.from(categoryMap.entries())
       .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Unknown';
     
     // Calculate monthly trend from actual data
     const monthlyTrend = calculateMonthlyTrend();
     
     return {
-      totalIncome,
-      averageIncome,
-      incomeCount: filteredTransactions.length,
-      topSource,
+      totalExpenses,
+      averageExpense,
+      expenseCount: filteredTransactions.length,
+      topCategory,
       monthlyTrend
     };
   };
 
   // Calculate monthly trend by comparing current month with previous month
   const calculateMonthlyTrend = (): number => {
-    if (incomeTransactions.length === 0) return 0;
+    if (expenseTransactions.length === 0) return 0;
 
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     
-    // Get current month's income
-    const currentMonthIncome = incomeTransactions
+    // Get current month's expenses
+    const currentMonthExpenses = expenseTransactions
       .filter(transaction => {
         const transactionDate = new Date(transaction.date);
         return transactionDate.getMonth() === currentMonth && 
                transactionDate.getFullYear() === currentYear;
       })
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+      .reduce((sum, transaction) => sum + transaction.amount, 0);
 
-    // Get previous month's income
+    // Get previous month's expenses
     const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     
-    const previousMonthIncome = incomeTransactions
+    const previousMonthExpenses = expenseTransactions
       .filter(transaction => {
         const transactionDate = new Date(transaction.date);
         return transactionDate.getMonth() === previousMonth && 
                transactionDate.getFullYear() === previousYear;
       })
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+      .reduce((sum, transaction) => sum + transaction.amount, 0);
 
     // Calculate percentage change
-    if (previousMonthIncome === 0) {
-      return currentMonthIncome > 0 ? 100 : 0; // If no previous month data, show 100% increase if current month has income
+    if (previousMonthExpenses === 0) {
+      return currentMonthExpenses > 0 ? 100 : 0; // If no previous month data, show 100% increase if current month has expenses
     }
 
-    const percentageChange = ((currentMonthIncome - previousMonthIncome) / previousMonthIncome) * 100;
+    const percentageChange = ((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100;
     return Math.round(percentageChange * 10) / 10; // Round to 1 decimal place
   };
 
@@ -258,7 +261,7 @@ const Income: React.FC = () => {
     
     filteredTransactions.forEach(transaction => {
       const month = new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-      monthlyData.set(month, (monthlyData.get(month) || 0) + Math.abs(transaction.amount));
+      monthlyData.set(month, (monthlyData.get(month) || 0) + transaction.amount);
     });
     
     return Array.from(monthlyData.entries())
@@ -266,31 +269,17 @@ const Income: React.FC = () => {
       .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
   };
 
-  const prepareSourceData = () => {
-    const sourceMap = new Map<string, number>();
-    
-    filteredTransactions.forEach(transaction => {
-      const source = transaction.merchant_name || transaction.name;
-      sourceMap.set(source, (sourceMap.get(source) || 0) + Math.abs(transaction.amount));
+  const getUniqueMerchants = () => {
+    const merchants = new Set<string>();
+    expenseTransactions.forEach(transaction => {
+      merchants.add(transaction.merchant_name || transaction.name);
     });
-    
-    return Array.from(sourceMap.entries())
-      .map(([source, amount]) => ({ source, amount }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 10);
-  };
-
-  const getUniqueSources = () => {
-    const sources = new Set<string>();
-    incomeTransactions.forEach(transaction => {
-      sources.add(transaction.merchant_name || transaction.name);
-    });
-    return Array.from(sources).sort();
+    return Array.from(merchants).sort();
   };
 
   const getUniqueCategories = () => {
     const categories = new Set<string>();
-    incomeTransactions.forEach(transaction => {
+    expenseTransactions.forEach(transaction => {
       if (transaction.personal_finance_category) {
         categories.add(formatCategoryName(transaction.personal_finance_category.primary));
         categories.add(formatCategoryName(transaction.personal_finance_category.detailed));
@@ -315,11 +304,8 @@ const Income: React.FC = () => {
     });
   };
 
-  const incomeSummary = calculateIncomeSummary();
+  const expenseSummary = calculateExpenseSummary();
   const chartData = prepareChartData();
-  const sourceData = prepareSourceData();
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF7C80', '#8DD1E1', '#D084D0'];
 
   return (
     <Box
@@ -351,7 +337,7 @@ const Income: React.FC = () => {
               Back to Dashboard
             </Button>
             
-            <Tooltip title="Refresh income data">
+            <Tooltip title="Refresh expense data">
               <Button
                 variant="outlined"
                 startIcon={<RefreshIcon />}
@@ -386,14 +372,14 @@ const Income: React.FC = () => {
             />
             <Box sx={{ flex: 1 }}>
               <Typography variant="h4" component="h1" fontWeight={700} color="white">
-                Income Analysis
+                Expense Analysis
               </Typography>
               <Typography variant="body1" color={alpha(theme.palette.common.white, 0.8)}>
-                Track and analyze your income sources and patterns
+                Track and analyze your spending patterns and categories
               </Typography>
               {appliedStartDate && appliedEndDate && (
                 <Typography variant="body2" color={alpha(theme.palette.common.white, 0.7)} sx={{ mt: 0.5 }}>
-                  📅 Showing income from {new Date(appliedStartDate + 'T00:00:00').toLocaleDateString()} to {new Date(appliedEndDate + 'T00:00:00').toLocaleDateString()}
+                  📅 Showing expenses from {new Date(appliedStartDate + 'T00:00:00').toLocaleDateString()} to {new Date(appliedEndDate + 'T00:00:00').toLocaleDateString()}
                 </Typography>
               )}
             </Box>
@@ -447,17 +433,17 @@ const Income: React.FC = () => {
               {/* Filters Row */}
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <FormControl sx={{ flex: '1 1 200px' }}>
-                  <InputLabel>Income Source</InputLabel>
+                  <InputLabel>Merchant</InputLabel>
                   <Select
-                    value={sourceFilter}
-                    label="Income Source"
-                    onChange={(e) => setSourceFilter(e.target.value)}
+                    value={merchantFilter}
+                    label="Merchant"
+                    onChange={(e) => setMerchantFilter(e.target.value)}
                     sx={{ borderRadius: 2 }}
                   >
-                    <MenuItem value="all">All Sources</MenuItem>
-                    {getUniqueSources().map((source) => (
-                      <MenuItem key={source} value={source}>
-                        {source}
+                    <MenuItem value="all">All Merchants</MenuItem>
+                    {getUniqueMerchants().map((merchant) => (
+                      <MenuItem key={merchant} value={merchant}>
+                        {merchant}
                       </MenuItem>
                     ))}
                   </Select>
@@ -526,7 +512,7 @@ const Income: React.FC = () => {
           </Box>
         ) : (
           <>
-            {/* Income Summary Cards */}
+            {/* Expense Summary Cards */}
             <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
               <Box sx={{ flex: '1 1 250px', minWidth: 250 }}>
                 <Card
@@ -535,7 +521,7 @@ const Income: React.FC = () => {
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
                     backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                    border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
@@ -543,18 +529,18 @@ const Income: React.FC = () => {
                       sx={{
                         width: 50,
                         height: 50,
-                        background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
+                        background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.light} 100%)`,
                         mx: 'auto',
                         mb: 2
                       }}
                     >
-                      <MoneyIcon sx={{ fontSize: 25 }} />
+                      <ReceiptIcon sx={{ fontSize: 25 }} />
                     </Avatar>
-                    <Typography variant="h4" fontWeight={700} color="success.main">
-                      {formatCurrency(incomeSummary.totalIncome)}
+                    <Typography variant="h4" fontWeight={700} color="warning.main">
+                      {formatCurrency(expenseSummary.totalExpenses)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Total Income
+                      Total Expenses
                     </Typography>
                   </CardContent>
                 </Card>
@@ -583,7 +569,7 @@ const Income: React.FC = () => {
                       <TimelineIcon sx={{ fontSize: 25 }} />
                     </Avatar>
                     <Typography variant="h4" fontWeight={700} color="primary.main">
-                      {formatCurrency(incomeSummary.averageIncome)}
+                      {formatCurrency(expenseSummary.averageExpense)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Average Per Transaction
@@ -612,13 +598,13 @@ const Income: React.FC = () => {
                         mb: 2
                       }}
                     >
-                      <BankIcon sx={{ fontSize: 25 }} />
+                      <ShoppingCartIcon sx={{ fontSize: 25 }} />
                     </Avatar>
                     <Typography variant="h4" fontWeight={700} color="info.main">
-                      {incomeSummary.incomeCount}
+                      {expenseSummary.expenseCount}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Income Transactions
+                      Expense Transactions
                     </Typography>
                   </CardContent>
                 </Card>
@@ -631,7 +617,7 @@ const Income: React.FC = () => {
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
                     backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                    border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
@@ -639,20 +625,20 @@ const Income: React.FC = () => {
                       sx={{
                         width: 50,
                         height: 50,
-                        background: `linear-gradient(135deg, ${incomeSummary.monthlyTrend > 0 ? theme.palette.success.main : incomeSummary.monthlyTrend < 0 ? theme.palette.warning.main : theme.palette.info.main} 0%, ${incomeSummary.monthlyTrend > 0 ? theme.palette.success.light : incomeSummary.monthlyTrend < 0 ? theme.palette.warning.light : theme.palette.info.light} 100%)`,
+                        background: `linear-gradient(135deg, ${expenseSummary.monthlyTrend < 0 ? theme.palette.success.main : expenseSummary.monthlyTrend > 0 ? theme.palette.error.main : theme.palette.info.main} 0%, ${expenseSummary.monthlyTrend < 0 ? theme.palette.success.light : expenseSummary.monthlyTrend > 0 ? theme.palette.error.light : theme.palette.info.light} 100%)`,
                         mx: 'auto',
                         mb: 2
                       }}
                     >
-                      {incomeSummary.monthlyTrend > 0 ? <TrendingUpIcon sx={{ fontSize: 25 }} /> : incomeSummary.monthlyTrend < 0 ? <TrendingDownIcon sx={{ fontSize: 25 }} /> : <TimelineIcon sx={{ fontSize: 25 }} />}
+                      {expenseSummary.monthlyTrend < 0 ? <TrendingDownIcon sx={{ fontSize: 25 }} /> : expenseSummary.monthlyTrend > 0 ? <TrendingUpIcon sx={{ fontSize: 25 }} /> : <TimelineIcon sx={{ fontSize: 25 }} />}
                     </Avatar>
-                    <Typography variant="h4" fontWeight={700} color={incomeSummary.monthlyTrend > 0 ? 'success.main' : incomeSummary.monthlyTrend < 0 ? 'warning.main' : 'info.main'}>
-                      {incomeSummary.monthlyTrend > 0 ? '+' : ''}{incomeSummary.monthlyTrend}%
+                    <Typography variant="h4" fontWeight={700} color={expenseSummary.monthlyTrend < 0 ? 'success.main' : expenseSummary.monthlyTrend > 0 ? 'error.main' : 'info.main'}>
+                      {expenseSummary.monthlyTrend > 0 ? '+' : ''}{expenseSummary.monthlyTrend}%
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {incomeSummary.monthlyTrend === 0 ? 'No Change' : 'Monthly Trend'}
+                      {expenseSummary.monthlyTrend === 0 ? 'No Change' : 'Monthly Trend'}
                     </Typography>
-                    {incomeSummary.monthlyTrend === 0 && (
+                    {expenseSummary.monthlyTrend === 0 && (
                       <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                         Insufficient data
                       </Typography>
@@ -664,7 +650,7 @@ const Income: React.FC = () => {
 
             {/* Charts */}
             <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-              {/* Income Trend Chart */}
+              {/* Expense Trend Chart */}
               <Box sx={{ flex: '1 1 100%', minWidth: 400 }}>
                 <Card
                   elevation={4}
@@ -677,7 +663,7 @@ const Income: React.FC = () => {
                 >
                   <CardContent sx={{ p: 3 }}>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
-                      Income Trend Over Time
+                      Expense Trend Over Time
                     </Typography>
                     <Box sx={{ height: 300, mt: 2 }}>
                       <ResponsiveContainer width="100%" height="100%">
@@ -686,15 +672,15 @@ const Income: React.FC = () => {
                           <XAxis dataKey="month" />
                           <YAxis />
                           <RechartsTooltip 
-                            formatter={(value: number) => [formatCurrency(value), 'Income']}
+                            formatter={(value: number) => [formatCurrency(value), 'Expenses']}
                             labelFormatter={(label) => `Month: ${label}`}
                           />
                           <Line 
                             type="monotone" 
                             dataKey="amount" 
-                            stroke={theme.palette.success.main} 
+                            stroke={theme.palette.warning.main} 
                             strokeWidth={3}
-                            dot={{ fill: theme.palette.success.main, strokeWidth: 2, r: 4 }}
+                            dot={{ fill: theme.palette.warning.main, strokeWidth: 2, r: 4 }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
@@ -704,7 +690,7 @@ const Income: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Recent Income Transactions */}
+            {/* Recent Expense Transactions */}
             <Card
               elevation={4}
               sx={{
@@ -716,12 +702,12 @@ const Income: React.FC = () => {
             >
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Recent Income Transactions
+                  Recent Expense Transactions
                 </Typography>
                 <Box sx={{ mt: 2 }}>
                   {filteredTransactions.length === 0 ? (
                     <Typography variant="body1" color="text.secondary" textAlign="center" py={4}>
-                      No income transactions found for the selected filters
+                      No expense transactions found for the selected filters
                     </Typography>
                   ) : (
                     filteredTransactions.slice(0, 10).map((transaction) => (
@@ -734,8 +720,8 @@ const Income: React.FC = () => {
                           p: 2,
                           mb: 1,
                           borderRadius: 2,
-                          backgroundColor: alpha(theme.palette.success.main, 0.05),
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`
+                          backgroundColor: alpha(theme.palette.warning.main, 0.05),
+                          border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -743,11 +729,11 @@ const Income: React.FC = () => {
                             sx={{
                               width: 40,
                               height: 40,
-                              backgroundColor: alpha(theme.palette.success.main, 0.1),
-                              color: theme.palette.success.main
+                              backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                              color: theme.palette.warning.main
                             }}
                           >
-                            <MoneyIcon />
+                            <ReceiptIcon />
                           </Avatar>
                           <Box>
                             <Typography variant="body2" fontWeight={500}>
@@ -765,8 +751,8 @@ const Income: React.FC = () => {
                             )}
                           </Box>
                         </Box>
-                        <Typography variant="body2" fontWeight={600} color="success.main">
-                          {formatCurrency(Math.abs(transaction.amount))}
+                        <Typography variant="body2" fontWeight={600} color="warning.main">
+                          {formatCurrency(transaction.amount)}
                         </Typography>
                       </Box>
                     ))
@@ -781,4 +767,4 @@ const Income: React.FC = () => {
   );
 };
 
-export default Income; 
+export default Expenses; 

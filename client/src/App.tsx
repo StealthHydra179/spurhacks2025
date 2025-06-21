@@ -11,6 +11,7 @@ import Register from './pages/Register'
 import Settings from './pages/Settings'
 import Transactions from './pages/Transactions'
 import Income from './pages/Income'
+import Expenses from './pages/Expenses'
 import Chatbot from './pages/Chatbot'
 import { theme } from './theme'
 
@@ -65,6 +66,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Income />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/expenses"
+            element={
+              <ProtectedRoute>
+                <Expenses />
               </ProtectedRoute>
             } 
           />
