@@ -79,12 +79,19 @@ router.post('/login', async (req, res) => {
 
     if (!user || !(await bcrypt.compare( password, user.hashed_password))) {
         return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    const userID = user.id
+    }    const userID = user.id;
 
     const token = jwt.sign({ username, userID }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
+    
+    // Send token as httpOnly cookie for better security
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Only use HTTPS in production
+        sameSite: 'strict',
+        maxAge: 3600000 // 1 hour in milliseconds
+    });
+    
+    res.json({ message: 'Login successful' });
     logger.info(`${TAG} User ${username} logged in successfully`);
 });
 
