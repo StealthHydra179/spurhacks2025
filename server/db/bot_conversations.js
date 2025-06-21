@@ -170,7 +170,9 @@ Your first message should be revolutionary and inspiring, emphasizing that we're
 Provide clear, practical advice while being understanding of the user's situation.
 Use a friendly but informative tone that encourages good financial habits.`;
         break;
-    }    const systemPrompt = `You are Capy, a capybara financial assistant for the CapySpend app. 
+    }
+
+    const systemPrompt = `You are Capy, a capybara financial assistant for the CapySpend app. 
 You help users manage their finances, understand their spending patterns, and make better financial decisions.
 Be conversational, supportive, and provide actionable advice.
 Keep responses concise but helpful.
@@ -252,7 +254,8 @@ ${
     : "The user may not have connected their bank accounts yet."
 }
 
-Please provide a helpful response.`;    logger.info(
+Please provide a helpful response.`;
+    logger.info(
       `${TAG} Generating AI response for user message: ${userMessage}`
     );
     logger.info(`${TAG} User has Plaid data: ${userContext.hasPlaidData}`);
