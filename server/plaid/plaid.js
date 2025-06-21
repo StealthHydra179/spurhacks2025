@@ -25,6 +25,27 @@ const client = new PlaidApi(configuration);
 const accessTokens = new Map();
 
 /**
+ * Helper function to log all stored access tokens
+ */
+function logStoredAccessTokens() {
+  console.log('🔑 Current Stored Access Tokens:');
+  console.log('🔑 Total tokens stored:', accessTokens.size);
+  
+  if (accessTokens.size === 0) {
+    console.log('🔑 No access tokens stored');
+    return;
+  }
+  
+  for (const [userId, tokenData] of accessTokens.entries()) {
+    console.log(`🔑 User ${userId}:`);
+    console.log(`🔑   Item ID: ${tokenData.itemId}`);
+    console.log(`🔑   Access Token: ${tokenData.accessToken}`);
+    console.log(`🔑   Token Length: ${tokenData.accessToken.length}`);
+    console.log(`🔑   Token Preview: ${tokenData.accessToken.substring(0, 20)}...`);
+  }
+}
+
+/**
  * Helper function to log Plaid API errors comprehensively
  */
 function logPlaidError(error, operation, userId = null) {
@@ -113,6 +134,14 @@ async function exchangePublicToken(publicToken, userId) {
     // Store the access token (in production, save to database)
     accessTokens.set(userId, { accessToken, itemId });
 
+    // Log access token creation
+    console.log('🔑 Access Token Created for user', userId, ':');
+    console.log('🔑 Access Token:', accessToken);
+    console.log('🔑 Item ID:', itemId);
+    console.log('🔑 Token Length:', accessToken.length);
+    console.log('🔑 Token Preview:', accessToken.substring(0, 20) + '...');
+    console.log('🔑 Total stored tokens:', accessTokens.size);
+
     logger.info(`${TAG} Public token exchanged successfully for user ${userId}, item ${itemId}`);
     logger.info(`${TAG} Access token (first 10 chars): ${accessToken.substring(0, 10)}...`);
     
@@ -158,17 +187,60 @@ async function getTransactions(userId, startDate, endDate) {
       throw new Error('No access token found for user');
     }
 
+    // Log access token details
+    console.log('🔑 Access Token Details for user', userId, ':');
+    console.log('🔑 Access Token:', userTokens.accessToken);
+    console.log('🔑 Item ID:', userTokens.itemId);
+    console.log('🔑 Token Length:', userTokens.accessToken.length);
+    console.log('🔑 Token Preview:', userTokens.accessToken.substring(0, 20) + '...');
+
     const request = {
       access_token: userTokens.accessToken,
       start_date: startDate || '2020-01-01',
       end_date: endDate || new Date().toISOString().split('T')[0],
     };
 
-    const transactionsResponse = await client.transactionsSync(request);
+    logger.info(`${TAG} Making Plaid transactions request for user ${userId}`);
+    logger.info(`${TAG} Request parameters:`, JSON.stringify({
+      start_date: request.start_date,
+      end_date: request.end_date,
+      has_access_token: !!request.access_token,
+      access_token_preview: request.access_token ? `${request.access_token.substring(0, 10)}...` : 'N/A'
+    }, null, 2));
+
+    const transactionsResponse = await client.transactionsGet(request);
+    
+    logger.info(`${TAG} Plaid transactions response received for user ${userId}`);
+    logger.info(`${TAG} Response structure:`, JSON.stringify({
+      has_transactions: !!transactionsResponse.data.transactions,
+      transaction_count: transactionsResponse.data.transactions ? transactionsResponse.data.transactions.length : 0,
+      accounts_count: transactionsResponse.data.accounts ? transactionsResponse.data.accounts.length : 0,
+      total_transactions: transactionsResponse.data.total_transactions || 0,
+      request_id: transactionsResponse.data.request_id || 'N/A'
+    }, null, 2));
+
+    // Log sample transactions if available
+    if (transactionsResponse.data.transactions && transactionsResponse.data.transactions.length > 0) {
+      logger.info(`${TAG} Sample transactions from Plaid for user ${userId}:`);
+      const sampleTransactions = transactionsResponse.data.transactions.slice(0, 3).map(t => ({
+        id: t.id,
+        name: t.name,
+        amount: t.amount,
+        date: t.date,
+        category: t.category,
+        pending: t.pending,
+        payment_channel: t.payment_channel
+      }));
+      logger.info(`${TAG} Sample transactions:`, JSON.stringify(sampleTransactions, null, 2));
+    } else {
+      logger.info(`${TAG} No transactions returned from Plaid for user ${userId}`);
+    }
+
     logger.info(`${TAG} Retrieved transactions for user ${userId}`);
     return transactionsResponse.data;
   } catch (error) {
-    logger.error(`${TAG} Error getting transactions: ${error.message}`);
+    logger.error(`${TAG} Error getting transactions for user ${userId}: ${error.message}`);
+    logPlaidError(error, 'getting transactions', userId);
     throw error;
   }
 }
@@ -427,7 +499,17 @@ async function getPlaidSummary() {
  * Check if a user has a linked Plaid Item
  */
 function hasLinkedItem(userId) {
-  return accessTokens.has(userId);
+  const hasToken = accessTokens.has(userId);
+  console.log(`🔑 Checking if user ${userId} has linked item: ${hasToken}`);
+  if (hasToken) {
+    const tokenData = accessTokens.get(userId);
+    console.log(`🔑 User ${userId} token details:`, {
+      itemId: tokenData.itemId,
+      tokenPreview: tokenData.accessToken.substring(0, 20) + '...',
+      tokenLength: tokenData.accessToken.length
+    });
+  }
+  return hasToken;
 }
 
 /**
@@ -503,4 +585,5 @@ module.exports = {
   testPlaidConfiguration,
   hasLinkedItem,
   getItemId,
+  logStoredAccessTokens,
 };

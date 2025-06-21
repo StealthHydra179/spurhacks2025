@@ -73,10 +73,41 @@ router.get('/transactions/:user_id', async (req, res) => {
     const { user_id } = req.params;
     const { start_date, end_date } = req.query;
     
-    const transactionsData = await plaid.getTransactions(user_id, start_date, end_date);
+    logger.info(`${TAG} Getting transactions for user ${user_id}`);
+    logger.info(`${TAG} Date range: ${start_date || 'default'} to ${end_date || 'default'}`);
+    
+    const transactionsData = await plaid.syncTransactions(user_id, start_date, end_date);
+    
+    // Log the response structure and transaction count
+    logger.info(`${TAG} Transactions API response received for user ${user_id}`);
+    logger.info(`${TAG} Response structure:`, JSON.stringify({
+      has_transactions: !!transactionsData.transactions,
+      transaction_count: transactionsData.transactions ? transactionsData.transactions.length : 0,
+      accounts_count: transactionsData.accounts ? transactionsData.accounts.length : 0,
+      total_transactions: transactionsData.total_transactions || 0,
+      request_id: transactionsData.request_id || 'N/A'
+    }, null, 2));
+    
+    // Log first few transactions for debugging
+    if (transactionsData.transactions && transactionsData.transactions.length > 0) {
+      logger.info(`${TAG} Sample transactions for user ${user_id}:`);
+      const sampleTransactions = transactionsData.transactions.slice(0, 3).map(t => ({
+        id: t.id,
+        name: t.name,
+        amount: t.amount,
+        date: t.date,
+        category: t.category,
+        pending: t.pending
+      }));
+      logger.info(`${TAG} Sample transactions:`, JSON.stringify(sampleTransactions, null, 2));
+    } else {
+      logger.info(`${TAG} No transactions found for user ${user_id}`);
+    }
+    
     res.json(transactionsData);
   } catch (error) {
     logger.error(`${TAG} Error getting transactions: ${error.message}`);
+    logger.error(`${TAG} Full error details:`, error);
     res.status(500).json({ error: 'Failed to get transactions' });
   }
 });
@@ -120,6 +151,9 @@ router.get('/transactions/:user_id', async (req, res) => {
 router.get('/item-status/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
+    
+    // Log all stored access tokens
+    plaid.logStoredAccessTokens();
     
     // Check if user has an access token stored (indicating a linked item)
     const hasLinkedItem = plaid.hasLinkedItem ? plaid.hasLinkedItem(user_id) : false;
