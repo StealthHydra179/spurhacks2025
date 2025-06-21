@@ -30,6 +30,7 @@ const accessTokens = new Map();
  */
 async function getUserAccessTokens(userId) {
   try {
+    logger.info(`${TAG} Getting access tokens for user ${userId}`);
     const plaidUsers = await plaidUsersDb.getByUserID(userId);
     if (!plaidUsers || plaidUsers.length === 0) {
       throw new Error('No access tokens found for user');
@@ -222,12 +223,12 @@ async function getTransactions(userId, startDate, endDate) {
     // Try transactionsGet first (for historical transactions)
     let transactionsResponse;
     try {
-      console.log('🔍 Trying transactionsGet API...');
+      console.log('Trying transactionsGet API...');
       transactionsResponse = await client.transactionsGet(request);
-      console.log('✅ transactionsGet successful');
+      console.log('transactionsGet successful');
     } catch (error) {
-      console.log('❌ transactionsGet failed, trying transactionsSync...');
-      console.log('❌ Error:', error.message);
+      console.log('TransactionsGet failed, trying transactionsSync...');
+      console.log('Error:', error.message);
       
       // If transactionsGet fails, try transactionsSync (for real-time sync)
       try {
@@ -242,13 +243,13 @@ async function getTransactions(userId, startDate, endDate) {
     logger.info(`${TAG} Plaid transactions response received for user ${userId}`);
     
     // Debug logging for Plaid response
-    console.log('🔍 Plaid API Response:', transactionsResponse);
-    console.log('🔍 Plaid API Response data:', transactionsResponse.data);
-    console.log('🔍 Plaid API Response data keys:', Object.keys(transactionsResponse.data));
-    console.log('🔍 Plaid API transactions:', transactionsResponse.data.transactions);
-    console.log('🔍 Plaid API transactions type:', typeof transactionsResponse.data.transactions);
-    console.log('🔍 Plaid API transactions length:', transactionsResponse.data.transactions ? transactionsResponse.data.transactions.length : 'undefined');
-    console.log('🔍 Is Plaid API transactions an array?', Array.isArray(transactionsResponse.data.transactions));
+    // console.log('🔍 Plaid API Response:', transactionsResponse);
+    // console.log('🔍 Plaid API Response data:', transactionsResponse.data);
+    // console.log('🔍 Plaid API Response data keys:', Object.keys(transactionsResponse.data));
+    // console.log('🔍 Plaid API transactions:', transactionsResponse.data.transactions);
+    // console.log('🔍 Plaid API transactions type:', typeof transactionsResponse.data.transactions);
+    // console.log('🔍 Plaid API transactions length:', transactionsResponse.data.transactions ? transactionsResponse.data.transactions.length : 'undefined');
+    // console.log('🔍 Is Plaid API transactions an array?', Array.isArray(transactionsResponse.data.transactions));
     
     logger.info(`${TAG} Response structure:`, JSON.stringify({
       has_transactions: !!transactionsResponse.data.transactions,
@@ -352,7 +353,7 @@ async function fetchPlaidInfo() {
     logger.info(`${TAG} Starting to fetch Plaid information for all users`);
     
     // Get all plaid users from database
-    const allPlaidUsers = await plaidUsersDb.getByUserID(); // This might need adjustment
+    const allPlaidUsers = await plaidUsersDb.getAllUserData(); // This might need adjustment
     
     if (!allPlaidUsers || allPlaidUsers.length === 0) {
       logger.info(`${TAG} No connected users found`);
@@ -607,6 +608,86 @@ async function testPlaidConfiguration() {
   }
 }
 
+/**
+ * Get transactions for a specific user with proper formatting
+ */
+async function getTransactionByUserID(userId, days = 30) {
+  try {
+    logger.info(`${TAG} Fetching transactions from Plaid API for user ${userId} (last ${days} days)`);
+    
+    // Get transactions from the specified number of days (default: 30 days)
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    // Get both transactions and accounts from Plaid API
+    const [plaidData, accountsData] = await Promise.all([
+      getTransactions(userId, startDate, endDate),
+      getAccounts(userId)
+    ]);
+    
+    if (!plaidData || !plaidData.transactions) {
+        if (!plaidData) {
+            logger.warn(`${TAG} No data returned from Plaid API for user ${userId}`);
+        } else if (!plaidData.transactions) {
+            logger.warn(`${TAG} No data found in Plaid data for user ${userId}`);
+        } else {
+            logger.warn(`${TAG} Plaid transacations structure is unexpected for user ${userId}`);
+        }
+      logger.warn(`${TAG} No transactions found for user ${userId}`);
+      return [];
+    }
+    
+    // Create a map of account IDs to account details
+    const accountMap = {};
+    if (accountsData && accountsData.data && accountsData.data.accounts) {
+      accountsData.data.accounts.forEach(account => {
+        accountMap[account.account_id] = {
+          name: account.name,
+          official_name: account.official_name,
+          type: account.type,
+          subtype: account.subtype,
+          mask: account.mask
+        };
+      });
+    }
+    
+    // Transform Plaid transaction format to match our expected format
+    const transformedTransactions = plaidData.transactions.map(transaction => {
+      const accountInfo = accountMap[transaction.account_id] || {};
+      
+      return {
+        id: transaction.transaction_id,
+        amount: Math.abs(transaction.amount), // Plaid uses negative for spending
+        transaction_time: new Date(transaction.date),
+        merchant_name: transaction.merchant_name || transaction.name,
+        category_primary: transaction.category ? transaction.category[0] : 'Other',
+        category_detailed: transaction.category ? transaction.category.join(' > ') : 'Other',
+        account_name: accountInfo.name || accountInfo.official_name || 'Unknown Account',
+        account_type: accountInfo.type || 'Unknown',
+        account_subtype: accountInfo.subtype || 'Unknown',
+        pending: transaction.pending,
+        payment_channel: transaction.payment_channel,
+        plaid_transaction_id: transaction.transaction_id,
+        // Additional Plaid-specific fields
+        original_amount: transaction.amount,
+        iso_currency_code: transaction.iso_currency_code,
+        unofficial_currency_code: transaction.unofficial_currency_code,
+        location: transaction.location,
+        account_mask: accountInfo.mask
+      };
+    });
+    
+    logger.info(`${TAG} Successfully transformed ${transformedTransactions.length} transactions for user ${userId}`);
+    
+    return transformedTransactions;
+    
+  } catch (error) {
+    logger.error(`${TAG} Error fetching transactions for user ${userId}: ${error.message}`);
+    // Return empty array instead of throwing to gracefully handle API failures
+    return [];
+  }
+}
+
 module.exports = {
   createLinkToken,
   exchangePublicToken,
@@ -623,4 +704,5 @@ module.exports = {
   hasLinkedItem,
   getItemId,
   logStoredAccessTokens,
+  getTransactionByUserID,
 };

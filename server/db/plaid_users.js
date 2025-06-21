@@ -1,4 +1,7 @@
 const {sql} = require('./db');
+const { logger } = require('../logger');
+
+const TAG = 'plaid_users';
 
 async function getByID(id) {
     return await sql`SELECT * FROM plaid_users WHERE id = ${id}`;
@@ -31,10 +34,23 @@ async function deleteByUserID(user_id) {
     return await sql`DELETE FROM plaid_users WHERE user_id = ${user_id}`;
 }
 
+async function getAllUserData() {
+    try {
+        // Get all plaid users from the database
+        const users = await sql`SELECT * FROM plaid_users`;
+        logger.info(`${TAG} Retrieved ${users.length} plaid users from database`);
+        return users;
+    } catch (error) {
+        logger.error(`${TAG} Error fetching all user data: ${error.message}`);
+        return [];
+    }
+}
+
 module.exports = {
     getByID: getByID,
     getByUserID: getByUserID,
     createAccessToken: createAccessToken,
     getByAccessToken: getByAccessToken,
-    deleteByUserID: deleteByUserID
+    deleteByUserID: deleteByUserID,
+    getAllUserData: getAllUserData
 };

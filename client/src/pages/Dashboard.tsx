@@ -93,9 +93,9 @@ const Dashboard: React.FC = () => {
     transactionCount: 0,
     month: '',
     year: 0
-  });
-  const [recentTransactions, setRecentTransactions] = useState<PlaidTransaction[]>([]);
+  });  const [recentTransactions, setRecentTransactions] = useState<PlaidTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAskingCapy, setIsAskingCapy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
   const [categoryData, setCategoryData] = useState<Array<{ name: string; value: number; color: string }>>([]);
@@ -254,8 +254,7 @@ const Dashboard: React.FC = () => {
   const handleLogoutClick = async () => {
     handleProfileMenuClose();
     await logout();
-  };
-  const handleSearchSubmit = async (e: React.FormEvent | React.KeyboardEvent) => {
+  };  const handleSearchSubmit = async (e: React.FormEvent | React.KeyboardEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
       // If no input, navigate to chat page
@@ -263,6 +262,7 @@ const Dashboard: React.FC = () => {
       return;
     }
 
+    setIsAskingCapy(true);
     try {
       // Call the ask-capy API to create a new conversation
       const data = await botConversationService.askCapy(user?.id || 1, searchQuery);
@@ -272,6 +272,8 @@ const Dashboard: React.FC = () => {
       console.error('Error creating conversation:', error);
       // Fallback: just navigate to chat page
       navigate('/chat');
+    } finally {
+      setIsAskingCapy(false);
     }
   };
 
@@ -343,14 +345,25 @@ const Dashboard: React.FC = () => {
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'center' }}>
-                <TextField
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'center' }}>                <TextField
                   variant="outlined"
-                  placeholder="ask capy a question"
+                  placeholder={isAskingCapy ? "Capy is thinking..." : "Ask capy a question about your finances"}
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        {isAskingCapy ? (
+                          <CircularProgress size={20} color="primary" />
+                        ) : (
+                          <SearchIcon color="action" />
+                        )}
+                      </InputAdornment>
+                    ),
+                  }}
+                  disabled={isAskingCapy}
                   sx={{
                     minWidth: { xs: 200, sm: 250, md: 300, lg: 400 },
                     maxWidth: { xs: 250, sm: 350, md: 450, lg: 600 },
@@ -869,10 +882,55 @@ const Dashboard: React.FC = () => {
                   </Box>
                 ))}
               </Box>
-            )}
-          </CardContent>
+            )}          </CardContent>
         </Card>
       </Container>
+
+      {/* Ask Capy Loading Overlay */}
+      {isAskingCapy && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: alpha(theme.palette.background.default, 0.8),
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: theme.zIndex.modal,
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
+          <Box
+            component="img"
+            src={capyImage}
+            alt="Capy"
+            sx={{
+              width: 80,
+              height: 80,
+              animation: 'pulse 1.5s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
+                  opacity: 0.8,
+                  transform: 'scale(1)'
+                },
+                '50%': {
+                  opacity: 1,
+                  transform: 'scale(1.05)'
+                }
+              }
+            }}
+          />
+          <Typography variant="h6" color="text.primary" textAlign="center">
+            Capy is thinking...
+          </Typography>
+          <CircularProgress size={40} thickness={4} />
+        </Box>
+      )}
     </Box>
   );
 };

@@ -7,6 +7,7 @@ const authenticateToken = require('../../jwt');
 
 const botConversationsDb = require('../../db/bot_conversations');
 const plaidUsersDb = require('../../db/plaid_users');
+const plaid = require('../../plaid/plaid'); 
 
 const TAG = 'api_bot_conversations';
 
@@ -149,6 +150,9 @@ router.get('/getFullConversation/:id', authenticateToken, async function (req, r
     }
 });
 
+const { Configuration, PlaidApi, PlaidEnvironments} = require('plaid');
+
+
 /**
  * POST /api/bot_conversations/ask-capy
  * Handle "ask capy a question" submission and create/redirect to chatbot conversation
@@ -174,11 +178,20 @@ router.post('/ask-capy', authenticateToken, async (req, res) => {
     logger.info(`${TAG}: Created new conversation ${newConversation.id} for user ${userID} with question: ${question}`);
     
     // Generate AI response
-    try {
-      // Check if user has Plaid data for context
-      const plaidUsers = await plaidUsersDb.getByUserID(userID);
+    try {      // Check if user has Plaid data for context
+        const plaidUsers = await plaidUsersDb.getByUserID(userID);
+        let transactionData = null;
+      
+        transactionData = await plaid.getTransactionByUserID(plaidUsers[0].user_id);
+
+
+        logger.info(`${TAG}: users Data ${JSON.stringify(plaidUsers)}`);
+
+        logger.info(`${TAG}: Transaction Data ${JSON.stringify(transactionData)}`);
+
       const userContext = {
-        hasPlaidData: plaidUsers && plaidUsers.length > 0
+        hasPlaidData: plaidUsers && plaidUsers.length > 0,
+        transactionData: transactionData,
       };
       
       const aiResponse = await botConversationsDb.generateAIResponse(question, userContext);

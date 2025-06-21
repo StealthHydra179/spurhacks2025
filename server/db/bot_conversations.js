@@ -13,19 +13,61 @@ const openai = new OpenAI({
  * Generate AI response using OpenAI GPT-4 mini
  */
 async function generateAIResponse(userMessage, userContext = {}) {
-  try {
-    const systemPrompt = `You are Capy, a friendly and helpful capybara financial assistant for the CapySpend app. 
+  try {    const systemPrompt = `You are Capy, a friendly and helpful capybara financial assistant for the CapySpend app. 
 You help users manage their finances, understand their spending patterns, and make better financial decisions.
 Be conversational, supportive, and provide actionable advice.
 Keep responses concise but helpful.
-If you need specific financial data to answer a question, let the user know what information would be helpful.`;
+If you need specific financial data to answer a question, let the user know what information would be helpful.
+
+IMPORTANT: Format your responses using Markdown for better readability:
+- Use **bold text** for emphasis on important points
+- Use *italic text* for financial terms or concepts  
+- Use bullet points (- or *) for lists of tips or suggestions
+- Use numbered lists (1., 2., etc.) for step-by-step instructions
+- Use \`code formatting\` for specific dollar amounts or percentages
+- Use ### headings for organizing longer responses into sections
+
+Examples of good formatting:
+- "I recommend **reducing your dining out budget** by \`$50\` per month"
+- "Here are *three key strategies* for building an emergency fund:"
+
+When you first respond to a user, introduce yourself as Capy and explain that you are here to help them with their finances.
+Mention that you are not a financial advisor, but you can provide general financial tips and advice based on the user's spending habits and financial goals.
+
+
+Recent Transaction Data:
+${JSON.stringify(userContext.transactionData)}
+
+`;    
+
+// const formatTransactionData = (transactions) => {
+//       if (!transactions || transactions.length === 0) {
+//         return 'No transaction data available.';
+//       }
+      
+//       // Format recent transactions for AI analysis
+//     //   const recentTransactions = transactions.slice(0, 10); // Last 10 transactions
+//     //   return recentTransactions.map(t => 
+//     //     `Date: ${t.transaction_time?.toISOString().split('T')[0] || 'Unknown'}, ` +
+//     //     `Amount: $${Math.abs(t.amount || 0).toFixed(2)}, ` +
+//     //     `Merchant: ${t.merchant_name || 'Unknown'}, ` +
+//     //     `Category: ${t.category_primary || 'Unknown'}, ` +
+//     //     `Account: ${t.account_name || 'Unknown'}`
+//     //   ).join('\n');
+//         return transactions
+//     };
 
     const userPrompt = `User question: ${userMessage}
     
 Context: The user is using CapySpend, a personal finance app that connects to their bank accounts via Plaid.
 ${userContext.hasPlaidData ? 'The user has connected their bank accounts.' : 'The user may not have connected their bank accounts yet.'}
 
-Please provide a helpful response.`;
+Please provide a helpful response.`;    logger.info(`${TAG} Generating AI response for user message: ${userMessage}`);
+    logger.info(`${TAG} User has Plaid data: ${userContext.hasPlaidData}`);
+    if (userContext.transactionData && userContext.transactionData.length > 0) {
+      logger.info(`${TAG} Using ${userContext.transactionData.length} transactions for context`);
+    }
+    logger.info(`${TAG} systemPrompt: ${systemPrompt}`);
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",

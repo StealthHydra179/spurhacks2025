@@ -428,7 +428,8 @@ Current user message: ${user_message}`;
     // Check if user has Plaid data for context
     const plaidUsers = await plaidUsersDb.getByUserID(user_id);
     const userContext = {
-      hasPlaidData: plaidUsers && plaidUsers.length > 0
+      hasPlaidData: plaidUsers && plaidUsers.length > 0,
+        transactionData: plaidUsers.length > 0 ? await plaid.getTransactionByUserID(plaidUsers[0].user_id) : null
     };
       // Generate AI response with conversation context
     const aiResponse = await botConversationsDb.generateAIResponse(contextualMessage, userContext);
