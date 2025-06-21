@@ -296,16 +296,34 @@ const Chatbot: React.FC = () => {
       {/* Sidebar Header */}
       <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, ml: 1 }}>
-          <IconButton
-            onClick={toggleSidebar}
-            sx={{
-              p: 0,
-              '&:hover': {
-                transform: 'scale(1.05)'
-              },
-              transition: 'transform 0.2s ease'
-            }}
-          >
+          {/* Only show collapsible button on desktop */}
+          {!isMobile && (
+            <IconButton
+              onClick={toggleSidebar}
+              sx={{
+                p: 0,
+                '&:hover': {
+                  transform: 'scale(1.05)'
+                },
+                transition: 'transform 0.2s ease'
+              }}
+            >
+              <Box
+                component="img"
+                src={capyImage}
+                alt="Capy"
+                sx={{ 
+                  width: 32, 
+                  height: 32, 
+                  objectFit: 'contain', 
+                  display: 'block',
+                  cursor: 'pointer'
+                }}
+              />
+            </IconButton>
+          )}
+          {/* Show Capy image without collapsible functionality on mobile */}
+          {isMobile && (
             <Box
               component="img"
               src={capyImage}
@@ -314,18 +332,19 @@ const Chatbot: React.FC = () => {
                 width: 32, 
                 height: 32, 
                 objectFit: 'contain', 
-                display: 'block',
-                cursor: 'pointer'
+                display: 'block'
               }}
             />
-          </IconButton>
-          {textVisible && (
+          )}
+          {/* Show text based on device and state */}
+          {(isMobile || (!isMobile && textVisible)) && (
             <Typography variant="h6" fontWeight={600}>
               Chat with Capy
             </Typography>
           )}
         </Box>
-        {!sidebarCollapsed && (
+        {/* Show buttons based on device and state */}
+        {(isMobile || (!isMobile && !sidebarCollapsed)) && (
           <Button
             fullWidth
             variant="contained"
@@ -341,7 +360,7 @@ const Chatbot: React.FC = () => {
             New Conversation
           </Button>
         )}
-        {sidebarCollapsed && (
+        {!isMobile && sidebarCollapsed && (
           <Button
             variant="contained"
             onClick={createNewConversation}
@@ -368,7 +387,7 @@ const Chatbot: React.FC = () => {
           </Box>
         ) : conversations.length === 0 ? (
           <Box sx={{ p: 3, textAlign: 'center' }}>
-            {!sidebarCollapsed ? (
+            {(isMobile || (!isMobile && !sidebarCollapsed)) ? (
               <>
                 <ChatIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
                 <Typography variant="body2" color="text.secondary">
@@ -391,15 +410,15 @@ const Chatbot: React.FC = () => {
                   onClick={() => handleConversationSelect(conversation)}
                   sx={{
                     py: 2,
-                    px: sidebarCollapsed ? 1 : 2,
-                    justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+                    px: (!isMobile && sidebarCollapsed) ? 1 : 2,
+                    justifyContent: (!isMobile && sidebarCollapsed) ? 'center' : 'flex-start',
                     '&.Mui-selected': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       borderRight: `3px solid ${theme.palette.primary.main}`
                     }
                   }}
                 >
-                  <ListItemAvatar sx={{ minWidth: sidebarCollapsed ? 'auto' : 40 }}>
+                  <ListItemAvatar sx={{ minWidth: (!isMobile && sidebarCollapsed) ? 'auto' : 40 }}>
                     <Avatar
                       sx={{
                         width: 32,
@@ -421,7 +440,7 @@ const Chatbot: React.FC = () => {
                       />
                     </Avatar>
                   </ListItemAvatar>
-                  {!sidebarCollapsed && (
+                  {(isMobile || (!isMobile && !sidebarCollapsed)) && (
                     <>
                       <ListItemText
                         primary={
@@ -472,7 +491,7 @@ const Chatbot: React.FC = () => {
 
       {/* Back to Dashboard */}
       <Box sx={{ p: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        {!sidebarCollapsed ? (
+        {(isMobile || (!isMobile && !sidebarCollapsed)) ? (
           <Button
             fullWidth
             variant="outlined"
