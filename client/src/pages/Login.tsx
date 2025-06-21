@@ -25,7 +25,6 @@ import {
   Lock as LockIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/api';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -52,10 +51,8 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      await authService.login(formData.username, formData.password);
-      // Use the auth context to login
-      login();
-      // Redirect to home page
+      await login(formData.username, formData.password);
+      // Redirect to home page after successful login
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
