@@ -59,6 +59,16 @@ export const authService = {
     const response = await api.get<User>('/api/users/profile');
     return response.data;
   },
+
+  getPersonality: async (): Promise<{ personality: number; personality_description: string; status: string }> => {
+    const response = await api.get<{ personality: number; personality_description: string; status: string }>('/api/users/personality');
+    return response.data;
+  },
+
+  setPersonality: async (personality: number): Promise<{ message: string; personality: number; status: string }> => {
+    const response = await api.post<{ message: string; personality: number; status: string }>('/api/users/personality', { personality });
+    return response.data;
+  },
 };
 
 export const userService = {

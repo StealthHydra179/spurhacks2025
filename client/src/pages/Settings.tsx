@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePlaidLink } from 'react-plaid-link';
-import { plaidService } from '../services/api';
+import { plaidService, authService } from '../services/api';
 import {
   Box,
   Container,
@@ -20,7 +20,9 @@ import {
   Divider,
   Avatar,
   Chip,
-  Alert
+  Alert,
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -41,6 +43,7 @@ interface CapyOption {
   description: string;
   icon: React.ReactNode;
   color: string;
+  personalityValue: number; // -1 for conservative, 0 for neutral, 1 for risky
 }
 
 const Settings: React.FC = () => {
@@ -51,7 +54,33 @@ const Settings: React.FC = () => {
   const [isBankLinked, setIsBankLinked] = useState(false);
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Load current personality on component mount
+  React.useEffect(() => {
+    const loadPersonality = async () => {
+      try {
+        const response = await authService.getPersonality();
+        const personalityValue = response.personality;
+        
+        // Map the personality value to the UI state
+        if (personalityValue === -1) {
+          setSelectedCapy('conservative');
+        } else if (personalityValue === 0) {
+          setSelectedCapy('neutral');
+        } else if (personalityValue === 1) {
+          setSelectedCapy('risky');
+        }
+      } catch (err: any) {
+        console.error('Failed to load personality:', err);
+        // Don't show error for loading, just use default
+      }
+    };
+
+    loadPersonality();
+  }, []);
 
   // Check initial item status
   React.useEffect(() => {
@@ -118,32 +147,60 @@ const Settings: React.FC = () => {
       label: 'Conservative Capy',
       description: 'Prioritizes safety and stability. Recommends low-risk investments and conservative spending habits.',
       icon: <SecurityIcon />,
-      color: theme.palette.success.main
+      color: theme.palette.success.main,
+      personalityValue: -1
     },
     {
       value: 'neutral',
       label: 'Neutral Capy',
       description: 'Balanced approach to financial advice. Considers both risk and reward for moderate growth.',
       icon: <BalanceIcon />,
-      color: theme.palette.primary.main
+      color: theme.palette.primary.main,
+      personalityValue: 0
     },
     {
       value: 'risky',
       label: 'Risky Capy',
       description: 'Aggressive financial strategies. Suggests higher-risk investments for maximum potential returns.',
       icon: <TrendingUpIcon />,
-      color: theme.palette.warning.main
+      color: theme.palette.warning.main,
+      personalityValue: 1
     }
   ];
 
-  const handleSave = () => {
-    // TODO: Save settings to backend
-    console.log('Saving capy personality:', selectedCapy);
-    navigate('/dashboard');
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      setError(null);
+      
+      // Find the selected option to get the personality value
+      const selectedOption = capyOptions.find(option => option.value === selectedCapy);
+      if (!selectedOption) {
+        throw new Error('Invalid personality selection');
+      }
+      
+      await authService.setPersonality(selectedOption.personalityValue);
+      setSuccessMessage('Settings saved successfully!');
+      
+      // Navigate to dashboard after a short delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+      
+    } catch (err: any) {
+      console.error('Failed to save settings:', err);
+      setError(err.response?.data?.message || 'Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handlePlaidLink = () => {
     open();
+  };
+
+  const handleCloseSnackbar = () => {
+    setSuccessMessage(null);
   };
 
   return (
@@ -405,8 +462,9 @@ const Settings: React.FC = () => {
               </Button>
               <Button
                 variant="contained"
-                startIcon={<SaveIcon />}
+                startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                 onClick={handleSave}
+                disabled={isSaving}
                 sx={{
                   borderRadius: 2,
                   px: 3,
@@ -418,12 +476,23 @@ const Settings: React.FC = () => {
                   }
                 }}
               >
-                Save Settings
+                {isSaving ? 'Saving...' : 'Save Settings'}
               </Button>
             </Box>
           </CardContent>
         </Card>
       </Container>
+      {successMessage && (
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="success">
+            {successMessage}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 };
