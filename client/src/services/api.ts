@@ -14,7 +14,7 @@ import type {
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: 'http://localhost:3000', // Backend server URL
-  timeout: 20000, // 10 second timeout
+  timeout: 10000, // 10 second timeout
   headers: {
     'Content-Type': 'application/json',
   },
