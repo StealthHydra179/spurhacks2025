@@ -65,18 +65,23 @@ const Dashboard: React.FC = () => {
               </Box>
             </Box>
             <Button
-              variant="outlined"
+              variant="contained"
               startIcon={<LogoutIcon />}
               onClick={handleLogout}
               sx={{
                 borderRadius: 2,
                 px: 3,
                 py: 1,
-                borderColor: theme.palette.error.main,
-                color: theme.palette.error.main,
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                background: theme.palette.error.main,
+                color: theme.palette.common.white,
+                textTransform: 'none',
+                transition: 'all 0.2s ease',
                 '&:hover': {
-                  borderColor: theme.palette.error.dark,
-                  backgroundColor: alpha(theme.palette.error.main, 0.1)
+                  background: theme.palette.error.dark,
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 3px 8px ${alpha(theme.palette.error.main, 0.3)}`
                 }
               }}
             >
@@ -89,8 +94,8 @@ const Dashboard: React.FC = () => {
         <Card
           elevation={8}
           sx={{
-            mb: 4,
-            borderRadius: 3,
+            mb: 3,
+            borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.95),
             backdropFilter: 'blur(20px)',
             border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
@@ -133,12 +138,12 @@ const Dashboard: React.FC = () => {
         </Card>
 
         {/* Stats Grid */}
-        <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
           <Card
             elevation={4}
             sx={{
               flex: '1 1 300px',
-              borderRadius: 3,
+              borderRadius: 2,
               background: alpha(theme.palette.background.paper, 0.95),
               backdropFilter: 'blur(20px)',
               transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -173,7 +178,7 @@ const Dashboard: React.FC = () => {
             elevation={4}
             sx={{
               flex: '1 1 300px',
-              borderRadius: 3,
+              borderRadius: 2,
               background: alpha(theme.palette.background.paper, 0.95),
               backdropFilter: 'blur(20px)',
               transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -208,7 +213,7 @@ const Dashboard: React.FC = () => {
             elevation={4}
             sx={{
               flex: '1 1 300px',
-              borderRadius: 3,
+              borderRadius: 2,
               background: alpha(theme.palette.background.paper, 0.95),
               backdropFilter: 'blur(20px)',
               transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -244,7 +249,7 @@ const Dashboard: React.FC = () => {
         <Card
           elevation={8}
           sx={{
-            borderRadius: 3,
+            borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.95),
             backdropFilter: 'blur(20px)',
             border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
