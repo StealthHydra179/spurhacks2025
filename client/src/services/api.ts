@@ -170,6 +170,11 @@ export const botConversationService = {
     });
     return response.data;
   },
+
+  deleteConversation: async (conversationId: string): Promise<{ message: string; status: string }> => {
+    const response = await api.delete<{ message: string; status: string }>(`/api/bot_conversations/deleteConversation/${conversationId}`);
+    return response.data;
+  },
 };
 
 export default api;

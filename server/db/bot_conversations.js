@@ -169,11 +169,32 @@ async function addMessageToConversation(conversationID, message, sender) {
   return result[0];
 }
 
+async function deleteConversation(conversationID, userID) {
+  // First, verify the conversation belongs to the user
+  const conversation = await getByID(conversationID);
+  if (!conversation || conversation.length === 0) {
+    throw new Error('Conversation not found');
+  }
+  
+  if (conversation[0].user_id !== userID) {
+    throw new Error('Access denied to this conversation');
+  }
+
+  // Delete all messages for this conversation first (due to foreign key constraint)
+  await sql`DELETE FROM conversation_message WHERE conversation_id = ${conversationID}`;
+  
+  // Then delete the conversation
+  const result = await sql`DELETE FROM bot_conversations WHERE id = ${conversationID} AND user_id = ${userID}`;
+  
+  return result;
+}
+
 module.exports = {
   getByID: getByID,
   getUserConversations: getUserConversations,
   getFullConversation: getFullConversation,
   createConversation: createConversation,
   addMessageToConversation: addMessageToConversation,
+  deleteConversation: deleteConversation,
   generateAIResponse: generateAIResponse,
 };

@@ -20,13 +20,18 @@ import {
   ListItemAvatar,
   Drawer,
   useMediaQuery,
-  Fab
+  Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText
 } from '@mui/material';
 import {
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
   Person as PersonIcon,
-
+  Delete as DeleteIcon,
   Add as AddIcon,
   Menu as MenuIcon,
   Chat as ChatIcon
@@ -52,6 +57,9 @@ const Chatbot: React.FC = () => {
   const [botTyping, setBotTyping] = useState(false);
   const [creatingConversation, setCreatingConversation] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [deletingConversation, setDeletingConversation] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -202,11 +210,46 @@ const Chatbot: React.FC = () => {
     }
   };
   const handleConversationSelect = async (conversation: ConversationSummary) => {
-    // Load the conversation directly instead of navigating
     await fetchConversation(conversation.id.toString());
+  };
+
+  const handleDeleteConversation = async (conversationId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent conversation selection when clicking delete
     
-    // Update URL without causing a page refresh
-    window.history.pushState(null, '', `/chat/${conversation.id}`);
+    setConversationToDelete(conversationId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!conversationToDelete) return;
+
+    try {
+      setDeletingConversation(conversationToDelete);
+      await botConversationService.deleteConversation(conversationToDelete);
+      
+      // Remove the conversation from the list
+      setConversations(prev => prev.filter(c => c.id.toString() !== conversationToDelete));
+      
+      // If the deleted conversation was the currently selected one, clear the selection
+      if (currentConversationId === conversationToDelete) {
+        setSelectedConversation(null);
+        setCurrentConversationId(null);
+        navigate('/chat', { replace: true });
+      }
+      
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      // You could add a snackbar here for better UX
+    } finally {
+      setDeletingConversation(null);
+      setDeleteDialogOpen(false);
+      setConversationToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setConversationToDelete(null);
   };
 
   // Sidebar content
@@ -259,7 +302,8 @@ const Chatbot: React.FC = () => {
         ) : (
           <List sx={{ p: 0 }}>
             {conversations.map((conversation) => (
-              <ListItem key={conversation.id} disablePadding>                <ListItemButton
+              <ListItem key={conversation.id} disablePadding>
+                <ListItemButton
                   selected={conversation.id.toString() === currentConversationId}
                   onClick={() => handleConversationSelect(conversation)}
                   sx={{
@@ -270,7 +314,8 @@ const Chatbot: React.FC = () => {
                       borderRight: `3px solid ${theme.palette.primary.main}`
                     }
                   }}
-                >                  <ListItemAvatar>
+                >
+                  <ListItemAvatar>
                     <Avatar
                       sx={{
                         width: 32,
@@ -301,6 +346,24 @@ const Chatbot: React.FC = () => {
                       </Typography>
                     }
                   />
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleDeleteConversation(conversation.id.toString(), e)}
+                    disabled={deletingConversation === conversation.id.toString()}
+                    sx={{
+                      color: 'text.secondary',
+                      '&:hover': {
+                        color: 'error.main',
+                        backgroundColor: alpha(theme.palette.error.main, 0.1)
+                      }
+                    }}
+                  >
+                    {deletingConversation === conversation.id.toString() ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <DeleteIcon fontSize="small" />
+                    )}
+                  </IconButton>
                 </ListItemButton>
               </ListItem>
             ))}
@@ -787,6 +850,74 @@ const Chatbot: React.FC = () => {
           <CircularProgress size={40} thickness={4} />
         </Box>
       )}
+
+      {/* Delete Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={cancelDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            background: alpha(theme.palette.background.paper, 0.95),
+            backdropFilter: 'blur(20px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+          }
+        }}
+      >
+        <DialogTitle 
+          id="alert-dialog-title"
+          sx={{
+            pb: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}
+        >
+          <DeleteIcon color="error" />
+          Confirm Deletion
+        </DialogTitle>
+        <DialogContent sx={{ pb: 2 }}>
+          <DialogContentText 
+            id="alert-dialog-description"
+            sx={{ 
+              color: 'text.primary',
+              fontSize: '1rem',
+              lineHeight: 1.5
+            }}
+          >
+            Are you sure you want to delete this conversation? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button 
+            onClick={cancelDelete}
+            variant="outlined"
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              minWidth: 80
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDelete} 
+            variant="contained"
+            color="error"
+            disabled={deletingConversation !== null}
+            startIcon={deletingConversation ? <CircularProgress size={16} /> : <DeleteIcon />}
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              minWidth: 80
+            }}
+          >
+            {deletingConversation ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
