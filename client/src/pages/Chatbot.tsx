@@ -34,25 +34,32 @@ import {
   Delete as DeleteIcon,
   Add as AddIcon,
   Menu as MenuIcon,
-  Chat as ChatIcon
+  Chat as ChatIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
 import capySVG from '../assets/capyy.svg';
-import { botConversationService, plaidService } from '../services/api';
+import capyImage from '../assets/capy.png';
+import communistHat from '../assets/communist-hat.svg';
+import { botConversationService, plaidService, authService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
 const DRAWER_WIDTH = 320;
+const COLLAPSED_DRAWER_WIDTH = 80;
 
 const Chatbot: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
-  const [newMessage, setNewMessage] = useState('');const [loading, setLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [botTyping, setBotTyping] = useState(false);
   const [creatingConversation, setCreatingConversation] = useState(false);
@@ -60,6 +67,9 @@ const Chatbot: React.FC = () => {
   const [deletingConversation, setDeletingConversation] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+  const [userPersonality, setUserPersonality] = useState<number>(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [textVisible, setTextVisible] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,6 +80,7 @@ const Chatbot: React.FC = () => {
 
   useEffect(() => {
     fetchConversations();
+    fetchUserPersonality();
   }, []);
   useEffect(() => {
     if (creatingConversation) return; // Don't auto-navigate when creating a conversation
@@ -98,7 +109,20 @@ const Chatbot: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };  const fetchConversation = async (id: string) => {
+  };
+
+  const fetchUserPersonality = async () => {
+    try {
+      const response = await authService.getPersonality();
+      setUserPersonality(response.personality);
+    } catch (error) {
+      console.error('Error fetching user personality:', error);
+      // Default to normal personality (0) if there's an error
+      setUserPersonality(0);
+    }
+  };
+
+  const fetchConversation = async (id: string) => {
     try {
       const data = await botConversationService.getFullConversation(id);
       setSelectedConversation(data);
@@ -252,35 +276,107 @@ const Chatbot: React.FC = () => {
     setConversationToDelete(null);
   };
 
+  const toggleSidebar = () => {
+    if (sidebarCollapsed) {
+      // Expanding - show text after animation completes
+      setSidebarCollapsed(false);
+      setTimeout(() => {
+        setTextVisible(true);
+      }, 300); // Match the sidebar transition duration
+    } else {
+      // Collapsing - hide text immediately
+      setTextVisible(false);
+      setSidebarCollapsed(true);
+    }
+  };
+
   // Sidebar content
   const sidebarContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Sidebar Header */}
       <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Box
-            component="img"
-            src={capySVG}
-            alt="Capy"
-            sx={{ width: 32, height: 32, objectFit: 'contain' }}
-          />
-          <Typography variant="h6" fontWeight={600}>
-            Chat with Capy
-          </Typography>
-        </Box>        <Button
-          fullWidth
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={createNewConversation}
-          disabled={creatingConversation}
-          sx={{
-            borderRadius: 2,
-            textTransform: 'none',
-            py: 1
-          }}
-        >
-          New Conversation
-        </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, ml: 1 }}>
+          {/* Only show collapsible button on desktop */}
+          {!isMobile && (
+            <IconButton
+              onClick={toggleSidebar}
+              sx={{
+                p: 0,
+                '&:hover': {
+                  transform: 'scale(1.05)'
+                },
+                transition: 'transform 0.2s ease'
+              }}
+            >
+              <Box
+                component="img"
+                src={capyImage}
+                alt="Capy"
+                sx={{ 
+                  width: 32, 
+                  height: 32, 
+                  objectFit: 'contain', 
+                  display: 'block',
+                  cursor: 'pointer'
+                }}
+              />
+            </IconButton>
+          )}
+          {/* Show Capy image without collapsible functionality on mobile */}
+          {isMobile && (
+            <Box
+              component="img"
+              src={capyImage}
+              alt="Capy"
+              sx={{ 
+                width: 32, 
+                height: 32, 
+                objectFit: 'contain', 
+                display: 'block'
+              }}
+            />
+          )}
+          {/* Show text based on device and state */}
+          {(isMobile || (!isMobile && textVisible)) && (
+            <Typography variant="h6" fontWeight={600}>
+              Chat with Capy
+            </Typography>
+          )}
+        </Box>
+        {/* Show buttons based on device and state */}
+        {(isMobile || (!isMobile && !sidebarCollapsed)) && (
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={createNewConversation}
+            disabled={creatingConversation}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              py: 1
+            }}
+          >
+            New Conversation
+          </Button>
+        )}
+        {!isMobile && sidebarCollapsed && (
+          <Button
+            variant="contained"
+            onClick={createNewConversation}
+            disabled={creatingConversation}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              py: 1,
+              minWidth: 'auto',
+              width: 48,
+              height: 48
+            }}
+          >
+            <AddIcon />
+          </Button>
+        )}
       </Box>
 
       {/* Conversations List */}
@@ -291,13 +387,19 @@ const Chatbot: React.FC = () => {
           </Box>
         ) : conversations.length === 0 ? (
           <Box sx={{ p: 3, textAlign: 'center' }}>
-            <ChatIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
-            <Typography variant="body2" color="text.secondary">
-              No conversations yet
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Start a new conversation to begin chatting with Capy
-            </Typography>
+            {(isMobile || (!isMobile && !sidebarCollapsed)) ? (
+              <>
+                <ChatIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+                <Typography variant="body2" color="text.secondary">
+                  No conversations yet
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Start a new conversation to begin chatting with Capy
+                </Typography>
+              </>
+            ) : (
+              <ChatIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+            )}
           </Box>
         ) : (
           <List sx={{ p: 0 }}>
@@ -308,62 +410,78 @@ const Chatbot: React.FC = () => {
                   onClick={() => handleConversationSelect(conversation)}
                   sx={{
                     py: 2,
-                    px: 2,
+                    px: (!isMobile && sidebarCollapsed) ? 1 : 2,
+                    justifyContent: (!isMobile && sidebarCollapsed) ? 'center' : 'flex-start',
                     '&.Mui-selected': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       borderRight: `3px solid ${theme.palette.primary.main}`
                     }
                   }}
                 >
-                  <ListItemAvatar>
+                  <ListItemAvatar sx={{ minWidth: (!isMobile && sidebarCollapsed) ? 'auto' : 40 }}>
                     <Avatar
                       sx={{
                         width: 32,
                         height: 32,
-                        background: theme.palette.primary.main
+                        background: theme.palette.primary.main,
+                        flexShrink: 0
                       }}
                     >
-                      <img src={capySVG} alt="Bot" style={{ width: 18, height: 18 }} />
+                      <img 
+                        src={capyImage} 
+                        alt="Bot" 
+                        style={{ 
+                          width: '70%', 
+                          height: '70%', 
+                          objectFit: 'contain',
+                          display: 'block',
+                          margin: 'auto'
+                        }} 
+                      />
                     </Avatar>
                   </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        variant="body2"
-                        fontWeight={500}
+                  {(isMobile || (!isMobile && !sidebarCollapsed)) && (
+                    <>
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {conversation.summary}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(conversation.create_timestamp).toLocaleDateString()}
+                          </Typography>
+                        }
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleDeleteConversation(conversation.id.toString(), e)}
+                        disabled={deletingConversation === conversation.id.toString()}
                         sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          color: 'text.secondary',
+                          '&:hover': {
+                            color: 'error.main',
+                            backgroundColor: alpha(theme.palette.error.main, 0.1)
+                          }
                         }}
                       >
-                        {conversation.summary}
-                      </Typography>
-                    }
-                    secondary={
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(conversation.create_timestamp).toLocaleDateString()}
-                      </Typography>
-                    }
-                  />
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleDeleteConversation(conversation.id.toString(), e)}
-                    disabled={deletingConversation === conversation.id.toString()}
-                    sx={{
-                      color: 'text.secondary',
-                      '&:hover': {
-                        color: 'error.main',
-                        backgroundColor: alpha(theme.palette.error.main, 0.1)
-                      }
-                    }}
-                  >
-                    {deletingConversation === conversation.id.toString() ? (
-                      <CircularProgress size={16} />
-                    ) : (
-                      <DeleteIcon fontSize="small" />
-                    )}
-                  </IconButton>
+                        {deletingConversation === conversation.id.toString() ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <DeleteIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </>
+                  )}
                 </ListItemButton>
               </ListItem>
             ))}
@@ -373,18 +491,34 @@ const Chatbot: React.FC = () => {
 
       {/* Back to Dashboard */}
       <Box sx={{ p: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        <Button
-          fullWidth
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/dashboard')}
-          sx={{
-            borderRadius: 2,
-            textTransform: 'none'
-          }}
-        >
-          Back to Dashboard
-        </Button>
+        {(isMobile || (!isMobile && !sidebarCollapsed)) ? (
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none'
+            }}
+          >
+            Back to Dashboard
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/dashboard')}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              minWidth: 'auto',
+              width: 48,
+              height: 48
+            }}
+          >
+            <ArrowBackIcon />
+          </Button>
+        )}
       </Box>
     </Box>
   );
@@ -396,12 +530,13 @@ const Chatbot: React.FC = () => {
         <Paper
           elevation={2}
           sx={{
-            width: DRAWER_WIDTH,
+            width: sidebarCollapsed ? COLLAPSED_DRAWER_WIDTH : DRAWER_WIDTH,
             flexShrink: 0,
             background: alpha(theme.palette.background.paper, 0.95),
             backdropFilter: 'blur(20px)',
             borderRadius: 0,
-            borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+            borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            transition: 'width 0.3s ease'
           }}
         >
           {sidebarContent}
@@ -438,6 +573,22 @@ const Chatbot: React.FC = () => {
           overflow: 'hidden',
         }}
       >
+        {/* Mobile Menu Button */}
+        {isMobile && (
+          <Fab
+            color="primary"
+            onClick={() => setMobileDrawerOpen(true)}
+            sx={{ 
+              position: 'absolute', 
+              top: 16, 
+              left: 16,
+              zIndex: 10
+            }}
+          >
+            <MenuIcon />
+          </Fab>
+        )}
+
         {/* Capybara SVG in bottom left, behind input box */}
         <Box
           sx={{
@@ -446,50 +597,32 @@ const Chatbot: React.FC = () => {
             bottom: 10,
             zIndex: 1,
             opacity: 1,
-            width: { xs: 150, sm: 220, md: 250
-            },
-            height: 'auto',
+            width: { xs: 150, sm: 220, md: 250 },
             pointerEvents: 'none',
           }}
         >
-          <img src={capySVG} alt="Capybara SVG" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          <Box sx={{ position: 'relative' }}>
+            <img src={capySVG} alt="Capybara SVG" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+            {userPersonality === 2 && (
+              <Box
+                component="img"
+                src={communistHat}
+                alt="Communist Hat"
+                sx={{
+                  position: 'absolute',
+                  top: '-12%',
+                  left: '42%',
+                  transform: 'translateX(-50%) rotate(-6deg)',
+                  width: '80%',
+                  height: 'auto',
+                  zIndex: 2,
+                }}
+              />
+            )}
+          </Box>
         </Box>
         {selectedConversation ? (
           <>
-            {/* Chat Header */}
-            <Paper
-              elevation={1}
-              sx={{
-                p: 2,
-                background: alpha(theme.palette.background.paper, 0.95),
-                backdropFilter: 'blur(20px)',
-                borderRadius: 0,
-                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {isMobile && (
-                  <IconButton onClick={() => setMobileDrawerOpen(true)}>
-                    <MenuIcon />
-                  </IconButton>
-                )}
-                <Box
-                  component="img"
-                  src={capySVG}
-                  alt="Capy"
-                  sx={{ width: 32, height: 32, objectFit: 'contain' }}
-                />
-                <Box>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Capy Assistant
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {selectedConversation.summary[0]?.summary}
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-
             {/* Messages */}
             <Box
               sx={{
@@ -519,10 +652,11 @@ const Chatbot: React.FC = () => {
                       sx={{
                         width: 32,
                         height: 32,
-                        background: theme.palette.primary.main
+                        background: theme.palette.primary.main,
+                        flexShrink: 0
                       }}
                     >
-                      <img src={capySVG} alt="Capy" style={{ width: 18, height: 18 }} />
+                      <img src={capyImage} alt="Capy" style={{ width: '70%', height: '70%', objectFit: 'contain', display: 'block', margin: 'auto' }} />
                     </Avatar>
                   )}
                   <Paper
@@ -670,7 +804,7 @@ const Chatbot: React.FC = () => {
               
               {/* Bot typing indicator */}
               {botTyping && (
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2, ml: { xs: '150px', sm: '200px', md: '250px' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 7, ml: { xs: '150px', sm: '200px', md: '250px' } }}>
                   <Paper
                     elevation={1}
                     sx={{
@@ -688,7 +822,7 @@ const Chatbot: React.FC = () => {
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <span>Typing</span>
+                      <span>Thinking</span>
                       <Box sx={{ display: 'inline-flex', ml: 0.5 }}>
                         <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0s' }} />
                         <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.2s' }} />
@@ -709,47 +843,64 @@ const Chatbot: React.FC = () => {
             </Box>
 
             {/* Message Input */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', p: 2, zIndex: 2, position: 'relative', background: 'transparent' }}>
-              <TextField
-                fullWidth
-                multiline
-                maxRows={4}
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                disabled={sending}
-                variant="outlined"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    background: '#FFE2B6',
-                    boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
-                    border: 'none',
-                    '& fieldset': {
-                      border: 'none',
-                    },
-                  }
-                }}
-              />
-              <Button
-                variant="contained"
-                onClick={sendMessage}
-                disabled={!newMessage.trim() || sending}
-                sx={{
-                  minWidth: 'auto',
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2
-                }}
-              >
-                {sending ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <SendIcon />
-                )}
-              </Button>
-            </Box>
+            {/* Message Input Overlay */}
+<Box
+  sx={{
+    position: 'absolute', // or 'fixed' if you want it stuck to the bottom of the screen
+    bottom: 0,
+    left: 0,
+    right: 0,
+    display: 'flex',
+    gap: 2,
+    alignItems: 'flex-end',
+    p: 2,
+    zIndex: 10,
+    background: 'transparent',
+    pointerEvents: 'none' // allow interactions only on children
+  }}
+>
+  <Box sx={{ flex: 1, pointerEvents: 'auto' }}>
+    <TextField
+      fullWidth
+      multiline
+      maxRows={4}
+      value={newMessage}
+      onChange={(e) => setNewMessage(e.target.value)}
+      onKeyPress={handleKeyPress}
+      placeholder="Type your message..."
+      disabled={sending}
+      variant="standard"
+      InputProps={{
+        disableUnderline: true
+      }}
+      sx={{
+        borderRadius: 2,
+        background: '#FFE2B6',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        px: 2,
+        py: 1.5
+      }}
+    />
+  </Box>
+  <Button
+    variant="contained"
+    onClick={sendMessage}
+    disabled={!newMessage.trim() || sending}
+    sx={{
+      minWidth: 'auto',
+      width: 48,
+      height: 48,
+      borderRadius: 2,
+      pointerEvents: 'auto'
+    }}
+  >
+    {sending ? (
+      <CircularProgress size={20} color="inherit" />
+    ) : (
+      <SendIcon />
+    )}
+  </Button>
+</Box>
           </>
         ) : (
           // No conversation selected state
@@ -765,27 +916,19 @@ const Chatbot: React.FC = () => {
               textAlign: 'center'
             }}
           >
-            {isMobile && (
-              <Fab
-                color="primary"
-                onClick={() => setMobileDrawerOpen(true)}
-                sx={{ position: 'absolute', top: 16, left: 16 }}
-              >
-                <MenuIcon />
-              </Fab>
-            )}
             <Box
               component="img"
-              src={capySVG}
+              src={capyImage}
               alt="Capy"
-              sx={{ width: 80, height: 80, objectFit: 'contain', opacity: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))'}}
+              sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', opacity: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))' }}
             />
             <Typography variant="h5" fontWeight={600} color="text.secondary">
               Welcome to Capy Chat
             </Typography>
-            <Typography variant="body1" color="text.secondary" maxWidth={400}>
+            <Typography variant="body1" color="text.secondary" maxWidth={400} sx={{ display: { xs: 'block', md: 'none' } }}>
               Select a conversation from the sidebar to continue chatting, or start a new conversation to begin.
-            </Typography>            <Button
+            </Typography>
+            <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={createNewConversation}
@@ -793,7 +936,8 @@ const Chatbot: React.FC = () => {
               sx={{ mt: 2, borderRadius: 2, textTransform: 'none' }}
             >
               Start New Conversation
-            </Button></Box>
+            </Button>
+          </Box>
         )}
       </Box>
 
@@ -818,23 +962,9 @@ const Chatbot: React.FC = () => {
         >
           <Box
             component="img"
-            src={capySVG}
+            src={capyImage}
             alt="Capy"
-            sx={{
-              width: 80,
-              height: 80,
-              animation: 'pulse 1.5s ease-in-out infinite',
-              '@keyframes pulse': {
-                '0%, 100%': {
-                  opacity: 0.8,
-                  transform: 'scale(1)'
-                },
-                '50%': {
-                  opacity: 1,
-                  transform: 'scale(1.05)'
-                }
-              }
-            }}
+            sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 0.8, transform: 'scale(1)' }, '50%': { opacity: 1, transform: 'scale(1.05)' } } }}
           />
           <Typography variant="h6" color="text.primary" textAlign="center">
             Starting new conversation...

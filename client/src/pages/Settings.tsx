@@ -31,11 +31,12 @@ import {
   TrendingUp as TrendingUpIcon,
   Balance as BalanceIcon,
   AccountBalance as AccountBalanceIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Whatshot as WhatshotIcon
 } from '@mui/icons-material';
 import capyImage from '../assets/capy.png';
 
-type CapyPersonality = 'conservative' | 'neutral' | 'risky';
+type CapyPersonality = 'conservative' | 'neutral' | 'risky' | 'communist';
 
 interface CapyOption {
   value: CapyPersonality;
@@ -43,7 +44,7 @@ interface CapyOption {
   description: string;
   icon: React.ReactNode;
   color: string;
-  personalityValue: number; // -1 for conservative, 0 for neutral, 1 for risky
+  personalityValue: number; // -1 for conservative, 0 for neutral, 1 for risky, 2 for communist
 }
 
 const Settings: React.FC = () => {
@@ -72,6 +73,8 @@ const Settings: React.FC = () => {
           setSelectedCapy('neutral');
         } else if (personalityValue === 1) {
           setSelectedCapy('risky');
+        } else if (personalityValue === 2) {
+          setSelectedCapy('communist');
         }
       } catch (err: any) {
         console.error('Failed to load personality:', err);
@@ -165,6 +168,14 @@ const Settings: React.FC = () => {
       icon: <TrendingUpIcon />,
       color: theme.palette.warning.main,
       personalityValue: 1
+    },
+    {
+      value: 'communist',
+      label: 'Communist Capy',
+      description: 'Revolutionary financial advisor with socialist principles. Emphasizes collective responsibility and community support.',
+      icon: <WhatshotIcon />,
+      color: theme.palette.error.main,
+      personalityValue: 2
     }
   ];
 
