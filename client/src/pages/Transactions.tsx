@@ -124,15 +124,26 @@ const Transactions: React.FC = () => {
       console.log('🔍 Fetching transactions with params:', {
         userId: user.id.toString(),
         startDate: startToUse || 'not set',
-        endDate: endToUse || 'not set'
+        endDate: endToUse || 'not set',
+        startDateType: typeof startToUse,
+        endDateType: typeof endToUse,
+        startDateValid: startToUse ? !isNaN(new Date(startToUse).getTime()) : false,
+        endDateValid: endToUse ? !isNaN(new Date(endToUse).getTime()) : false
       });
+      
+      // Log the exact URL that will be called
+      const params = new URLSearchParams();
+      if (startToUse) params.append('start_date', startToUse);
+      if (endToUse) params.append('end_date', endToUse);
+      const url = `/api/plaid/transactions/${user.id.toString()}?${params.toString()}`;
+      console.log('🔗 API URL:', url);
       
       const response = await plaidService.getTransactions(user.id.toString(), startToUse, endToUse);
       
       console.log('✅ Transactions API response received:', {
         hasTransactions: !!response.transactions,
         transactionCount: response.transactions ? response.transactions.length : 0,
-        sampleTransactions: response.transactions ? response.transactions.slice(0, 2).map(t => ({
+        sampleTransactions: response.transactions ? response.transactions.slice(0, 3).map(t => ({
           id: t.transaction_id,
           name: t.name,
           amount: t.amount,
@@ -140,6 +151,33 @@ const Transactions: React.FC = () => {
           category: t.category
         })) : []
       });
+      
+      // Check for transactions outside the date range
+      if (response.transactions && (startToUse || endToUse)) {
+        const outOfRangeTransactions = response.transactions.filter(t => {
+          const txDate = new Date(t.date);
+          const startDate = startToUse ? new Date(startToUse) : null;
+          const endDate = endToUse ? new Date(endToUse) : null;
+          
+          // Reset time to start of day for comparison
+          txDate.setHours(0, 0, 0, 0);
+          if (startDate) startDate.setHours(0, 0, 0, 0);
+          if (endDate) endDate.setHours(0, 0, 0, 0);
+          
+          const afterStart = !startDate || txDate >= startDate;
+          const beforeEnd = !endDate || txDate <= endDate;
+          
+          return !(afterStart && beforeEnd);
+        });
+        
+        if (outOfRangeTransactions.length > 0) {
+          console.warn('⚠️ Found transactions outside date range:', outOfRangeTransactions.map(t => ({
+            date: t.date,
+            name: t.name,
+            amount: t.amount
+          })));
+        }
+      }
       
       setTransactions(response.transactions || []);
       setFilteredTransactions(response.transactions || []);

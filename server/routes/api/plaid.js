@@ -7,6 +7,27 @@ const plaidUsersDb = require('../../db/plaid_users');
 const TAG = 'plaid_routes';
 
 /**
+ * Helper function to validate and normalize date strings
+ */
+function normalizeDate(dateString) {
+  if (!dateString) return null;
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      logger.warn(`${TAG} Invalid date string: ${dateString}`);
+      return null;
+    }
+    
+    // Return date in YYYY-MM-DD format
+    return date.toISOString().split('T')[0];
+  } catch (error) {
+    logger.warn(`${TAG} Error parsing date: ${dateString}`, error);
+    return null;
+  }
+}
+
+/**
  * POST /api/plaid/create_link_token
  * Step 1: Create a link token for Plaid Link initialization
  */
@@ -82,45 +103,84 @@ router.get('/transactions/:user_id', async (req, res) => {
     const { user_id } = req.params;
     const { start_date, end_date } = req.query;
     
-    logger.info(`${TAG} Getting transactions for user ${user_id}`);
-    logger.info(`${TAG} Date range: ${start_date || 'default'} to ${end_date || 'default'}`);
+    // Normalize and validate dates
+    const normalizedStartDate = normalizeDate(start_date);
+    const normalizedEndDate = normalizeDate(end_date);
     
-    const transactionsData = await plaid.getTransactions(user_id, start_date, end_date);
+    logger.info(`${TAG} Getting transactions for user ${user_id}`);
+    logger.info(`${TAG} Original date range: ${start_date || 'default'} to ${end_date || 'default'}`);
+    logger.info(`${TAG} Normalized date range: ${normalizedStartDate || 'default'} to ${normalizedEndDate || 'default'}`);
+    
+    const transactionsData = await plaid.getTransactions(user_id, normalizedStartDate, normalizedEndDate);
+    
+    // Additional date filtering to ensure we only return transactions within the specified range
+    let filteredTransactions = transactionsData.transactions || [];
+    
+    if (normalizedStartDate || normalizedEndDate) {
+      filteredTransactions = filteredTransactions.filter(transaction => {
+        const transactionDate = transaction.date; // Plaid returns date in YYYY-MM-DD format
+        
+        // Convert dates to Date objects for comparison
+        const txDate = new Date(transactionDate);
+        const startDate = normalizedStartDate ? new Date(normalizedStartDate) : null;
+        const endDate = normalizedEndDate ? new Date(normalizedEndDate) : null;
+        
+        // Reset time to start of day for accurate date comparison
+        txDate.setHours(0, 0, 0, 0);
+        if (startDate) startDate.setHours(0, 0, 0, 0);
+        if (endDate) endDate.setHours(0, 0, 0, 0);
+        
+        // Check if transaction date is within range
+        const afterStart = !startDate || txDate >= startDate;
+        const beforeEnd = !endDate || txDate <= endDate;
+        
+        const isInRange = afterStart && beforeEnd;
+        
+        // Log transactions that are being filtered out
+        if (!isInRange) {
+          logger.debug(`${TAG} Filtering out transaction: ${transaction.name} (${transaction.date}) - outside range ${normalizedStartDate} to ${normalizedEndDate}`);
+        }
+        
+        return isInRange;
+      });
+      
+      logger.info(`${TAG} Date filtering applied: ${transactionsData.transactions?.length || 0} total transactions, ${filteredTransactions.length} after filtering`);
+      
+      // Log any transactions that were filtered out
+      const filteredOut = (transactionsData.transactions || []).filter(t => !filteredTransactions.includes(t));
+      if (filteredOut.length > 0) {
+        logger.info(`${TAG} Filtered out transactions:`, filteredOut.map(t => ({
+          date: t.date,
+          name: t.name,
+          amount: t.amount
+        })));
+      }
+    }
     
     // Debug logging to see the exact structure
     console.log('🔍 Raw transactionsData:', transactionsData);
     console.log('🔍 transactionsData type:', typeof transactionsData);
     console.log('🔍 transactionsData keys:', Object.keys(transactionsData));
-    console.log('🔍 transactionsData.transactions:', transactionsData.transactions);
-    console.log('🔍 transactionsData.transactions type:', typeof transactionsData.transactions);
-    console.log('🔍 transactionsData.transactions length:', transactionsData.transactions ? transactionsData.transactions.length : 'undefined');
-    console.log('🔍 Is transactionsData.transactions an array?', Array.isArray(transactionsData.transactions));
-    
-    // Test if data exists in different ways
-    console.log('🔍 Does transactionsData have transactions property?', 'transactions' in transactionsData);
-    console.log('🔍 transactionsData.transactions === undefined?', transactionsData.transactions === undefined);
-    console.log('🔍 transactionsData.transactions === null?', transactionsData.transactions === null);
-    console.log('🔍 transactionsData.transactions === false?', transactionsData.transactions === false);
-    
-    // Try to access it as a string key
-    console.log('🔍 transactionsData["transactions"]:', transactionsData["transactions"]);
-    console.log('🔍 transactionsData["transactions"] length:', transactionsData["transactions"] ? transactionsData["transactions"].length : 'undefined');
-    
-    // Log the full structure as JSON to see everything
-    console.log('🔍 Full transactionsData as JSON:', JSON.stringify(transactionsData, null, 2));
+    console.log('🔍 Filtered transactions length:', filteredTransactions.length);
     
     // Log the response structure and transaction count
     logger.info(`${TAG} Transactions API response received for user ${user_id}`);
     logger.info(`${TAG} Response structure:`, JSON.stringify({
-      has_transactions: !!transactionsData.transactions,
-      transaction_count: transactionsData.transactions ? transactionsData.transactions.length : 0,
+      has_transactions: !!filteredTransactions,
+      transaction_count: filteredTransactions.length,
       accounts_count: transactionsData.accounts ? transactionsData.accounts.length : 0,
       total_transactions: transactionsData.total_transactions || 0,
-      request_id: transactionsData.request_id || 'N/A'
+      request_id: transactionsData.request_id || 'N/A',
+      date_filter_applied: !!(normalizedStartDate || normalizedEndDate),
+      original_start_date: start_date,
+      original_end_date: end_date,
+      normalized_start_date: normalizedStartDate,
+      normalized_end_date: normalizedEndDate
     }, null, 2));
-    if (transactionsData["transactions"] && transactionsData["transactions"].length > 0) {
-      logger.info(`${TAG} Sample transactions for user ${user_id}:`);
-      const sampleTransactions = transactionsData["transactions"].slice(0, 3).map(t => ({
+    
+    if (filteredTransactions.length > 0) {
+      logger.info(`${TAG} Sample filtered transactions for user ${user_id}:`);
+      const sampleTransactions = filteredTransactions.slice(0, 3).map(t => ({
         id: t.id,
         name: t.name,
         amount: t.amount,
@@ -130,15 +190,15 @@ router.get('/transactions/:user_id', async (req, res) => {
       }));
       logger.info(`${TAG} Sample transactions:`, JSON.stringify(sampleTransactions, null, 2));
     } else {
-      logger.info(`${TAG} No transactions found for user ${user_id}`);
+      logger.info(`${TAG} No transactions found for user ${user_id} in specified date range`);
     }
     
     // Log the final response format
-    console.log('📤 Final API response format:', Array.isArray(transactionsData["transactions"]) ? 'Array' : 'Not Array');
-    console.log('📤 Response length:', transactionsData["transactions"] ? transactionsData["transactions"].length : 0);
-    console.log('📤 Response type:', typeof transactionsData["transactions"]);
+    console.log('📤 Final API response format:', Array.isArray(filteredTransactions) ? 'Array' : 'Not Array');
+    console.log('📤 Response length:', filteredTransactions.length);
+    console.log('📤 Response type:', typeof filteredTransactions);
     
-    res.json(transactionsData["transactions"]);
+    res.json(filteredTransactions);
   } catch (error) {
     logger.error(`${TAG} Error getting transactions: ${error.message}`);
     logger.error(`${TAG} Full error details:`, error);
