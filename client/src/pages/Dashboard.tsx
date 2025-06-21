@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { plaidService } from '../services/api';
-import TransactionCalendar from '../components/TransactionCalendar';
 import {
   Box,
   Container,
@@ -94,7 +93,6 @@ const Dashboard: React.FC = () => {
     year: 0
   });
   const [recentTransactions, setRecentTransactions] = useState<PlaidTransaction[]>([]);
-  const [monthlyTransactions, setMonthlyTransactions] = useState<PlaidTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
@@ -177,9 +175,6 @@ const Dashboard: React.FC = () => {
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 5);
       setRecentTransactions(recent);
-      
-      // Store all transactions for the calendar
-      setMonthlyTransactions(transactions);
       
     } catch (err: any) {
       console.error('❌ Failed to fetch monthly data:', err);
@@ -595,15 +590,6 @@ const Dashboard: React.FC = () => {
               </Typography>
             </CardContent>
           </Card>
-        </Box>
-
-        {/* Transaction Calendar */}
-        <Box sx={{ mb: 3 }}>
-          <TransactionCalendar
-            transactions={monthlyTransactions}
-            month={monthlySummary.month}
-            year={monthlySummary.year}
-          />
         </Box>
 
         {/* Recent Activity */}
