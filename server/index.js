@@ -99,20 +99,3 @@ async function initializePlaidDataFetching() {
 
   logger.info(`${TAG} Plaid data fetching intervals initialized`);
 }
-
-// // Fetch plaid information once on boot, and every 12 hours after
-// const plaid = require('./plaid/plaid');
-// plaid.fetchPlaidInfo().then(() => {
-//   logger.info(`${TAG} Plaid information fetched successfully on server boot`);
-// }).catch((error) => {
-//   logger.error(`${TAG} Error fetching plaid information: ${error.message}`);
-// });
-
-// // Set an interval to fetch plaid information every 12 hours
-// setInterval(() => {
-//   plaid.fetchPlaidInfo().then(() => {
-//     logger.info(`${TAG} Plaid information fetched successfully`);
-//   }).catch((error) => {
-//     logger.error(`${TAG} Error fetching plaid information: ${error.message}`);
-//   });
-// }, 12 * 60 * 60 * 1000); // 12 hours in milliseconds

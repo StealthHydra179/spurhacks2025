@@ -9,6 +9,29 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function format(transactionData) {
+    // keep the following elements
+    // original amount
+    //transaction time
+    //category primary
+    //payment chanel
+    //currency code
+    //location
+
+    return transactionData.map((transaction) => {
+        return {
+            original_amount: transaction.original_amount || 0,
+            transaction_time: transaction.transaction_time
+                ? new Date(transaction.transaction_time).toISOString()
+                : null,
+            category_primary: transaction.category_primary || "Uncategorized",
+            payment_channel: transaction.payment_channel || "Unknown",
+            iso_currency_code: transaction.iso_currency_code || "USD",
+            location: transaction.location || "Unknown",
+        };
+    });
+}
+
 /**
  * Generate AI response using OpenAI GPT-4 mini
  */
@@ -36,8 +59,8 @@ When you first respond to a user, introduce yourself as Capy and explain that yo
 Mention that you are not a financial advisor, but you can provide general financial tips and advice based on the user's spending habits and financial goals.
 
 
-Recent Transaction Data:
-${JSON.stringify(userContext.transactionData)}
+Recent Transaction Data (postive is an outflow of money, negative is an inflow):
+${JSON.stringify(format(userContext.transactionData))}
 
 `;
 
