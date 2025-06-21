@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import { useAuth } from '../context/AuthContext';
 import {
   Box,
   Typography,
@@ -39,14 +41,16 @@ const Chatbot: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const messagesEndRef = useRef<HTMLDivElement>(null);  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState('');const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [botTyping, setBotTyping] = useState(false);
+  const [creatingConversation, setCreatingConversation] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const scrollToBottom = () => {
@@ -59,8 +63,9 @@ const Chatbot: React.FC = () => {
   useEffect(() => {
     fetchConversations();
   }, []);
-
   useEffect(() => {
+    if (creatingConversation) return; // Don't auto-navigate when creating a conversation
+    
     if (conversationId && conversations.length > 0) {
       const conversation = conversations.find(c => c.id.toString() === conversationId);
       if (conversation) {
@@ -71,7 +76,7 @@ const Chatbot: React.FC = () => {
       const mostRecent = conversations[0];
       navigate(`/chat/${mostRecent.id}`, { replace: true });
     }
-  }, [conversationId, conversations]);
+  }, [conversationId, conversations, creatingConversation]);
   const fetchConversations = async () => {
     try {
       const data = await botConversationService.getUserConversationSummaries();
@@ -97,22 +102,61 @@ const Chatbot: React.FC = () => {
     } catch (error) {
       console.error('Error fetching conversation:', error);
       setBotTyping(false); // Clear typing indicator on error
-    }
-  };const createNewConversation = async () => {
-    const question = 'Hello! I\'d like to start a new conversation about my finances.';
+    }  };const createNewConversation = async () => {
+    if (creatingConversation) return; // Prevent multiple simultaneous requests
+      setCreatingConversation(true);
+    
+    // Clear current conversation immediately to hide old chat
+    setSelectedConversation(null);
+    setCurrentConversationId(null);
+    
+    // Close mobile drawer if open
+    setMobileDrawerOpen(false);
+      const question = 'Hello! I\'d like to start a new conversation about my finances.';    
     try {
-      const data = await botConversationService.askCapy(1, question); // TODO: Get actual user ID from auth context
-      await fetchConversations(); // Refresh conversations list
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
       
-      // Load the new conversation directly instead of navigating
-      await fetchConversation(data.conversation_id.toString());
+      const data = await botConversationService.askCapy(user.id, question);
       
-      // Update URL without causing a page refresh
-      window.history.pushState(null, '', `/chat/${data.conversation_id}`);
+      // Set the new conversation ID immediately to prevent race conditions
+      const newConversationId = data.conversation_id.toString();
+      setCurrentConversationId(newConversationId);
+      
+      // Navigate to the new conversation first
+      navigate(`/chat/${newConversationId}`, { replace: true });
+      
+      // Then refresh conversations list and load conversation data
+      await fetchConversations();
+      await fetchConversation(newConversationId);
+        // Check if conversation has messages, if not wait a bit longer
+      let attempts = 0;
+      const maxAttempts = 10; // Maximum 5 seconds (10 * 500ms)
+      
+      const checkConversationReady = () => {
+        attempts++;
+        if (selectedConversation && selectedConversation.messages && selectedConversation.messages.length >= 2) {
+          // We have both user and bot messages
+          setCreatingConversation(false);
+        } else if (attempts < maxAttempts) {
+          // Wait a bit more and check again
+          setTimeout(checkConversationReady, 500);
+        } else {
+          // Timeout - hide loading anyway
+          setCreatingConversation(false);
+        }
+      };
+      
+      // Start checking after a short delay
+      setTimeout(checkConversationReady, 1000);
+      
     } catch (error) {
       console.error('Error creating conversation:', error);
+      setCreatingConversation(false);
     }
-  };  const sendMessage = async () => {
+  };const sendMessage = async () => {
     if (!newMessage.trim() || sending || !currentConversationId) return;
 
     setSending(true);
@@ -180,12 +224,12 @@ const Chatbot: React.FC = () => {
           <Typography variant="h6" fontWeight={600}>
             Chat with Capy
           </Typography>
-        </Box>
-        <Button
+        </Box>        <Button
           fullWidth
           variant="contained"
           startIcon={<AddIcon />}
           onClick={createNewConversation}
+          disabled={creatingConversation}
           sx={{
             borderRadius: 2,
             textTransform: 'none',
@@ -410,9 +454,106 @@ const Chatbot: React.FC = () => {
                       color: message.sender === 'user' 
                         ? theme.palette.primary.contrastText 
                         : theme.palette.text.primary
-                    }}
-                  >
-                    <Typography variant="body1">{message.message}</Typography>
+                    }}                  >                    {message.sender === 'bot' ? (
+                      <Box className="markdown-content">
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => (
+                              <Typography variant="body1" component="span" sx={{ display: 'block', mb: 1 }}>
+                                {children}
+                              </Typography>
+                            ),
+                          h1: ({ children }) => (
+                            <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                              {children}
+                            </Typography>
+                          ),
+                          h2: ({ children }) => (
+                            <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                              {children}
+                            </Typography>
+                          ),
+                          h3: ({ children }) => (
+                            <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                              {children}
+                            </Typography>
+                          ),
+                          strong: ({ children }) => (
+                            <Typography component="strong" sx={{ fontWeight: 'bold' }}>
+                              {children}
+                            </Typography>
+                          ),
+                          em: ({ children }) => (
+                            <Typography component="em" sx={{ fontStyle: 'italic' }}>
+                              {children}
+                            </Typography>
+                          ),
+                          code: ({ children }) => (
+                            <Typography 
+                              component="code" 
+                              sx={{ 
+                                backgroundColor: alpha(theme.palette.background.default, 0.8),
+                                padding: '2px 4px',
+                                borderRadius: 1,
+                                fontFamily: 'monospace',
+                                fontSize: '0.9em'
+                              }}
+                            >
+                              {children}
+                            </Typography>
+                          ),
+                          pre: ({ children }) => (
+                            <Box
+                              component="pre"
+                              sx={{
+                                backgroundColor: alpha(theme.palette.background.default, 0.8),
+                                padding: 2,
+                                borderRadius: 1,
+                                overflow: 'auto',
+                                fontFamily: 'monospace',
+                                fontSize: '0.9em',
+                                my: 1
+                              }}
+                            >
+                              {children}
+                            </Box>
+                          ),
+                          ul: ({ children }) => (
+                            <Typography component="ul" sx={{ pl: 2, my: 1 }}>
+                              {children}
+                            </Typography>
+                          ),
+                          ol: ({ children }) => (
+                            <Typography component="ol" sx={{ pl: 2, my: 1 }}>
+                              {children}
+                            </Typography>
+                          ),
+                          li: ({ children }) => (
+                            <Typography component="li" variant="body1" sx={{ mb: 0.5 }}>
+                              {children}
+                            </Typography>
+                          ),
+                          blockquote: ({ children }) => (
+                            <Box
+                              component="blockquote"
+                              sx={{
+                                borderLeft: `4px solid ${theme.palette.primary.main}`,
+                                paddingLeft: 2,
+                                margin: '1em 0',
+                                fontStyle: 'italic',
+                                color: theme.palette.text.secondary
+                              }}
+                            >
+                              {children}
+                            </Box>
+                          )
+                        }}                        >
+                          {message.message}
+                        </ReactMarkdown>
+                      </Box>
+                    ) : (
+                      <Typography variant="body1">{message.message}</Typography>
+                    )}
                     <Typography 
                       variant="caption" 
                       sx={{ 
@@ -586,18 +727,66 @@ const Chatbot: React.FC = () => {
             </Typography>
             <Typography variant="body1" color="text.secondary" maxWidth={400}>
               Select a conversation from the sidebar to continue chatting, or start a new conversation to begin.
-            </Typography>
-            <Button
+            </Typography>            <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={createNewConversation}
+              disabled={creatingConversation}
               sx={{ mt: 2, borderRadius: 2, textTransform: 'none' }}
             >
               Start New Conversation
-            </Button>
-          </Box>
+            </Button></Box>
         )}
       </Box>
+
+      {/* New Conversation Loading Overlay */}
+      {creatingConversation && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: alpha(theme.palette.background.default, 0.8),
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: theme.zIndex.modal,
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
+          <Box
+            component="img"
+            src={capyImage}
+            alt="Capy"
+            sx={{
+              width: 80,
+              height: 80,
+              animation: 'pulse 1.5s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
+                  opacity: 0.8,
+                  transform: 'scale(1)'
+                },
+                '50%': {
+                  opacity: 1,
+                  transform: 'scale(1.05)'
+                }
+              }
+            }}
+          />
+          <Typography variant="h6" color="text.primary" textAlign="center">
+            Starting new conversation...
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ maxWidth: 300 }}>
+            Capy is preparing to chat with you about your finances
+          </Typography>
+          <CircularProgress size={40} thickness={4} />
+        </Box>
+      )}
     </Box>
   );
 };

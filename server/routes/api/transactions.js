@@ -1,19 +1,18 @@
-var express = require('express'),
-    router = express.Router();
-    
-const { sql } = require('../../db/db');    
-const { logger } = require('../../logger');
+var express = require("express"),
+  router = express.Router();
 
-const transactionsDb = require('../../db/transactions');
+const { sql } = require("../../db/db");
+const { logger } = require("../../logger");
 
-const TAG = 'api_transactions';
+const transactionsDb = require("../../db/transactions");
 
-router.get('/', function (req, res) {
-    res.json({
-        message: 'Welcome to the Transactions API',
-        status: 'success'
-    });
-})
+const TAG = "api_transactions";
 
+router.get("/", function (req, res) {
+  res.json({
+    message: "Welcome to the Transactions API",
+    status: "success",
+  });
+});
 
 module.exports = router;
