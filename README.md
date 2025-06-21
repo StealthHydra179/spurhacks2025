@@ -12,3 +12,8 @@ To run server
 ```bash
 npm run server
 ```
+
+
+API Routes
+Get:
+localhost:3000/api/users/getByID/:ID

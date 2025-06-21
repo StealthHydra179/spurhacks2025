@@ -13,6 +13,11 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+var apiUsers = require('./routes/api/users');
+app.use('/api/users', apiUsers);
+var apiTransactions = require('./routes/api/transactions');
+app.use('/api/transactions', apiTransactions);
+
 app.listen(port, () => {
   logger.info(`${TAG} Server listening on port ${port}`)
 })

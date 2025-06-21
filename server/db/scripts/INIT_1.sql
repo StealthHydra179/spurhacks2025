@@ -1,5 +1,6 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
+    email VARCHAR,
     username VARCHAR,
     plaid_id INTEGER,
     hashed_password VARCHAR,
