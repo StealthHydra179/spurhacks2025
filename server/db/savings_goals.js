@@ -1,4 +1,4 @@
-const { pool } = require('./db');
+const { sql } = require('./db');
 const { logger } = require('../logger');
 
 const TAG = 'db_savings_goals';
@@ -33,11 +33,11 @@ const savingsGoalsDb = {
       ];
       
       logger.info(`${TAG} Creating savings goal for user ${userId}`);
-      const result = await pool.query(query, values);
+      const result = await sql.unsafe(query, values);
       
-      if (result.rows.length > 0) {
-        logger.info(`${TAG} Successfully created savings goal with ID: ${result.rows[0].id}`);
-        return result.rows[0];
+      if (result.length > 0) {
+        logger.info(`${TAG} Successfully created savings goal with ID: ${result[0].id}`);
+        return result[0];
       }
       
       throw new Error('Failed to create savings goal');
@@ -57,10 +57,10 @@ const savingsGoalsDb = {
       `;
       
       logger.info(`${TAG} Fetching savings goals for user ${userId}`);
-      const result = await pool.query(query, [userId]);
+      const result = await sql.unsafe(query, [userId]);
       
-      logger.info(`${TAG} Found ${result.rows.length} savings goals for user ${userId}`);
-      return result.rows;
+      logger.info(`${TAG} Found ${result.length} savings goals for user ${userId}`);
+      return result;
     } catch (error) {
       logger.error(`${TAG} Error fetching savings goals for user ${userId}: ${error.message}`);
       throw error;
@@ -76,11 +76,11 @@ const savingsGoalsDb = {
       `;
       
       logger.info(`${TAG} Fetching savings goal with ID: ${goalId}`);
-      const result = await pool.query(query, [goalId]);
+      const result = await sql.unsafe(query, [goalId]);
       
-      if (result.rows.length > 0) {
+      if (result.length > 0) {
         logger.info(`${TAG} Found savings goal with ID: ${goalId}`);
-        return result.rows[0];
+        return result[0];
       }
       
       logger.warn(`${TAG} No savings goal found with ID: ${goalId}`);
@@ -165,11 +165,11 @@ const savingsGoalsDb = {
       `;
       
       logger.info(`${TAG} Updating savings goal ${goalId} for user ${userId}`);
-      const result = await pool.query(query, values);
+      const result = await sql.unsafe(query, values);
       
-      if (result.rows.length > 0) {
+      if (result.length > 0) {
         logger.info(`${TAG} Successfully updated savings goal with ID: ${goalId}`);
-        return result.rows[0];
+        return result[0];
       }
       
       logger.warn(`${TAG} No savings goal found to update with ID: ${goalId} for user: ${userId}`);
@@ -190,9 +190,9 @@ const savingsGoalsDb = {
       `;
       
       logger.info(`${TAG} Deleting savings goal ${goalId} for user ${userId}`);
-      const result = await pool.query(query, [goalId, userId]);
+      const result = await sql.unsafe(query, [goalId, userId]);
       
-      if (result.rows.length > 0) {
+      if (result.length > 0) {
         logger.info(`${TAG} Successfully deleted savings goal with ID: ${goalId}`);
         return true;
       }
