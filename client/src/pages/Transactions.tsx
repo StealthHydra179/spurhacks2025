@@ -240,7 +240,16 @@ const Transactions: React.FC = () => {
     setAppliedEndDate(formatDateForInput(today));
   };
 
-  // Filter transactions based on search and filters
+  // Function to format category names for better display
+  const formatCategoryName = (category: string): string => {
+    return category
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Filter transactions based on search term and filters
   useEffect(() => {
     let filtered = transactions;
 
@@ -257,11 +266,16 @@ const Transactions: React.FC = () => {
 
     // Category filter
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(transaction =>
-        transaction.category?.includes(categoryFilter) ||
-        transaction.personal_finance_category?.primary === categoryFilter ||
-        transaction.personal_finance_category?.detailed === categoryFilter
-      );
+      filtered = filtered.filter(transaction => {
+        // Check if any of the transaction's categories match the selected formatted category
+        const transactionCategories = [
+          ...(transaction.category || []),
+          transaction.personal_finance_category?.primary,
+          transaction.personal_finance_category?.detailed
+        ].filter((cat): cat is string => Boolean(cat));
+        
+        return transactionCategories.some(cat => formatCategoryName(cat) === categoryFilter);
+      });
     }
 
     // Payment channel filter
@@ -276,14 +290,15 @@ const Transactions: React.FC = () => {
 
   const getUniqueCategories = () => {
     const categories = new Set<string>();
+    
     transactions.forEach(transaction => {
       // Add personal finance categories
       if (transaction.personal_finance_category) {
-        categories.add(transaction.personal_finance_category.primary);
-        categories.add(transaction.personal_finance_category.detailed);
+        categories.add(formatCategoryName(transaction.personal_finance_category.primary));
+        categories.add(formatCategoryName(transaction.personal_finance_category.detailed));
       }
       // Add regular categories
-      transaction.category?.forEach(cat => categories.add(cat));
+      transaction.category?.forEach(cat => categories.add(formatCategoryName(cat)));
     });
     return Array.from(categories).sort();
   };
@@ -713,14 +728,14 @@ const Transactions: React.FC = () => {
                             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                               {transaction.personal_finance_category ? (
                                 <Chip
-                                  label={transaction.personal_finance_category.primary}
+                                  label={formatCategoryName(transaction.personal_finance_category.primary)}
                                   size="small"
                                   sx={{ fontSize: '0.7rem', height: 20 }}
                                 />
                               ) : transaction.category?.slice(0, 2).map((cat, index) => (
                                 <Chip
                                   key={index}
-                                  label={cat}
+                                  label={formatCategoryName(cat)}
                                   size="small"
                                   sx={{ fontSize: '0.7rem', height: 20 }}
                                 />
