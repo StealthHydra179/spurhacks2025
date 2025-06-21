@@ -103,12 +103,7 @@ const Register: React.FC = () => {
             borderRadius: 4,
             backdropFilter: 'blur(20px)',
             background: alpha(theme.palette.background.paper, 0.95),
-            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-8px)',
-              boxShadow: theme.shadows[24]
-            }
+            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
           }}
         >
           <CardContent sx={{ p: 4 }}>

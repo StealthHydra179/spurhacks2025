@@ -1,4 +1,4 @@
-# spurhacks2025
+# capyspend
 
 Create .env file in root folder and follow this format:
 ```
