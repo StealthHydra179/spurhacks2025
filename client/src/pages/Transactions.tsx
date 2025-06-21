@@ -73,11 +73,36 @@ const Transactions: React.FC = () => {
       try {
         setIsLoading(true);
         setError(null);
+        
+        console.log('🔍 Fetching transactions with params:', {
+          userId: user.id.toString(),
+          startDate: startDate || 'not set',
+          endDate: endDate || 'not set'
+        });
+        
         const response = await plaidService.getTransactions(user.id.toString(), startDate || undefined, endDate || undefined);
+        
+        console.log('✅ Transactions API response received:', {
+          hasTransactions: !!response.transactions,
+          transactionCount: response.transactions ? response.transactions.length : 0,
+          sampleTransactions: response.transactions ? response.transactions.slice(0, 2).map(t => ({
+            id: t.id,
+            name: t.name,
+            amount: t.amount,
+            date: t.date,
+            category: t.category
+          })) : []
+        });
+        
         setTransactions(response.transactions || []);
         setFilteredTransactions(response.transactions || []);
       } catch (err: any) {
-        console.error('Failed to fetch transactions:', err);
+        console.error('❌ Failed to fetch transactions:', err);
+        console.error('❌ Error details:', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
         setError(err.response?.data?.message || 'Failed to fetch transactions');
       } finally {
         setIsLoading(false);
