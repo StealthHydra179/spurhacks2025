@@ -95,7 +95,7 @@ router.post("/login", async (req, res) => {
   const userID = user.id;
 
   const token = jwt.sign({ username, userID }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
+    expiresIn: "7d",
   });
 
   // Send token as httpOnly cookie for better security
@@ -103,7 +103,7 @@ router.post("/login", async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Only use HTTPS in production
     sameSite: "strict",
-    maxAge: 3600000, // 1 hour in milliseconds
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
   });
 
   res.json({ message: "Login successful" });
@@ -121,6 +121,32 @@ router.post("/logout", (req, res) => {
 
   res.json({ message: "Logout successful" });
   logger.info(`${TAG} User logged out successfully`);
+});
+
+// Refresh token route
+router.post("/refresh", authenticateToken, (req, res) => {
+  try {
+    // Create a new token with the same user data
+    const token = jwt.sign(
+      { username: req.user.username, userID: req.user.userID }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "7d" }
+    );
+
+    // Set the new token as a cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+    });
+
+    res.json({ message: "Token refreshed successfully" });
+    logger.info(`${TAG} Token refreshed for user ${req.user.username}`);
+  } catch (error) {
+    logger.error(`${TAG} Error refreshing token: ${error.message}`);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 // Protected route

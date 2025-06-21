@@ -30,25 +30,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // // Check for existing authentication on component mount
-  // React.useEffect(() => {
-  //   const checkAuthStatus = async () => {
-  //     try {
-  //       // Try to fetch user profile to check if user is authenticated
-  //       const userData = await authService.getProfile();
-  //       setUser(userData);
-  //       setIsAuthenticated(true);
-  //     } catch (error) {
-  //       // User is not authenticated or session expired
-  //       setIsAuthenticated(false);
-  //       setUser(null);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
+  // Check for existing authentication on component mount
+  React.useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        // Try to fetch user profile to check if user is authenticated
+        const userData = await authService.getProfile();
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (error) {
+        // User is not authenticated or session expired
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  //   checkAuthStatus();
-  // }, []);
+    checkAuthStatus();
+  }, []);
+
+  // Set up automatic token refresh
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Refresh token every 6 days (before the 7-day expiration)
+    const refreshInterval = setInterval(async () => {
+      try {
+        await authService.refreshToken();
+        console.log('Token refreshed automatically');
+      } catch (error) {
+        console.error('Failed to refresh token:', error);
+        // If refresh fails, user will need to log in again
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    }, 6 * 24 * 60 * 60 * 1000); // 6 days in milliseconds
+
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated]);
 
   const login = async (username: string, password: string) => {
     try {

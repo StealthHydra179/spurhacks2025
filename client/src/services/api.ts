@@ -25,7 +25,7 @@ api.interceptors.response.use(
   },
   (error) => {
     // Handle 401 Unauthorized errors
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
       // Redirect to login page
       window.location.href = '/login';
     }
@@ -53,6 +53,11 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     await api.post('/api/users/logout');
+  },
+
+  refreshToken: async (): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>('/api/users/refresh');
+    return response.data;
   },
 
   getProfile: async (): Promise<User> => {
