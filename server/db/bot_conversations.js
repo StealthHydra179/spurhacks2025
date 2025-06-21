@@ -1,6 +1,7 @@
 const { sql } = require("./db");
 const OpenAI = require("openai");
 const { logger } = require("../logger");
+const usersDb = require("./users");
 
 const TAG = "bot_conversations";
 
@@ -35,13 +36,54 @@ function format(transactionData) {
 /**
  * Generate AI response using OpenAI GPT-4 mini
  */
-async function generateAIResponse(userMessage, userContext = {}) {
+async function generateAIResponse(userMessage, userContext = {}, userId = null) {
   try {
-    const systemPrompt = `You are Capy, a friendly and helpful capybara financial assistant for the CapySpend app. 
+    // Get user personality mode from database
+    let personalityMode = 0; // Default to normal
+    let personalityDescription = "";
+    
+    if (userId) {
+      try {
+        personalityMode = await usersDb.getUserPersonality(userId);
+        if (personalityMode === null) {
+          personalityMode = 0; // Default to normal if no personality found
+        }
+      } catch (error) {
+        logger.warn(`${TAG} Could not fetch personality for user ${userId}: ${error.message}`);
+        personalityMode = 0;
+      }
+    }
+
+    // Set personality description and behavior based on mode
+    switch (personalityMode) {
+      case -1:
+        personalityDescription = `You should be GENTLE and ENCOURAGING in your financial advice. 
+Be supportive and understanding about financial mistakes. Use softer language like "consider" and "might want to" instead of direct commands.
+Focus on small, achievable steps and celebrate any progress the user makes.
+Be empathetic about financial stress and provide reassurance along with advice.`;
+        break;
+      case 1:
+        personalityDescription = `You should be MORE DIRECT and ASSERTIVE in your financial advice.
+Use stronger language and be more firm about financial decisions that need to be made.
+Point out financial mistakes clearly and provide direct action items.
+Be more urgent about addressing poor financial habits, but remain helpful and supportive.
+Use phrases like "you need to" and "you should immediately" when appropriate.`;
+        break;
+      case 0:
+      default:
+        personalityDescription = `You should be BALANCED in your approach - neither too gentle nor too aggressive.
+Provide clear, practical advice while being understanding of the user's situation.
+Use a friendly but informative tone that encourages good financial habits.`;
+        break;
+    }
+
+    const systemPrompt = `You are Capy, a capybara financial assistant for the CapySpend app. 
 You help users manage their finances, understand their spending patterns, and make better financial decisions.
 Be conversational, supportive, and provide actionable advice.
 Keep responses concise but helpful.
 If you need specific financial data to answer a question, let the user know what information would be helpful.
+
+PERSONALITY MODE: ${personalityDescription}
 
 IMPORTANT: Format your responses using Markdown for better readability:
 - Use **bold text** for emphasis on important points
@@ -114,7 +156,7 @@ Please provide a helpful response.`;
           content: userPrompt,
         },
       ],
-      max_tokens: 500,
+      max_tokens: 1500,
       temperature: 0.7,
     });
 

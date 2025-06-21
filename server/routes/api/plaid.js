@@ -503,11 +503,11 @@ Current user message: ${user_message}`;
         plaidUsers.length > 0
           ? await plaid.getTransactionByUserID(plaidUsers[0].user_id)
           : null,
-    };
-    // Generate AI response with conversation context
+    };    // Generate AI response with conversation context
     const aiResponse = await botConversationsDb.generateAIResponse(
       contextualMessage,
-      userContext
+      userContext,
+      user_id
     );
 
     // Add AI response to the conversation

@@ -234,11 +234,10 @@ router.post("/ask-capy", authenticateToken, async (req, res) => {
       const userContext = {
         hasPlaidData: plaidUsers && plaidUsers.length > 0,
         transactionData: transactionData,
-      };
-
-      const aiResponse = await botConversationsDb.generateAIResponse(
+      };      const aiResponse = await botConversationsDb.generateAIResponse(
         question,
-        userContext
+        userContext,
+        userID
       );
 
       // Add AI response to the conversation
