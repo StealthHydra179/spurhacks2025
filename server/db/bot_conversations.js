@@ -154,7 +154,7 @@ Please provide a helpful response.`;
     logger.info(`${TAG} systemPrompt: ${systemPrompt}`);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
