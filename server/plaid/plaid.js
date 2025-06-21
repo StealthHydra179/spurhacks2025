@@ -206,13 +206,6 @@ async function getTransactions(userId, startDate, endDate) {
   try {
     const userTokens = await getUserAccessTokens(userId);
 
-    // Log access token details
-    console.log('🔑 Access Token Details for user', userId, ':');
-    console.log('🔑 Access Token:', userTokens.accessToken);
-    console.log('🔑 Item ID:', userTokens.itemId);
-    console.log('🔑 Token Length:', userTokens.accessToken.length);
-    console.log('🔑 Token Preview:', userTokens.accessToken.substring(0, 20) + '...');
-
     const request = {
       access_token: userTokens.accessToken,
       start_date: startDate || '2020-01-01',
@@ -281,7 +274,7 @@ async function getTransactions(userId, startDate, endDate) {
     } else {
       logger.info(`${TAG} No transactions returned from Plaid for user ${userId}`);
     }
-    const transactionsResponse = await client.transactionsSync(request);
+    
     logger.info(`${TAG} Retrieved transactions for user ${userId}`);
     return transactionsResponse.data;
   } catch (error) {
@@ -549,7 +542,6 @@ async function hasLinkedItem(userId) {
     logger.error(`${TAG} Error checking linked item for user ${userId}: ${error.message}`);
     return false;
   }
-}
 }
 
 /**

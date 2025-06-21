@@ -190,7 +190,7 @@ router.get('/item-status/:user_id', async (req, res) => {
     plaid.logStoredAccessTokens();
     
     // Check if user has an access token stored (indicating a linked item)
-    const hasLinkedItem = plaid.hasLinkedItem ? plaid.hasLinkedItem(user_id) : false;
+    const hasLinkedItem = plaid.hasLinkedItem ? await plaid.hasLinkedItem(user_id) : false;
     
     if (hasLinkedItem) {
       // If they have a linked item, try to get basic info to verify it's still valid
@@ -198,7 +198,7 @@ router.get('/item-status/:user_id', async (req, res) => {
         const accountsData = await plaid.getAccounts(user_id);
         res.json({
           has_linked_item: true,
-          item_id: plaid.getItemId ? plaid.getItemId(user_id) : null,
+          item_id: await plaid.getItemId(user_id),
           account_count: accountsData.accounts ? accountsData.accounts.length : 0,
           last_verified: new Date().toISOString()
         });
