@@ -845,8 +845,76 @@ const Chatbot: React.FC = () => {
           <CircularProgress size={40} thickness={4} />
         </Box>
       )}
-    </Box>
-  );
+
+{/* Delete Dialog */}
+<Dialog
+open={deleteDialogOpen}
+onClose={cancelDelete}
+aria-labelledby="alert-dialog-title"
+aria-describedby="alert-dialog-description"
+PaperProps={{
+  sx: {
+    borderRadius: 2,
+    background: alpha(theme.palette.background.paper, 0.95),
+    backdropFilter: 'blur(20px)',
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+  }
+}}
+>
+<DialogTitle 
+  id="alert-dialog-title"
+  sx={{
+    pb: 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1
+  }}
+>
+  <DeleteIcon color="error" />
+  Confirm Deletion
+</DialogTitle>
+<DialogContent sx={{ pb: 2 }}>
+  <DialogContentText 
+    id="alert-dialog-description"
+    sx={{ 
+      color: 'text.primary',
+      fontSize: '1rem',
+      lineHeight: 1.5
+    }}
+  >
+    Are you sure you want to delete this conversation? This action cannot be undone.
+  </DialogContentText>
+</DialogContent>
+<DialogActions sx={{ p: 2, pt: 0 }}>
+  <Button 
+    onClick={cancelDelete}
+    variant="outlined"
+    sx={{ 
+      borderRadius: 2,
+      textTransform: 'none',
+      minWidth: 80
+    }}
+  >
+    Cancel
+  </Button>
+  <Button 
+    onClick={confirmDelete} 
+    variant="contained"
+    color="error"
+    disabled={deletingConversation !== null}
+    startIcon={deletingConversation ? <CircularProgress size={16} /> : <DeleteIcon />}
+    sx={{ 
+      borderRadius: 2,
+      textTransform: 'none',
+      minWidth: 80
+    }}
+  >
+    {deletingConversation ? 'Deleting...' : 'Delete'}
+  </Button>
+</DialogActions>
+</Dialog>
+</Box>
+);
 };
 
 export default Chatbot;
