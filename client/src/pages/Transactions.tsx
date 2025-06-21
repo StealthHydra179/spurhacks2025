@@ -28,7 +28,8 @@ import {
   Grid,
   Avatar,
   CircularProgress,
-  Alert
+  Alert,
+  Tooltip
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -36,7 +37,9 @@ import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   Receipt as ReceiptIcon,
-  FilterList as FilterIcon
+  FilterList as FilterIcon,
+  CalendarToday as CalendarIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 import capyImage from '../assets/capy.png';
 
@@ -87,53 +90,117 @@ const Transactions: React.FC = () => {
   const [paymentChannelFilter, setPaymentChannelFilter] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [appliedStartDate, setAppliedStartDate] = useState('');
+  const [appliedEndDate, setAppliedEndDate] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Set default date range (last 30 days)
+  useEffect(() => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    const formatDateForInput = (date: Date) => {
+      return date.toISOString().split('T')[0];
+    };
+    
+    setStartDate(formatDateForInput(thirtyDaysAgo));
+    setEndDate(formatDateForInput(today));
+    setAppliedStartDate(formatDateForInput(thirtyDaysAgo));
+    setAppliedEndDate(formatDateForInput(today));
+  }, []);
 
   // Fetch transactions from Plaid
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!user?.id) return;
+  const fetchTransactions = async (start?: string, end?: string) => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoading(true);
+      setError(null);
       
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        console.log('🔍 Fetching transactions with params:', {
-          userId: user.id.toString(),
-          startDate: startDate || 'not set',
-          endDate: endDate || 'not set'
-        });
-        
-        const response = await plaidService.getTransactions(user.id.toString(), startDate || undefined, endDate || undefined);
-        
-        console.log('✅ Transactions API response received:', {
-          hasTransactions: !!response.transactions,
-          transactionCount: response.transactions ? response.transactions.length : 0,
-          sampleTransactions: response.transactions ? response.transactions.slice(0, 2).map(t => ({
-            id: t.transaction_id,
-            name: t.name,
-            amount: t.amount,
-            date: t.date,
-            category: t.category
-          })) : []
-        });
-        
-        setTransactions(response.transactions || []);
-        setFilteredTransactions(response.transactions || []);
-      } catch (err: any) {
-        console.error('❌ Failed to fetch transactions:', err);
-        console.error('❌ Error details:', {
-          message: err.message,
-          response: err.response?.data,
-          status: err.response?.status
-        });
-        setError(err.response?.data?.message || 'Failed to fetch transactions');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      const startToUse = start || appliedStartDate;
+      const endToUse = end || appliedEndDate;
+      
+      console.log('🔍 Fetching transactions with params:', {
+        userId: user.id.toString(),
+        startDate: startToUse || 'not set',
+        endDate: endToUse || 'not set'
+      });
+      
+      const response = await plaidService.getTransactions(user.id.toString(), startToUse, endToUse);
+      
+      console.log('✅ Transactions API response received:', {
+        hasTransactions: !!response.transactions,
+        transactionCount: response.transactions ? response.transactions.length : 0,
+        sampleTransactions: response.transactions ? response.transactions.slice(0, 2).map(t => ({
+          id: t.transaction_id,
+          name: t.name,
+          amount: t.amount,
+          date: t.date,
+          category: t.category
+        })) : []
+      });
+      
+      setTransactions(response.transactions || []);
+      setFilteredTransactions(response.transactions || []);
+    } catch (err: any) {
+      console.error('❌ Failed to fetch transactions:', err);
+      console.error('❌ Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      setError(err.response?.data?.message || 'Failed to fetch transactions');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchTransactions();
-  }, [user?.id, startDate, endDate]);
+  // Initial fetch
+  useEffect(() => {
+    if (appliedStartDate && appliedEndDate) {
+      fetchTransactions();
+    }
+  }, [user?.id, appliedStartDate, appliedEndDate]);
+
+  // Handle date range application
+  const applyDateRange = () => {
+    if (!startDate || !endDate) {
+      setError('Please select both start and end dates');
+      return;
+    }
+    
+    if (new Date(startDate) > new Date(endDate)) {
+      setError('Start date cannot be after end date');
+      return;
+    }
+    
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+    setError(null);
+  };
+
+  // Handle manual refresh
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchTransactions().finally(() => setIsRefreshing(false));
+  };
+
+  // Handle quick date range selection
+  const setQuickDateRange = (days: number) => {
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - days);
+    
+    const formatDateForInput = (date: Date) => {
+      return date.toISOString().split('T')[0];
+    };
+    
+    setStartDate(formatDateForInput(startDate));
+    setEndDate(formatDateForInput(today));
+    setAppliedStartDate(formatDateForInput(startDate));
+    setAppliedEndDate(formatDateForInput(today));
+  };
 
   // Filter transactions based on search and filters
   useEffect(() => {
@@ -221,8 +288,22 @@ const Transactions: React.FC = () => {
     setSearchTerm('');
     setCategoryFilter('all');
     setPaymentChannelFilter('all');
-    setStartDate('');
-    setEndDate('');
+    // Don't clear date filters by default, just clear the search and category filters
+  };
+
+  const clearDateRange = () => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    const formatDateForInput = (date: Date) => {
+      return date.toISOString().split('T')[0];
+    };
+    
+    setStartDate(formatDateForInput(thirtyDaysAgo));
+    setEndDate(formatDateForInput(today));
+    setAppliedStartDate(formatDateForInput(thirtyDaysAgo));
+    setAppliedEndDate(formatDateForInput(today));
   };
 
   return (
@@ -253,6 +334,26 @@ const Transactions: React.FC = () => {
             >
               Back to Dashboard
             </Button>
+            
+            <Tooltip title="Refresh transactions">
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                sx={{
+                  borderRadius: 2,
+                  borderColor: alpha(theme.palette.common.white, 0.3),
+                  color: theme.palette.common.white,
+                  '&:hover': {
+                    borderColor: theme.palette.common.white,
+                    backgroundColor: alpha(theme.palette.common.white, 0.1)
+                  }
+                }}
+              >
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </Button>
+            </Tooltip>
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -267,13 +368,18 @@ const Transactions: React.FC = () => {
                 boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`
               }}
             />
-            <Box>
+            <Box sx={{ flex: 1 }}>
               <Typography variant="h4" component="h1" fontWeight={700} color="white">
                 Transactions
               </Typography>
               <Typography variant="body1" color={alpha(theme.palette.common.white, 0.8)}>
                 View and manage your financial transactions
               </Typography>
+              {appliedStartDate && appliedEndDate && (
+                <Typography variant="body2" color={alpha(theme.palette.common.white, 0.7)} sx={{ mt: 0.5 }}>
+                  📅 Showing transactions from {new Date(appliedStartDate).toLocaleDateString()} to {new Date(appliedEndDate).toLocaleDateString()}
+                </Typography>
+              )}
             </Box>
           </Box>
         </Box>
@@ -311,6 +417,45 @@ const Transactions: React.FC = () => {
                     }
                   }}
                 />
+              </Box>
+
+              {/* Quick Date Range Presets */}
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                  Quick ranges:
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setQuickDateRange(7)}
+                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
+                >
+                  Last 7 days
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setQuickDateRange(30)}
+                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
+                >
+                  Last 30 days
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setQuickDateRange(90)}
+                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
+                >
+                  Last 90 days
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setQuickDateRange(365)}
+                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
+                >
+                  Last year
+                </Button>
               </Box>
 
               {/* Filters Row */}
@@ -355,6 +500,13 @@ const Transactions: React.FC = () => {
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
                   sx={{ flex: '1 1 150px', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
 
@@ -364,8 +516,32 @@ const Transactions: React.FC = () => {
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
                   sx={{ flex: '1 1 150px', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
+
+                <Button
+                  variant="contained"
+                  onClick={applyDateRange}
+                  startIcon={<CalendarIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    height: 56,
+                    px: 3,
+                    backgroundColor: theme.palette.primary.main,
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.dark,
+                    }
+                  }}
+                >
+                  Apply Date Range
+                </Button>
 
                 <Button
                   variant="outlined"
@@ -383,6 +559,24 @@ const Transactions: React.FC = () => {
                   }}
                 >
                   Clear Filters
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  onClick={clearDateRange}
+                  sx={{
+                    borderRadius: 2,
+                    height: 56,
+                    px: 3,
+                    borderColor: alpha(theme.palette.secondary.main, 0.3),
+                    color: theme.palette.secondary.main,
+                    '&:hover': {
+                      borderColor: theme.palette.secondary.main,
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.1)
+                    }
+                  }}
+                >
+                  Reset Dates
                 </Button>
               </Box>
             </Box>
