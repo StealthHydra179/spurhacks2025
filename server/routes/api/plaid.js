@@ -114,6 +114,52 @@ router.get('/accounts/:user_id', async (req, res) => {
 // });
 
 /**
+ * GET /api/plaid/item-status/:user_id
+ * Check if a user has a linked Plaid Item
+ */
+router.get('/item-status/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    
+    // Check if user has an access token stored (indicating a linked item)
+    const hasLinkedItem = plaid.hasLinkedItem ? plaid.hasLinkedItem(user_id) : false;
+    
+    if (hasLinkedItem) {
+      // If they have a linked item, try to get basic info to verify it's still valid
+      try {
+        const accountsData = await plaid.getAccounts(user_id);
+        res.json({
+          has_linked_item: true,
+          item_id: plaid.getItemId ? plaid.getItemId(user_id) : null,
+          account_count: accountsData.accounts ? accountsData.accounts.length : 0,
+          last_verified: new Date().toISOString()
+        });
+      } catch (error) {
+        // Item exists but might be invalid/expired
+        res.json({
+          has_linked_item: true,
+          item_id: plaid.getItemId ? plaid.getItemId(user_id) : null,
+          account_count: 0,
+          status: 'invalid_or_expired',
+          error: error.message,
+          last_verified: new Date().toISOString()
+        });
+      }
+    } else {
+      res.json({
+        has_linked_item: false,
+        item_id: null,
+        account_count: 0,
+        last_checked: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    logger.error(`${TAG} Error checking item status for user ${req.params.user_id}: ${error.message}`);
+    res.status(500).json({ error: 'Failed to check item status' });
+  }
+});
+
+/**
  * DELETE /api/plaid/item/:user_id
  * Remove/disconnect a bank account for a user
  */

@@ -424,6 +424,21 @@ async function getPlaidSummary() {
 }
 
 /**
+ * Check if a user has a linked Plaid Item
+ */
+function hasLinkedItem(userId) {
+  return accessTokens.has(userId);
+}
+
+/**
+ * Get the item ID for a user
+ */
+function getItemId(userId) {
+  const userTokens = accessTokens.get(userId);
+  return userTokens ? userTokens.itemId : null;
+}
+
+/**
  * Test Plaid configuration and connectivity
  */
 async function testPlaidConfiguration() {
@@ -486,4 +501,6 @@ module.exports = {
   fetchAllTransactionsPlaid,
   getPlaidSummary,
   testPlaidConfiguration,
+  hasLinkedItem,
+  getItemId,
 };
