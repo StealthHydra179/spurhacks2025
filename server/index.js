@@ -40,8 +40,6 @@ const apiBotConversations = require("./routes/api/bot_conversations");
 app.use("/api/bot_conversations", apiBotConversations);
 const apiPlaid = require("./routes/api/plaid");
 app.use("/api/plaid", apiPlaid);
-const apiSavingsGoals = require("./routes/api/savings_goals");
-app.use("/api/savings_goals", apiSavingsGoals);
 
 app.listen(port, () => {
   logger.info(`${TAG} Server listening on port ${port}`);
