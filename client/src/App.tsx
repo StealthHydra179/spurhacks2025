@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import PlaidRoute from './components/PlaidRoute'
 import PublicRoute from './routes/PublicRoute'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
@@ -57,7 +58,9 @@ function App() {
             path="/transactions"
             element={
               <ProtectedRoute>
-                <Transactions />
+                <PlaidRoute>
+                  <Transactions />
+                </PlaidRoute>
               </ProtectedRoute>
             } 
           />
@@ -65,7 +68,9 @@ function App() {
             path="/income"
             element={
               <ProtectedRoute>
-                <Income />
+                <PlaidRoute>
+                  <Income />
+                </PlaidRoute>
               </ProtectedRoute>
             } 
           />
@@ -73,7 +78,9 @@ function App() {
             path="/expenses"
             element={
               <ProtectedRoute>
-                <Expenses />
+                <PlaidRoute>
+                  <Expenses />
+                </PlaidRoute>
               </ProtectedRoute>
             } 
           />
