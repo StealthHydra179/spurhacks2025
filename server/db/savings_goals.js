@@ -5,14 +5,32 @@ const TAG = 'db_savings_goals';
 
 const savingsGoalsDb = {
   // Create a new savings goal
-  create: async (userId, amount, startTimestamp, endTimestamp) => {
+  create: async (userId, goalData) => {
     try {
+      const {
+        title,
+        description,
+        amount,
+        deadline,
+        category,
+        priority = 'medium',
+        icon,
+        color,
+        current_amount = 0.0
+      } = goalData;
+      
       const query = `
-        INSERT INTO savings_goals (user_id, amount, start_timestamp, end_timestamp, current_amount)
-        VALUES ($1, $2, $3, $4, 0.0)
-        RETURNING id, user_id, amount, start_timestamp, end_timestamp
+        INSERT INTO savings_goals (
+          user_id, title, description, amount, current_amount, 
+          deadline, category, priority, icon, color
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING *
       `;
-      const values = [userId, amount, startTimestamp, endTimestamp];
+      const values = [
+        userId, title, description, amount, current_amount,
+        deadline, category, priority, icon, color
+      ];
       
       logger.info(`${TAG} Creating savings goal for user ${userId}`);
       const result = await pool.query(query, values);
@@ -28,15 +46,14 @@ const savingsGoalsDb = {
       throw error;
     }
   },
-
-  // Get all savings goals for a user (excluding current_amount)
+  // Get all savings goals for a user
   getByUserId: async (userId) => {
     try {
       const query = `
-        SELECT id, user_id, amount, start_timestamp, end_timestamp
+        SELECT *
         FROM savings_goals
         WHERE user_id = $1
-        ORDER BY start_timestamp DESC
+        ORDER BY created_at DESC
       `;
       
       logger.info(`${TAG} Fetching savings goals for user ${userId}`);
@@ -49,12 +66,11 @@ const savingsGoalsDb = {
       throw error;
     }
   },
-
-  // Get a specific savings goal by ID (excluding current_amount)
+  // Get a specific savings goal by ID
   getById: async (goalId) => {
     try {
       const query = `
-        SELECT id, user_id, amount, start_timestamp, end_timestamp
+        SELECT *
         FROM savings_goals
         WHERE id = $1
       `;
@@ -74,17 +90,79 @@ const savingsGoalsDb = {
       throw error;
     }
   },
-
-  // Update a savings goal (excluding current_amount)
-  update: async (goalId, userId, amount, startTimestamp, endTimestamp) => {
+  // Update a savings goal
+  update: async (goalId, userId, goalData) => {
     try {
+      const {
+        title,
+        description,
+        amount,
+        current_amount,
+        deadline,
+        category,
+        priority,
+        icon,
+        color
+      } = goalData;
+      
+      // Build dynamic query based on provided fields
+      const fields = [];
+      const values = [];
+      let paramIndex = 1;
+      
+      if (title !== undefined) {
+        fields.push(`title = $${paramIndex++}`);
+        values.push(title);
+      }
+      if (description !== undefined) {
+        fields.push(`description = $${paramIndex++}`);
+        values.push(description);
+      }
+      if (amount !== undefined) {
+        fields.push(`amount = $${paramIndex++}`);
+        values.push(amount);
+      }
+      if (current_amount !== undefined) {
+        fields.push(`current_amount = $${paramIndex++}`);
+        values.push(current_amount);
+      }
+      if (deadline !== undefined) {
+        fields.push(`deadline = $${paramIndex++}`);
+        values.push(deadline);
+      }
+      if (category !== undefined) {
+        fields.push(`category = $${paramIndex++}`);
+        values.push(category);
+      }
+      if (priority !== undefined) {
+        fields.push(`priority = $${paramIndex++}`);
+        values.push(priority);
+      }
+      if (icon !== undefined) {
+        fields.push(`icon = $${paramIndex++}`);
+        values.push(icon);
+      }
+      if (color !== undefined) {
+        fields.push(`color = $${paramIndex++}`);
+        values.push(color);
+      }
+      
+      if (fields.length === 0) {
+        throw new Error('No fields provided for update');
+      }
+      
+      // Add updated_at timestamp
+      fields.push(`updated_at = CURRENT_TIMESTAMP`);
+      
+      // Add WHERE clause parameters
+      values.push(goalId, userId);
+      
       const query = `
         UPDATE savings_goals
-        SET amount = $2, start_timestamp = $3, end_timestamp = $4
-        WHERE id = $1 AND user_id = $5
-        RETURNING id, user_id, amount, start_timestamp, end_timestamp
+        SET ${fields.join(', ')}
+        WHERE id = $${paramIndex++} AND user_id = $${paramIndex}
+        RETURNING *
       `;
-      const values = [goalId, amount, startTimestamp, endTimestamp, userId];
       
       logger.info(`${TAG} Updating savings goal ${goalId} for user ${userId}`);
       const result = await pool.query(query, values);
