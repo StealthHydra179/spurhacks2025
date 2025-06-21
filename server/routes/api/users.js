@@ -179,10 +179,10 @@ router.post("/personality", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "Personality mode is required" });
     }
 
-    const validModes = [-1, 0, 1];
+    const validModes = [-1, 0, 1, 2];
     if (!validModes.includes(personalityMode)) {
       return res.status(400).json({ 
-        message: "Invalid personality mode. Must be -1 (less aggressive), 0 (normal), or 1 (more aggressive)" 
+        message: "Invalid personality mode. Must be -1 (less aggressive), 0 (normal), 1 (more aggressive), or 2 (communist)" 
       });
     }
 
@@ -218,7 +218,8 @@ router.get("/personality", authenticateToken, async (req, res) => {
       personality: personality,
       personality_description: personality === -1 ? "less aggressive" : 
                              personality === 0 ? "normal" : 
-                             personality === 1 ? "more aggressive" : "unknown",
+                             personality === 1 ? "more aggressive" : 
+                             personality === 2 ? "communist" : "unknown",
       status: "success"
     });
   } catch (error) {
