@@ -4,7 +4,7 @@ var express = require('express'),
 const { sql } = require('../../db/db');    
 const { logger } = require('../../logger');
 
-const userDb = require('../../db/transactions'); 
+const transactionsDb = require('../../db/transactions');
 
 const TAG = 'api_transactions';
 
