@@ -16,7 +16,11 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
-  Alert
+  Alert,
+  Menu,
+  MenuItem,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -91,6 +95,7 @@ const Dashboard: React.FC = () => {
   const [recentTransactions, setRecentTransactions] = useState<PlaidTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Get current month's date range
   const getCurrentMonthRange = () => {
@@ -184,7 +189,22 @@ const Dashboard: React.FC = () => {
     fetchMonthlyData();
   }, [user?.id]);
 
-  const handleLogout = async () => {
+  // Profile menu handlers
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setProfileMenuAnchor(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchor(null);
+  };
+
+  const handleSettingsClick = () => {
+    handleProfileMenuClose();
+    navigate('/settings');
+  };
+
+  const handleLogoutClick = async () => {
+    handleProfileMenuClose();
     await logout();
   };
 
@@ -233,7 +253,7 @@ const Dashboard: React.FC = () => {
                   CapySpend
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Welcome back, {user?.username}!
+                  Welcome back!
                 </Typography>
               </Box>
             </Box>
@@ -280,102 +300,106 @@ const Dashboard: React.FC = () => {
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Button
-                variant="contained"
-                startIcon={<SettingsIcon />}
-                onClick={() => navigate('/settings')}
-                sx={{
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1,
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                  background: theme.palette.warning.main,
-                  color: theme.palette.common.white,
-                  textTransform: 'none',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    background: theme.palette.warning.dark,
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 3px 8px ${alpha(theme.palette.warning.main, 0.3)}`
+              <Tooltip title="Profile menu">
+                <IconButton
+                  onClick={handleProfileMenuOpen}
+                  onMouseEnter={handleProfileMenuOpen}
+                  sx={{
+                    p: 0,
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    },
+                    transition: 'transform 0.2s ease'
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <PersonIcon sx={{ fontSize: 24 }} />
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+              
+              <Menu
+                anchorEl={profileMenuAnchor}
+                open={Boolean(profileMenuAnchor)}
+                onClose={handleProfileMenuClose}
+                onMouseLeave={handleProfileMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    minWidth: 250,
+                    background: alpha(theme.palette.background.paper, 0.95),
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.1)}`
                   }
                 }}
               >
-                Settings
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<LogoutIcon />}
-                onClick={handleLogout}
-                sx={{
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1,
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                  background: theme.palette.error.main,
-                  color: theme.palette.common.white,
-                  textTransform: 'none',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    background: theme.palette.error.dark,
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 3px 8px ${alpha(theme.palette.error.main, 0.3)}`
-                  }
-                }}
-              >
-                Logout
-              </Button>
+                {/* User Info Section */}
+                <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                    <Avatar
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                      }}
+                    >
+                      <PersonIcon sx={{ fontSize: 20 }} />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        {user?.username}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {user?.email}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Chip
+                      label={user?.mode === 0 ? 'Light Mode' : 'Dark Mode'}
+                      color="primary"
+                      size="small"
+                      sx={{ fontSize: '0.7rem' }}
+                    />
+                    <Chip
+                      label="Active User"
+                      color="success"
+                      size="small"
+                      sx={{ fontSize: '0.7rem' }}
+                    />
+                  </Box>
+                </Box>
+                
+                <MenuItem onClick={handleSettingsClick} sx={{ py: 1.5 }}>
+                  <SettingsIcon sx={{ mr: 2, fontSize: 20 }} />
+                  Settings
+                </MenuItem>
+                <Divider />
+                <MenuItem onClick={handleLogoutClick} sx={{ py: 1.5, color: theme.palette.error.main }}>
+                  <LogoutIcon sx={{ mr: 2, fontSize: 20 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
             </Box>
           </Box>
         </Box>
-
-        {/* User Info Card */}
-        <Card
-          elevation={8}
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Avatar
-                sx={{
-                  width: 80,
-                  height: 80,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                  boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.4)}`
-                }}
-              >
-                <PersonIcon sx={{ fontSize: 40 }} />
-              </Avatar>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h5" fontWeight={600} gutterBottom>
-                  {user?.username}
-                </Typography>
-                <Typography variant="body1" color="text.secondary" gutterBottom>
-                  {user?.email}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  <Chip
-                    label={user?.mode === 0 ? 'Light Mode' : 'Dark Mode'}
-                    color="primary"
-                    size="small"
-                  />
-                  <Chip
-                    label="Active User"
-                    color="success"
-                    size="small"
-                  />
-                </Box>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
 
         {/* Monthly Summary Header */}
         <Card
