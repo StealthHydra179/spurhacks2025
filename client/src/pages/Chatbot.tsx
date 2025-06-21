@@ -513,7 +513,7 @@ const Chatbot: React.FC = () => {
                     flexDirection: 'row',
                   }}
                 >
-                  {/* Avatar always first, Paper always last */}
+                  {/* For bot: Avatar left, Paper right. For user: Paper left, Avatar right. */}
                   {message.sender === 'bot' && (
                     <Avatar
                       sx={{
@@ -523,17 +523,6 @@ const Chatbot: React.FC = () => {
                       }}
                     >
                       <img src={capySVG} alt="Capy" style={{ width: 18, height: 18 }} />
-                    </Avatar>
-                  )}
-                  {message.sender === 'user' && (
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        background: theme.palette.secondary.main
-                      }}
-                    >
-                      <PersonIcon sx={{ fontSize: 18 }} />
                     </Avatar>
                   )}
                   <Paper
@@ -665,6 +654,17 @@ const Chatbot: React.FC = () => {
                       {new Date(message.message_timestamp).toLocaleTimeString()}
                     </Typography>
                   </Paper>
+                  {message.sender === 'user' && (
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        background: theme.palette.secondary.main
+                      }}
+                    >
+                      <PersonIcon sx={{ fontSize: 18 }} />
+                    </Avatar>
+                  )}
                 </Box>
               ))}
               
