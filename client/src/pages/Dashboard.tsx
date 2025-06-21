@@ -99,6 +99,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
   const [categoryData, setCategoryData] = useState<Array<{ name: string; value: number; color: string }>>([]);
+  const [isPlaidLinked, setIsPlaidLinked] = useState<boolean | null>(null);
 
   // Get current month's date range
   const getCurrentMonthRange = () => {
@@ -232,10 +233,26 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Fetch data on component mount
+  // Check if Plaid is linked
   useEffect(() => {
-    fetchMonthlyData();
+    const checkPlaidLinked = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await plaidService.getItemStatus(user.id);
+        setIsPlaidLinked(res.has_linked_item);
+      } catch (err) {
+        setIsPlaidLinked(false); // fallback: treat as not linked
+      }
+    };
+    checkPlaidLinked();
   }, [user?.id]);
+
+  // Only fetch transactions if Plaid is linked
+  useEffect(() => {
+    if (!user?.id || isPlaidLinked !== true) return;
+    fetchMonthlyData();
+    // eslint-disable-next-line
+  }, [user?.id, isPlaidLinked]);
 
   // Profile menu handlers
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -507,387 +524,415 @@ const Dashboard: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Monthly Summary Header */}
-        <Card
-          elevation={4}
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar
-                  sx={{
-                    width: 50,
-                    height: 50,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                  }}
-                >
-                  <CalendarIcon sx={{ fontSize: 25 }} />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" fontWeight={600}>
-                    {monthlySummary.month} {monthlySummary.year} Summary
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {monthlySummary.transactionCount} transactions this month
-                  </Typography>
-                </Box>
-              </Box>
+        {/* Plaid not linked CTA */}
+        {isPlaidLinked === false && (
+          <Card elevation={8} sx={{ mb: 4, borderRadius: 2, background: alpha(theme.palette.background.paper, 0.95), backdropFilter: 'blur(20px)', border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
+            <CardContent sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="h5" fontWeight={700} gutterBottom>
+                Link your bank account to get started
+              </Typography>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                To see your financial summary, please link your account with Plaid.
+              </Typography>
               <Button
-                variant="outlined"
-                onClick={fetchMonthlyData}
-                disabled={isLoading}
-                startIcon={isLoading ? <CircularProgress size={16} /> : <CalendarIcon />}
-                sx={{
-                  borderRadius: 2,
-                  borderColor: alpha(theme.palette.primary.main, 0.3),
-                  color: theme.palette.primary.main,
-                  '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1)
-                  }
-                }}
+                variant="contained"
+                color="primary"
+                size="large"
+                sx={{ mt: 2, borderRadius: 2, px: 4, py: 1 }}
+                onClick={() => navigate('/settings')}
               >
-                {isLoading ? 'Refreshing...' : 'Refresh'}
+                Link with Plaid
               </Button>
-            </Box>
-
-            {/* Stats Grid */}
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <Card
-                elevation={4}
-                onClick={() => navigate('/income')}
-                sx={{
-                  flex: '1 1 200px',
-                  borderRadius: 2,
-                  background: alpha(theme.palette.background.paper, 0.95),
-                  backdropFilter: 'blur(20px)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[12]
-                  }
-                }}
-              >
-                <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                  <Avatar
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
-                      mx: 'auto',
-                      mb: 2
-                    }}
-                  >
-                    <TrendingUp sx={{ fontSize: 25 }} />
-                  </Avatar>
-                  {isLoading ? (
-                    <CircularProgress size={30} sx={{ mb: 2 }} />
-                  ) : (
-                    <Typography variant="h5" fontWeight={700} gutterBottom color="success.main">
-                      {formatCurrency(monthlySummary.income)}
-                    </Typography>
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    Total Income
-                  </Typography>
-                </CardContent>
-              </Card>
-
-              <Card
-                elevation={4}
-                onClick={() => navigate('/expenses')}
-                sx={{
-                  flex: '1 1 200px',
-                  borderRadius: 2,
-                  background: alpha(theme.palette.background.paper, 0.95),
-                  backdropFilter: 'blur(20px)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[12]
-                  }
-                }}
-              >
-                <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                  <Avatar
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.light} 100%)`,
-                      mx: 'auto',
-                      mb: 2
-                    }}
-                  >
-                    <Receipt sx={{ fontSize: 25 }} />
-                  </Avatar>
-                  {isLoading ? (
-                    <CircularProgress size={30} sx={{ mb: 2 }} />
-                  ) : (
-                    <Typography variant="h5" fontWeight={700} gutterBottom color="warning.main">
-                      {formatCurrency(monthlySummary.expenses)}
-                    </Typography>
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    Total Expenses
-                  </Typography>
-                </CardContent>
-              </Card>
-
-              <Card
-                elevation={4}
-                onClick={() => navigate('/transactions')}
-                sx={{
-                  flex: '1 1 200px',
-                  borderRadius: 2,
-                  background: alpha(theme.palette.background.paper, 0.95),
-                  backdropFilter: 'blur(20px)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[12]
-                  }
-                }}
-              >
-                <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                  <Avatar
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
-                      mx: 'auto',
-                      mb: 2
-                    }}
-                  >
-                    <MonetizationOn sx={{ fontSize: 25 }} />
-                  </Avatar>
-                  {isLoading ? (
-                    <CircularProgress size={30} sx={{ mb: 2 }} />
-                  ) : (
-                    <Typography 
-                      variant="h5" 
-                      fontWeight={700} 
-                      gutterBottom 
-                      color={monthlySummary.netChange >= 0 ? "success.main" : "error.main"}
-                    >
-                      {formatCurrency(monthlySummary.netChange)}
-                    </Typography>
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    Net Change
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Box>
-          </CardContent>
-        </Card>
-
-        {/* Spending by Category Pie Chart */}
-        {categoryData.length > 0 && (
-          <Card
-            elevation={4}
-            sx={{
-              mb: 3,
-              borderRadius: 2,
-              background: alpha(theme.palette.background.paper, 0.95),
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Spending by Category
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Breakdown of your expenses this month
-              </Typography>
-              
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'center' }}>
-                <Box sx={{ width: { xs: '100%', md: '50%' }, height: 300 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip 
-                        formatter={(value: number) => [formatCurrency(value), 'Amount']}
-                        labelFormatter={(label) => `Category: ${label}`}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </Box>
-                
-                <Box sx={{ flex: 1, width: { xs: '100%', md: '50%' } }}>
-                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                    Category Breakdown
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {categoryData.slice(0, 8).map((category, index) => (
-                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box
-                          sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            backgroundColor: category.color,
-                            flexShrink: 0
-                          }}
-                        />
-                        <Typography variant="body2" sx={{ flex: 1 }}>
-                          {category.name}
-                        </Typography>
-                        <Typography variant="body2" fontWeight={600}>
-                          {formatCurrency(category.value)}
-                        </Typography>
-                      </Box>
-                    ))}
-                    {categoryData.length > 8 && (
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                        +{categoryData.length - 8} more categories
-                      </Typography>
-                    )}
-                  </Box>
-                </Box>
-              </Box>
             </CardContent>
           </Card>
         )}
 
-        {/* Error Alert */}
-        {error && (
-          <Alert 
-            severity="error" 
-            sx={{ mb: 3, borderRadius: 2 }}
-            onClose={() => setError(null)}
-          >
-            {error}
-          </Alert>
-        )}
-
-        {/* Recent Activity */}
-        <Card
-          elevation={8}
-          sx={{
-            borderRadius: 2,
-            background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" fontWeight={600}>
-                Recent Activity
-              </Typography>
-              <Button
-                variant="text"
-                onClick={() => navigate('/transactions')}
-                sx={{
-                  color: theme.palette.primary.main,
-                  textTransform: 'none',
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1)
-                  }
-                }}
-              >
-                View All Transactions
-              </Button>
-            </Box>
-            <Divider sx={{ mb: 3 }} />
-            
-            {isLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                <CircularProgress />
-              </Box>
-            ) : recentTransactions.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body1" color="text.secondary" gutterBottom>
-                  No recent transactions found
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Your recent transactions will appear here
-                </Typography>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {recentTransactions.map((transaction) => (
-                  <Box key={transaction.transaction_id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-                      {transaction.logo_url ? (
-                        <Avatar
-                          src={transaction.logo_url}
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1)
-                          }}
-                        />
-                      ) : (
-                        <Avatar
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1),
-                            color: transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main
-                          }}
-                        >
-                          {transaction.personal_finance_category?.primary?.charAt(0) || transaction.name.charAt(0)}
-                        </Avatar>
-                      )}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body1" fontWeight={500}>
-                          {transaction.merchant_name || transaction.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {transaction.personal_finance_category?.primary || transaction.category?.join(', ') || 'Uncategorized'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatDate(transaction.date)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography 
-                        variant="body1" 
-                        color={transaction.amount < 0 ? "success.main" : "error.main"} 
-                        fontWeight={600}
-                      >
-                        {transaction.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
+        {/* Only show dashboard if Plaid is linked */}
+        {isPlaidLinked && (
+          <>
+            {/* Monthly Summary Header */}
+            <Card
+              elevation={4}
+              sx={{
+                mb: 3,
+                borderRadius: 2,
+                background: alpha(theme.palette.background.paper, 0.95),
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                      }}
+                    >
+                      <CalendarIcon sx={{ fontSize: 25 }} />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" fontWeight={600}>
+                        {monthlySummary.month} {monthlySummary.year} Summary
                       </Typography>
-                      {transaction.pending && (
-                        <Chip 
-                          label="Pending" 
-                          size="small" 
-                          color="warning" 
-                          sx={{ fontSize: '0.7rem', height: 20, mt: 0.5 }}
-                        />
-                      )}
+                      <Typography variant="body2" color="text.secondary">
+                        {monthlySummary.transactionCount} transactions this month
+                      </Typography>
                     </Box>
                   </Box>
-                ))}
-              </Box>
-            )}          </CardContent>
-        </Card>
+                  <Button
+                    variant="outlined"
+                    onClick={fetchMonthlyData}
+                    disabled={isLoading}
+                    startIcon={isLoading ? <CircularProgress size={16} /> : <CalendarIcon />}
+                    sx={{
+                      borderRadius: 2,
+                      borderColor: alpha(theme.palette.primary.main, 0.3),
+                      color: theme.palette.primary.main,
+                      '&:hover': {
+                        borderColor: theme.palette.primary.main,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                      }
+                    }}
+                  >
+                    {isLoading ? 'Refreshing...' : 'Refresh'}
+                  </Button>
+                </Box>
+
+                {/* Stats Grid */}
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  <Card
+                    elevation={4}
+                    onClick={() => navigate('/income')}
+                    sx={{
+                      flex: '1 1 200px',
+                      borderRadius: 2,
+                      background: alpha(theme.palette.background.paper, 0.95),
+                      backdropFilter: 'blur(20px)',
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: theme.shadows[12]
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                      <Avatar
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
+                          mx: 'auto',
+                          mb: 2
+                        }}
+                      >
+                        <TrendingUp sx={{ fontSize: 25 }} />
+                      </Avatar>
+                      {isLoading ? (
+                        <CircularProgress size={30} sx={{ mb: 2 }} />
+                      ) : (
+                        <Typography variant="h5" fontWeight={700} gutterBottom color="success.main">
+                          {formatCurrency(monthlySummary.income)}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" color="text.secondary">
+                        Total Income
+                      </Typography>
+                    </CardContent>
+                  </Card>
+
+                  <Card
+                    elevation={4}
+                    onClick={() => navigate('/expenses')}
+                    sx={{
+                      flex: '1 1 200px',
+                      borderRadius: 2,
+                      background: alpha(theme.palette.background.paper, 0.95),
+                      backdropFilter: 'blur(20px)',
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: theme.shadows[12]
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                      <Avatar
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.light} 100%)`,
+                          mx: 'auto',
+                          mb: 2
+                        }}
+                      >
+                        <Receipt sx={{ fontSize: 25 }} />
+                      </Avatar>
+                      {isLoading ? (
+                        <CircularProgress size={30} sx={{ mb: 2 }} />
+                      ) : (
+                        <Typography variant="h5" fontWeight={700} gutterBottom color="warning.main">
+                          {formatCurrency(monthlySummary.expenses)}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" color="text.secondary">
+                        Total Expenses
+                      </Typography>
+                    </CardContent>
+                  </Card>
+
+                  <Card
+                    elevation={4}
+                    onClick={() => navigate('/transactions')}
+                    sx={{
+                      flex: '1 1 200px',
+                      borderRadius: 2,
+                      background: alpha(theme.palette.background.paper, 0.95),
+                      backdropFilter: 'blur(20px)',
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: theme.shadows[12]
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                      <Avatar
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
+                          mx: 'auto',
+                          mb: 2
+                        }}
+                      >
+                        <MonetizationOn sx={{ fontSize: 25 }} />
+                      </Avatar>
+                      {isLoading ? (
+                        <CircularProgress size={30} sx={{ mb: 2 }} />
+                      ) : (
+                        <Typography 
+                          variant="h5" 
+                          fontWeight={700} 
+                          gutterBottom 
+                          color={monthlySummary.netChange >= 0 ? "success.main" : "error.main"}
+                        >
+                          {formatCurrency(monthlySummary.netChange)}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" color="text.secondary">
+                        Net Change
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Box>
+              </CardContent>
+            </Card>
+
+            {/* Spending by Category Pie Chart */}
+            {categoryData.length > 0 && (
+              <Card
+                elevation={4}
+                sx={{
+                  mb: 3,
+                  borderRadius: 2,
+                  background: alpha(theme.palette.background.paper, 0.95),
+                  backdropFilter: 'blur(20px)',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    Spending by Category
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    Breakdown of your expenses this month
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'center' }}>
+                    <Box sx={{ width: { xs: '100%', md: '50%' }, height: 300 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={categoryData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {categoryData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip 
+                            formatter={(value: number) => [formatCurrency(value), 'Amount']}
+                            labelFormatter={(label) => `Category: ${label}`}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Box>
+                    
+                    <Box sx={{ flex: 1, width: { xs: '100%', md: '50%' } }}>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        Category Breakdown
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {categoryData.slice(0, 8).map((category, index) => (
+                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box
+                              sx={{
+                                width: 12,
+                                height: 12,
+                                borderRadius: '50%',
+                                backgroundColor: category.color,
+                                flexShrink: 0
+                              }}
+                            />
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                              {category.name}
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                              {formatCurrency(category.value)}
+                            </Typography>
+                          </Box>
+                        ))}
+                        {categoryData.length > 8 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                            +{categoryData.length - 8} more categories
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Error Alert */}
+            {error && (
+              <Alert 
+                severity="error" 
+                sx={{ mb: 3, borderRadius: 2 }}
+                onClose={() => setError(null)}
+              >
+                {error}
+              </Alert>
+            )}
+
+            {/* Recent Activity */}
+            <Card
+              elevation={8}
+              sx={{
+                borderRadius: 2,
+                background: alpha(theme.palette.background.paper, 0.95),
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6" fontWeight={600}>
+                    Recent Activity
+                  </Typography>
+                  <Button
+                    variant="text"
+                    onClick={() => navigate('/transactions')}
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textTransform: 'none',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                      }
+                    }}
+                  >
+                    View All Transactions
+                  </Button>
+                </Box>
+                <Divider sx={{ mb: 3 }} />
+                
+                {isLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : recentTransactions.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="body1" color="text.secondary" gutterBottom>
+                      No recent transactions found
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Your recent transactions will appear here
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {recentTransactions.map((transaction) => (
+                      <Box key={transaction.transaction_id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                          {transaction.logo_url ? (
+                            <Avatar
+                              src={transaction.logo_url}
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1)
+                              }}
+                            />
+                          ) : (
+                            <Avatar
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1),
+                                color: transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main
+                              }}
+                            >
+                              {transaction.personal_finance_category?.primary?.charAt(0) || transaction.name.charAt(0)}
+                            </Avatar>
+                          )}
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body1" fontWeight={500}>
+                              {transaction.merchant_name || transaction.name}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {transaction.personal_finance_category?.primary || transaction.category?.join(', ') || 'Uncategorized'}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatDate(transaction.date)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography 
+                            variant="body1" 
+                            color={transaction.amount < 0 ? "success.main" : "error.main"} 
+                            fontWeight={600}
+                          >
+                            {transaction.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
+                          </Typography>
+                          {transaction.pending && (
+                            <Chip 
+                              label="Pending" 
+                              size="small" 
+                              color="warning" 
+                              sx={{ fontSize: '0.7rem', height: 20, mt: 0.5 }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                )}          </CardContent>
+            </Card>
+          </>
+        )}
       </Container>
 
       {/* Ask Capy Loading Overlay */}
