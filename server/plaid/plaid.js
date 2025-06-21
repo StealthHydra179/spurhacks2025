@@ -208,9 +208,37 @@ async function getTransactions(userId, startDate, endDate) {
       access_token_preview: request.access_token ? `${request.access_token.substring(0, 10)}...` : 'N/A'
     }, null, 2));
 
-    const transactionsResponse = await client.transactionsGet(request);
+    // Try transactionsGet first (for historical transactions)
+    let transactionsResponse;
+    try {
+      console.log('🔍 Trying transactionsGet API...');
+      transactionsResponse = await client.transactionsGet(request);
+      console.log('✅ transactionsGet successful');
+    } catch (error) {
+      console.log('❌ transactionsGet failed, trying transactionsSync...');
+      console.log('❌ Error:', error.message);
+      
+      // If transactionsGet fails, try transactionsSync (for real-time sync)
+      try {
+        transactionsResponse = await client.transactionsSync(request);
+        console.log('✅ transactionsSync successful');
+      } catch (syncError) {
+        console.log('❌ transactionsSync also failed');
+        throw syncError;
+      }
+    }
     
     logger.info(`${TAG} Plaid transactions response received for user ${userId}`);
+    
+    // Debug logging for Plaid response
+    console.log('🔍 Plaid API Response:', transactionsResponse);
+    console.log('🔍 Plaid API Response data:', transactionsResponse.data);
+    console.log('🔍 Plaid API Response data keys:', Object.keys(transactionsResponse.data));
+    console.log('🔍 Plaid API transactions:', transactionsResponse.data.transactions);
+    console.log('🔍 Plaid API transactions type:', typeof transactionsResponse.data.transactions);
+    console.log('🔍 Plaid API transactions length:', transactionsResponse.data.transactions ? transactionsResponse.data.transactions.length : 'undefined');
+    console.log('🔍 Is Plaid API transactions an array?', Array.isArray(transactionsResponse.data.transactions));
+    
     logger.info(`${TAG} Response structure:`, JSON.stringify({
       has_transactions: !!transactionsResponse.data.transactions,
       transaction_count: transactionsResponse.data.transactions ? transactionsResponse.data.transactions.length : 0,

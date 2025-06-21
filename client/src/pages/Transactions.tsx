@@ -41,14 +41,37 @@ import {
 import capyImage from '../assets/capy.png';
 
 interface PlaidTransaction {
-  id: string;
+  transaction_id: string;
+  account_id: string;
   amount: number;
   date: string;
   name: string;
-  category: string[];
+  category: string[] | null;
   payment_channel: string;
   pending: boolean;
-  account_id: string;
+  merchant_name: string | null;
+  logo_url: string | null;
+  personal_finance_category: {
+    primary: string;
+    detailed: string;
+    confidence_level: string;
+  } | null;
+  counterparties: Array<{
+    name: string;
+    type: string;
+    logo_url: string | null;
+    website: string | null;
+  }> | null;
+  location: {
+    address: string | null;
+    city: string | null;
+    region: string | null;
+    country: string | null;
+  } | null;
+  iso_currency_code: string;
+  transaction_type: string;
+  authorized_date: string | null;
+  datetime: string | null;
 }
 
 const Transactions: React.FC = () => {
@@ -86,7 +109,7 @@ const Transactions: React.FC = () => {
           hasTransactions: !!response.transactions,
           transactionCount: response.transactions ? response.transactions.length : 0,
           sampleTransactions: response.transactions ? response.transactions.slice(0, 2).map(t => ({
-            id: t.id,
+            id: t.transaction_id,
             name: t.name,
             amount: t.amount,
             date: t.date,
@@ -120,14 +143,19 @@ const Transactions: React.FC = () => {
     if (searchTerm) {
       filtered = filtered.filter(transaction =>
         transaction.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.category.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()))
+        transaction.merchant_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.category?.some(cat => cat?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        transaction.personal_finance_category?.primary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.personal_finance_category?.detailed.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Category filter
     if (categoryFilter !== 'all') {
       filtered = filtered.filter(transaction =>
-        transaction.category.includes(categoryFilter)
+        transaction.category?.includes(categoryFilter) ||
+        transaction.personal_finance_category?.primary === categoryFilter ||
+        transaction.personal_finance_category?.detailed === categoryFilter
       );
     }
 
@@ -144,7 +172,13 @@ const Transactions: React.FC = () => {
   const getUniqueCategories = () => {
     const categories = new Set<string>();
     transactions.forEach(transaction => {
-      transaction.category.forEach(cat => categories.add(cat));
+      // Add personal finance categories
+      if (transaction.personal_finance_category) {
+        categories.add(transaction.personal_finance_category.primary);
+        categories.add(transaction.personal_finance_category.detailed);
+      }
+      // Add regular categories
+      transaction.category?.forEach(cat => categories.add(cat));
     });
     return Array.from(categories).sort();
   };
@@ -172,15 +206,15 @@ const Transactions: React.FC = () => {
     });
   };
 
-  const getTransactionIcon = (category: string[]) => {
-    if (category.some(cat => cat.toLowerCase().includes('food'))) {
+  const getTransactionIcon = (category: string[] | null) => {
+    if (category?.some(cat => cat.toLowerCase().includes('food'))) {
       return <ReceiptIcon />;
     }
     return <TrendingDownIcon />;
   };
 
   const getTransactionColor = (amount: number) => {
-    return amount > 0 ? theme.palette.success.main : theme.palette.error.main;
+    return amount > 0 ? theme.palette.error.main : theme.palette.success.main;
   };
 
   const clearFilters = () => {
@@ -401,32 +435,54 @@ const Transactions: React.FC = () => {
                       </TableRow>
                     ) : (
                       filteredTransactions.map((transaction) => (
-                        <TableRow key={transaction.id} hover>
+                        <TableRow key={transaction.transaction_id} hover>
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                              <Avatar
-                                sx={{
-                                  width: 40,
-                                  height: 40,
-                                  backgroundColor: alpha(getTransactionColor(transaction.amount), 0.1),
-                                  color: getTransactionColor(transaction.amount)
-                                }}
-                              >
-                                {getTransactionIcon(transaction.category)}
-                              </Avatar>
+                              {transaction.logo_url ? (
+                                <Avatar
+                                  src={transaction.logo_url}
+                                  sx={{
+                                    width: 40,
+                                    height: 40,
+                                    backgroundColor: alpha(getTransactionColor(transaction.amount), 0.1)
+                                  }}
+                                />
+                              ) : (
+                                <Avatar
+                                  sx={{
+                                    width: 40,
+                                    height: 40,
+                                    backgroundColor: alpha(getTransactionColor(transaction.amount), 0.1),
+                                    color: getTransactionColor(transaction.amount)
+                                  }}
+                                >
+                                  {getTransactionIcon(transaction.category)}
+                                </Avatar>
+                              )}
                               <Box>
                                 <Typography variant="body2" fontWeight={500}>
-                                  {transaction.name}
+                                  {transaction.merchant_name || transaction.name}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                  {transaction.payment_channel}
+                                  {transaction.payment_channel} • {transaction.transaction_type}
                                 </Typography>
+                                {transaction.location?.city && (
+                                  <Typography variant="caption" color="text.secondary" display="block">
+                                    📍 {transaction.location.city}{transaction.location.region ? `, ${transaction.location.region}` : ''}
+                                  </Typography>
+                                )}
                               </Box>
                             </Box>
                           </TableCell>
                           <TableCell>
                             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                              {transaction.category.slice(0, 2).map((cat, index) => (
+                              {transaction.personal_finance_category ? (
+                                <Chip
+                                  label={transaction.personal_finance_category.primary}
+                                  size="small"
+                                  sx={{ fontSize: '0.7rem', height: 20 }}
+                                />
+                              ) : transaction.category?.slice(0, 2).map((cat, index) => (
                                 <Chip
                                   key={index}
                                   label={cat}
@@ -434,7 +490,7 @@ const Transactions: React.FC = () => {
                                   sx={{ fontSize: '0.7rem', height: 20 }}
                                 />
                               ))}
-                              {transaction.category.length > 2 && (
+                              {transaction.category?.length && transaction.category.length > 2 && (
                                 <Chip
                                   label={`+${transaction.category.length - 2}`}
                                   size="small"
@@ -448,6 +504,11 @@ const Transactions: React.FC = () => {
                             <Typography variant="body2">
                               {formatDate(transaction.date)}
                             </Typography>
+                            {transaction.authorized_date && transaction.authorized_date !== transaction.date && (
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                Auth: {formatDate(transaction.authorized_date)}
+                              </Typography>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Typography
@@ -456,6 +517,9 @@ const Transactions: React.FC = () => {
                               color={getTransactionColor(transaction.amount)}
                             >
                               {formatAmount(transaction.amount)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {transaction.iso_currency_code}
                             </Typography>
                           </TableCell>
                           <TableCell>

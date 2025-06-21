@@ -121,8 +121,9 @@ export const plaidService = {
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
     
-    const response = await api.get<{ transactions: any[] }>(`/api/plaid/transactions/${userId}?${params.toString()}`);
-    return response.data;
+    const response = await api.get<any[]>(`/api/plaid/transactions/${userId}?${params.toString()}`);
+    // The response is now just an array, so wrap it in the expected format
+    return { transactions: response.data };
   },
 };
 

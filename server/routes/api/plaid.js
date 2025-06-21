@@ -76,7 +76,29 @@ router.get('/transactions/:user_id', async (req, res) => {
     logger.info(`${TAG} Getting transactions for user ${user_id}`);
     logger.info(`${TAG} Date range: ${start_date || 'default'} to ${end_date || 'default'}`);
     
-    const transactionsData = await plaid.syncTransactions(user_id, start_date, end_date);
+    const transactionsData = await plaid.getTransactions(user_id, start_date, end_date);
+    
+    // Debug logging to see the exact structure
+    console.log('🔍 Raw transactionsData:', transactionsData);
+    console.log('🔍 transactionsData type:', typeof transactionsData);
+    console.log('🔍 transactionsData keys:', Object.keys(transactionsData));
+    console.log('🔍 transactionsData.transactions:', transactionsData.transactions);
+    console.log('🔍 transactionsData.transactions type:', typeof transactionsData.transactions);
+    console.log('🔍 transactionsData.transactions length:', transactionsData.transactions ? transactionsData.transactions.length : 'undefined');
+    console.log('🔍 Is transactionsData.transactions an array?', Array.isArray(transactionsData.transactions));
+    
+    // Test if data exists in different ways
+    console.log('🔍 Does transactionsData have transactions property?', 'transactions' in transactionsData);
+    console.log('🔍 transactionsData.transactions === undefined?', transactionsData.transactions === undefined);
+    console.log('🔍 transactionsData.transactions === null?', transactionsData.transactions === null);
+    console.log('🔍 transactionsData.transactions === false?', transactionsData.transactions === false);
+    
+    // Try to access it as a string key
+    console.log('🔍 transactionsData["transactions"]:', transactionsData["transactions"]);
+    console.log('🔍 transactionsData["transactions"] length:', transactionsData["transactions"] ? transactionsData["transactions"].length : 'undefined');
+    
+    // Log the full structure as JSON to see everything
+    console.log('🔍 Full transactionsData as JSON:', JSON.stringify(transactionsData, null, 2));
     
     // Log the response structure and transaction count
     logger.info(`${TAG} Transactions API response received for user ${user_id}`);
@@ -87,11 +109,9 @@ router.get('/transactions/:user_id', async (req, res) => {
       total_transactions: transactionsData.total_transactions || 0,
       request_id: transactionsData.request_id || 'N/A'
     }, null, 2));
-    
-    // Log first few transactions for debugging
-    if (transactionsData.transactions && transactionsData.transactions.length > 0) {
+    if (transactionsData["transactions"] && transactionsData["transactions"].length > 0) {
       logger.info(`${TAG} Sample transactions for user ${user_id}:`);
-      const sampleTransactions = transactionsData.transactions.slice(0, 3).map(t => ({
+      const sampleTransactions = transactionsData["transactions"].slice(0, 3).map(t => ({
         id: t.id,
         name: t.name,
         amount: t.amount,
@@ -104,7 +124,12 @@ router.get('/transactions/:user_id', async (req, res) => {
       logger.info(`${TAG} No transactions found for user ${user_id}`);
     }
     
-    res.json(transactionsData);
+    // Log the final response format
+    console.log('📤 Final API response format:', Array.isArray(transactionsData["transactions"]) ? 'Array' : 'Not Array');
+    console.log('📤 Response length:', transactionsData["transactions"] ? transactionsData["transactions"].length : 0);
+    console.log('📤 Response type:', typeof transactionsData["transactions"]);
+    
+    res.json(transactionsData["transactions"]);
   } catch (error) {
     logger.error(`${TAG} Error getting transactions: ${error.message}`);
     logger.error(`${TAG} Full error details:`, error);
