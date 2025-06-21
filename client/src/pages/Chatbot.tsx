@@ -37,6 +37,7 @@ import {
   Chat as ChatIcon
 } from '@mui/icons-material';
 import capySVG from '../assets/capyy.svg';
+import capyImage from '../assets/capy.png';
 import { botConversationService, plaidService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
@@ -260,9 +261,9 @@ const Chatbot: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Box
             component="img"
-            src={capySVG}
+            src={capyImage}
             alt="Capy"
-            sx={{ width: 32, height: 32, objectFit: 'contain' }}
+            sx={{ width: 32, objectFit: 'contain', display: 'block' }}
           />
           <Typography variant="h6" fontWeight={600}>
             Chat with Capy
@@ -320,10 +321,21 @@ const Chatbot: React.FC = () => {
                       sx={{
                         width: 32,
                         height: 32,
-                        background: theme.palette.primary.main
+                        background: theme.palette.primary.main,
+                        flexShrink: 0
                       }}
                     >
-                      <img src={capySVG} alt="Bot" style={{ width: 18, height: 18 }} />
+                      <img 
+                        src={capyImage} 
+                        alt="Bot" 
+                        style={{ 
+                          width: '70%', 
+                          height: '70%', 
+                          objectFit: 'contain',
+                          display: 'block',
+                          margin: 'auto'
+                        }} 
+                      />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
@@ -446,13 +458,11 @@ const Chatbot: React.FC = () => {
             bottom: 10,
             zIndex: 1,
             opacity: 1,
-            width: { xs: 150, sm: 220, md: 250
-            },
-            height: 'auto',
+            width: { xs: 150, sm: 220, md: 250 },
             pointerEvents: 'none',
           }}
         >
-          <img src={capySVG} alt="Capybara SVG" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          <img src={capySVG} alt="Capybara SVG" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
         </Box>
         {selectedConversation ? (
           <>
@@ -475,9 +485,9 @@ const Chatbot: React.FC = () => {
                 )}
                 <Box
                   component="img"
-                  src={capySVG}
+                  src={capyImage}
                   alt="Capy"
-                  sx={{ width: 32, height: 32, objectFit: 'contain' }}
+                  sx={{ width: 32, objectFit: 'contain', display: 'block' }}
                 />
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600}>
@@ -519,10 +529,11 @@ const Chatbot: React.FC = () => {
                       sx={{
                         width: 32,
                         height: 32,
-                        background: theme.palette.primary.main
+                        background: theme.palette.primary.main,
+                        flexShrink: 0
                       }}
                     >
-                      <img src={capySVG} alt="Capy" style={{ width: 18, height: 18 }} />
+                      <img src={capyImage} alt="Capy" style={{ width: '70%', height: '70%', objectFit: 'contain', display: 'block', margin: 'auto' }} />
                     </Avatar>
                   )}
                   <Paper
@@ -776,9 +787,9 @@ const Chatbot: React.FC = () => {
             )}
             <Box
               component="img"
-              src={capySVG}
+              src={capyImage}
               alt="Capy"
-              sx={{ width: 80, height: 80, objectFit: 'contain', opacity: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))'}}
+              sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', opacity: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))' }}
             />
             <Typography variant="h5" fontWeight={600} color="text.secondary">
               Welcome to Capy Chat
@@ -818,23 +829,9 @@ const Chatbot: React.FC = () => {
         >
           <Box
             component="img"
-            src={capySVG}
+            src={capyImage}
             alt="Capy"
-            sx={{
-              width: 80,
-              height: 80,
-              animation: 'pulse 1.5s ease-in-out infinite',
-              '@keyframes pulse': {
-                '0%, 100%': {
-                  opacity: 0.8,
-                  transform: 'scale(1)'
-                },
-                '50%': {
-                  opacity: 1,
-                  transform: 'scale(1.05)'
-                }
-              }
-            }}
+            sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 0.8, transform: 'scale(1)' }, '50%': { opacity: 1, transform: 'scale(1.05)' } } }}
           />
           <Typography variant="h6" color="text.primary" textAlign="center">
             Starting new conversation...
