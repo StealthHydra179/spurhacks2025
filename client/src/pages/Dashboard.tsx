@@ -372,10 +372,8 @@ const Dashboard: React.FC = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        {isAskingCapy ? (
+                        {isAskingCapy && (
                           <CircularProgress size={20} color="primary" />
-                        ) : (
-                          <SearchIcon color="action" />
                         )}
                       </InputAdornment>
                     ),
