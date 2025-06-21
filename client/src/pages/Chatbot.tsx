@@ -24,7 +24,7 @@ import {
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
   Person as PersonIcon,
-  SmartToy as SmartToyIcon,
+
   Add as AddIcon,
   Menu as MenuIcon,
   Chat as ChatIcon
@@ -40,22 +40,21 @@ const Chatbot: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [botTyping, setBotTyping] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
   useEffect(() => {
     scrollToBottom();
-  }, [selectedConversation?.messages]);
+  }, [selectedConversation?.messages, botTyping]);
 
   useEffect(() => {
     fetchConversations();
@@ -91,13 +90,15 @@ const Chatbot: React.FC = () => {
       const data = await botConversationService.getFullConversation(id);
       setSelectedConversation(data);
       setCurrentConversationId(id);
+      setBotTyping(false); // Clear typing indicator when switching conversations
       if (isMobile) {
         setMobileDrawerOpen(false);
       }
     } catch (error) {
       console.error('Error fetching conversation:', error);
+      setBotTyping(false); // Clear typing indicator on error
     }
-  };  const createNewConversation = async () => {
+  };const createNewConversation = async () => {
     const question = 'Hello! I\'d like to start a new conversation about my finances.';
     try {
       const data = await botConversationService.askCapy(1, question); // TODO: Get actual user ID from auth context
@@ -116,19 +117,19 @@ const Chatbot: React.FC = () => {
 
     setSending(true);
     const messageToSend = newMessage;
-    setNewMessage('');
-
-    try {
+    setNewMessage('');    try {
       await botConversationService.addMessage(currentConversationId, messageToSend, 'user');
       await fetchConversation(currentConversationId);
       
-      // Add bot response
+      // Add bot response with typing indicator
       setTimeout(async () => {
+        setBotTyping(true); // Show typing indicator
         await addBotResponse(messageToSend);
-      }, 1000);
+      }, 500); // Small delay to make it feel more natural
     } catch (error) {
       console.error('Error sending message:', error);
       setNewMessage(messageToSend);
+      setBotTyping(false);
     } finally {
       setSending(false);
     }
@@ -144,6 +145,9 @@ const Chatbot: React.FC = () => {
       await fetchConversations(); // Update sidebar with latest message time
     } catch (error) {
       console.error('Error adding bot response:', error);
+    } finally {
+      // Hide bot typing indicator
+      setBotTyping(false);
     }
   };
 
@@ -222,8 +226,7 @@ const Chatbot: React.FC = () => {
                       borderRight: `3px solid ${theme.palette.primary.main}`
                     }
                   }}
-                >
-                  <ListItemAvatar>
+                >                  <ListItemAvatar>
                     <Avatar
                       sx={{
                         width: 32,
@@ -231,7 +234,7 @@ const Chatbot: React.FC = () => {
                         background: theme.palette.primary.main
                       }}
                     >
-                      <SmartToyIcon sx={{ fontSize: 18 }} />
+                      <img src={capyImage} alt="Bot" style={{ width: 18, height: 18 }} />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
@@ -383,8 +386,7 @@ const Chatbot: React.FC = () => {
                     gap: 2,
                     justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start'
                   }}
-                >
-                  {message.sender === 'bot' && (
+                >                  {message.sender === 'bot' && (
                     <Avatar
                       sx={{
                         width: 32,
@@ -392,7 +394,7 @@ const Chatbot: React.FC = () => {
                         background: theme.palette.primary.main
                       }}
                     >
-                      <SmartToyIcon sx={{ fontSize: 18 }} />
+                      <img src={capyImage} alt="Bot" style={{ width: 18, height: 18 }} />
                     </Avatar>
                   )}
                   
@@ -432,10 +434,73 @@ const Chatbot: React.FC = () => {
                       }}
                     >
                       <PersonIcon sx={{ fontSize: 18 }} />
-                    </Avatar>
-                  )}
+                    </Avatar>                  )}
                 </Box>
               ))}
+              
+              {/* Bot typing indicator */}
+              {botTyping && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 2,
+                    justifyContent: 'flex-start'
+                  }}
+                >                  <Avatar
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      background: theme.palette.primary.main
+                    }}
+                  >
+                    <img src={capyImage} alt="Bot" style={{ width: 18, height: 18 }} />
+                  </Avatar>
+                    <Paper
+                    elevation={1}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      background: alpha(theme.palette.background.paper, 0.9),
+                      color: theme.palette.text.primary,
+                      minWidth: 60,
+                      '& .typing-dots': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        height: 20,
+                        '& .dot': {
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: theme.palette.text.secondary,
+                          animation: 'typing-bounce 1.4s infinite ease-in-out',
+                          '&:nth-of-type(1)': { animationDelay: '0s' },
+                          '&:nth-of-type(2)': { animationDelay: '0.2s' },
+                          '&:nth-of-type(3)': { animationDelay: '0.4s' }
+                        }
+                      },
+                      '@keyframes typing-bounce': {
+                        '0%, 80%, 100%': {
+                          opacity: 0.3,
+                          transform: 'scale(0.8)'
+                        },
+                        '40%': {
+                          opacity: 1,
+                          transform: 'scale(1)'
+                        }
+                      }
+                    }}
+                  >
+                    <Box className="typing-dots">
+                      <Box className="dot" />
+                      <Box className="dot" />
+                      <Box className="dot" />
+                    </Box>
+                  </Paper>
+                </Box>
+              )}
+              
               <div ref={messagesEndRef} />
             </Box>
 
