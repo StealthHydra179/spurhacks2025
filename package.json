@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "main": "server/index.js",
   "dependencies": {
+    "axios": "^1.6.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.5.0",
@@ -15,7 +16,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "node server/index.js"
+    "server": "node server/index.js",
+    "test:insights": "node server/test_insights.js"
   },
   "author": "",
   "license": "ISC"
