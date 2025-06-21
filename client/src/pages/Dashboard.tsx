@@ -28,8 +28,7 @@ import {
   DialogActions,
   FormControl,
   InputLabel,
-  Select,
-  Grid
+  Select
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -222,6 +221,17 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'goals' | 'accounts'>('overview');
   const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
+  const [newGoal, setNewGoal] = useState({
+    title: '',
+    description: '',
+    targetAmount: 0,
+    deadline: '',
+    category: 'savings' as const,
+    priority: 'medium' as const,
+    icon: '💰',
+    color: '#4CAF50'
+  });
   const [balances, setBalances] = useState<any>(null);
   const [isBalancesLoading, setIsBalancesLoading] = useState(false);
 
@@ -515,6 +525,43 @@ const Dashboard: React.FC = () => {
   const handleCloseGoalDialog = () => {
     setIsGoalDialogOpen(false);
     setSelectedGoal(null);
+  };
+
+  const handleAddGoal = () => {
+    const goal: FinancialGoal = {
+      id: Date.now().toString(),
+      ...newGoal,
+      currentAmount: 0,
+      status: 'active',
+      createdAt: new Date().toISOString()
+    };
+    setGoals([...goals, goal]);
+    handleCloseAddGoalDialog();
+  };
+
+  const handleDeleteGoal = (goalId: string) => {
+    setGoals(goals.filter(goal => goal.id !== goalId));
+    if (selectedGoal?.id === goalId) {
+      handleCloseGoalDialog();
+    }
+  };
+
+  const handleOpenAddGoalDialog = () => {
+    setIsAddGoalDialogOpen(true);
+  };
+
+  const handleCloseAddGoalDialog = () => {
+    setIsAddGoalDialogOpen(false);
+    setNewGoal({
+      title: '',
+      description: '',
+      targetAmount: 0,
+      deadline: '',
+      category: 'savings',
+      priority: 'medium',
+      icon: '💰',
+      color: '#4CAF50'
+    });
   };
 
   // Helper for tab navigation
@@ -1288,6 +1335,32 @@ const Dashboard: React.FC = () => {
                         </CardContent>
                       </Card>
                     </Box>
+                    
+                    {/* Add Goal Button */}
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleOpenAddGoalDialog}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          px: 4,
+                          py: 1.5,
+                          fontSize: '1rem',
+                          fontWeight: 600,
+                          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                          '&:hover': {
+                            background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+                            transform: 'translateY(-2px)',
+                            boxShadow: theme.shadows[8]
+                          },
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        Add New Goal
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Card>
 
@@ -1350,6 +1423,21 @@ const Dashboard: React.FC = () => {
                                 }}
                               />
                             </Box>
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteGoal(goal.id);
+                              }}
+                              sx={{
+                                color: 'text.secondary',
+                                '&:hover': {
+                                  color: 'error.main',
+                                  backgroundColor: alpha(theme.palette.error.main, 0.1)
+                                }
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
                           </Box>
 
                           {/* Goal Description */}
@@ -1827,6 +1915,206 @@ const Dashboard: React.FC = () => {
             </DialogActions>
           </>
         )}
+      </Dialog>
+
+      {/* Add Goal Dialog */}
+      <Dialog
+        open={isAddGoalDialogOpen}
+        onClose={handleCloseAddGoalDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            background: alpha(theme.palette.background.paper, 0.95),
+            backdropFilter: 'blur(20px)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h5" fontWeight={700}>
+            Create New Financial Goal
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Set up a new financial goal with custom tracking and automation
+          </Typography>
+        </DialogTitle>
+        
+        <DialogContent sx={{ pt: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+            {/* Basic Information */}
+            <Box sx={{ flex: 1 }}>
+              <TextField
+                fullWidth
+                label="Goal Title"
+                value={newGoal.title}
+                onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="Description"
+                multiline
+                rows={3}
+                value={newGoal.description}
+                onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="Target Amount"
+                type="number"
+                value={newGoal.targetAmount}
+                onChange={(e) => setNewGoal({ ...newGoal, targetAmount: parseFloat(e.target.value) || 0 })}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="Deadline"
+                type="date"
+                value={newGoal.deadline}
+                onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                sx={{ mb: 2 }}
+              />
+            </Box>
+            
+            {/* Category and Priority */}
+            <Box sx={{ flex: 1 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={newGoal.category}
+                  label="Category"
+                  onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value as any })}
+                >
+                  <MenuItem value="savings">💰 Savings</MenuItem>
+                  <MenuItem value="debt">💳 Debt Repayment</MenuItem>
+                  <MenuItem value="investment">📈 Investment</MenuItem>
+                  <MenuItem value="purchase">🛒 Purchase</MenuItem>
+                  <MenuItem value="emergency">🛡️ Emergency Fund</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Priority</InputLabel>
+                <Select
+                  value={newGoal.priority}
+                  label="Priority"
+                  onChange={(e) => setNewGoal({ ...newGoal, priority: e.target.value as any })}
+                >
+                  <MenuItem value="low">Low Priority</MenuItem>
+                  <MenuItem value="medium">Medium Priority</MenuItem>
+                  <MenuItem value="high">High Priority</MenuItem>
+                </Select>
+              </FormControl>
+              
+              {/* Icon Selection */}
+              <Typography variant="subtitle2" gutterBottom>
+                Choose an Icon
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['💰', '🏠', '✈️', '💻', '📈', '💳', '🛡️', '🎓', '🚗', '🏥', '🎯', '⭐'].map((icon) => (
+                  <IconButton
+                    key={icon}
+                    onClick={() => setNewGoal({ ...newGoal, icon })}
+                    sx={{
+                      fontSize: '24px',
+                      border: newGoal.icon === icon ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                      }
+                    }}
+                  >
+                    {icon}
+                  </IconButton>
+                ))}
+              </Box>
+              
+              {/* Color Selection */}
+              <Typography variant="subtitle2" gutterBottom>
+                Choose a Color
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['#4CAF50', '#2196F3', '#FF9800', '#F44336', '#9C27B0', '#00BCD4', '#FF5722', '#795548', '#607D8B', '#E91E63'].map((color) => (
+                  <IconButton
+                    key={color}
+                    onClick={() => setNewGoal({ ...newGoal, color })}
+                    sx={{
+                      backgroundColor: color,
+                      width: 40,
+                      height: 40,
+                      border: newGoal.color === color ? `3px solid ${theme.palette.common.white}` : '3px solid transparent',
+                      boxShadow: newGoal.color === color ? `0 0 0 2px ${theme.palette.primary.main}` : 'none',
+                      '&:hover': {
+                        transform: 'scale(1.1)'
+                      }
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Box>
+          
+          {/* Automation Suggestions */}
+          <Box sx={{ mt: 3 }}>
+            <Card
+              elevation={2}
+              sx={{
+                borderRadius: 2,
+                background: alpha(theme.palette.info.main, 0.05),
+                border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+              }}
+            >
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  🤖 Automation Suggestions
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Capy can help automate your goal progress tracking:
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Track savings from specific income sources
+                  </Typography>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Monitor spending in related categories
+                  </Typography>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Send reminders when off track
+                  </Typography>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Suggest budget adjustments
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button onClick={handleCloseAddGoalDialog} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleAddGoal}
+            disabled={!newGoal.title || !newGoal.description || newGoal.targetAmount <= 0 || !newGoal.deadline}
+            sx={{ borderRadius: 2 }}
+          >
+            Create Goal
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
