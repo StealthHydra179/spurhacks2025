@@ -18,7 +18,7 @@ function format(transactionData) {
     //payment chanel
     //currency code
     //location
-
+  logger.info(`${TAG} transactionDATA: ${JSON.stringify(transactionData)}`)
     return transactionData.map((transaction) => {
         return {
             original_amount: transaction.original_amount || 0,
@@ -29,6 +29,7 @@ function format(transactionData) {
             payment_channel: transaction.payment_channel || "Unknown",
             iso_currency_code: transaction.iso_currency_code || "USD",
             location: transaction.location || "Unknown",
+            merchant_name: transaction.merchant_name || "Unknown",
         };
     });
 }
@@ -108,10 +109,19 @@ Examples of good formatting:
 When you first respond to a user, introduce yourself as Capy and explain that you are here to help them with their finances.
 Mention that you are not a financial advisor, but you can provide general financial tips and advice based on the user's spending habits and financial goals.
 
+CURRENT DATE: ${new Date().toISOString().split('T')[0]} (YYYY-MM-DD format)
 
-Recent Transaction Data (postive is an outflow of money, negative is an inflow):
+TRANSACTION DATA FORMATTING RULES:
+- **Negative values (-$100)** represent **deposits/income** into accounts (money coming in)
+- **Positive values (+$100)** represent **withdrawals/purchases** (money going out)
+- When discussing transactions, always clarify whether it's income or spending
+- Format amounts as: "You spent \`$50\` at [merchant]" for positive values
+- Format amounts as: "You received \`$100\` from [source]" for negative values
+- When analyzing spending patterns, focus on positive values (outflows)
+- When discussing income, focus on negative values (inflows)
+
+Recent Transaction Data:
 ${JSON.stringify(format(userContext.transactionData))}
-
 `;
 
     // const formatTransactionData = (transactions) => {
@@ -153,7 +163,7 @@ Please provide a helpful response.`;
     logger.info(`${TAG} systemPrompt: ${systemPrompt}`);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",

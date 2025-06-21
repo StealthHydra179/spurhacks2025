@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { plaidService } from '../services/api';
+import { plaidService, savingsGoalsService } from '../services/api';
 import {
   Box,
   Container,
@@ -95,107 +95,20 @@ interface MonthlySummary {
 }
 
 interface FinancialGoal {
-  id: string;
+  id: number;
+  user_id: number;
   title: string;
   description: string;
-  targetAmount: number;
-  currentAmount: number;
-  deadline: string;
-  category: 'savings' | 'debt' | 'investment' | 'purchase' | 'emergency';
+  amount: number;
+  current_amount: number;
+  deadline: string | null;
+  category: string | null;
   priority: 'low' | 'medium' | 'high';
-  status: 'active' | 'completed' | 'paused';
-  createdAt: string;
-  icon: string;
-  color: string;
+  icon: string | null;
+  color: string | null;
+  created_at: string;
+  updated_at: string | null;
 }
-
-// Mock goals data
-const mockGoals: FinancialGoal[] = [
-  {
-    id: '1',
-    title: 'Emergency Fund',
-    description: 'Build a 6-month emergency fund for unexpected expenses',
-    targetAmount: 15000,
-    currentAmount: 8500,
-    deadline: '2025-12-31',
-    category: 'emergency',
-    priority: 'high',
-    status: 'active',
-    createdAt: '2024-01-15',
-    icon: '🛡️',
-    color: '#FF6B6B'
-  },
-  {
-    id: '2',
-    title: 'Vacation Fund',
-    description: 'Save for a dream vacation to Japan',
-    targetAmount: 8000,
-    currentAmount: 3200,
-    deadline: '2025-06-30',
-    category: 'savings',
-    priority: 'medium',
-    status: 'active',
-    createdAt: '2024-02-01',
-    icon: '✈️',
-    color: '#4ECDC4'
-  },
-  {
-    id: '3',
-    title: 'Pay Off Credit Card',
-    description: 'Eliminate high-interest credit card debt',
-    targetAmount: 5000,
-    currentAmount: 3500,
-    deadline: '2025-03-31',
-    category: 'debt',
-    priority: 'high',
-    status: 'active',
-    createdAt: '2024-01-01',
-    icon: '💳',
-    color: '#45B7D1'
-  },
-  {
-    id: '4',
-    title: 'Investment Portfolio',
-    description: 'Start building a diversified investment portfolio',
-    targetAmount: 10000,
-    currentAmount: 1200,
-    deadline: '2025-12-31',
-    category: 'investment',
-    priority: 'medium',
-    status: 'active',
-    createdAt: '2024-03-01',
-    icon: '📈',
-    color: '#96CEB4'
-  },
-  {
-    id: '5',
-    title: 'New Laptop',
-    description: 'Save for a new MacBook Pro for work',
-    targetAmount: 2500,
-    currentAmount: 1800,
-    deadline: '2025-04-30',
-    category: 'purchase',
-    priority: 'low',
-    status: 'active',
-    createdAt: '2024-02-15',
-    icon: '💻',
-    color: '#FFEAA7'
-  },
-  {
-    id: '6',
-    title: 'Home Down Payment',
-    description: 'Save for a 20% down payment on a house',
-    targetAmount: 80000,
-    currentAmount: 15000,
-    deadline: '2027-12-31',
-    category: 'savings',
-    priority: 'high',
-    status: 'active',
-    createdAt: '2023-06-01',
-    icon: '🏠',
-    color: '#DDA0DD'
-  }
-];
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -217,18 +130,21 @@ const Dashboard: React.FC = () => {
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
   const [categoryData, setCategoryData] = useState<Array<{ name: string; value: number; color: string }>>([]);
   const [isPlaidLinked, setIsPlaidLinked] = useState<boolean | null>(null);
-  const [goals, setGoals] = useState<FinancialGoal[]>(mockGoals);
+  const [goals, setGoals] = useState<FinancialGoal[]>([]);
+  const [isGoalsLoading, setIsGoalsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'goals' | 'accounts'>('overview');
   const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
+  const [isEditGoalDialogOpen, setIsEditGoalDialogOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<FinancialGoal | null>(null);
   const [newGoal, setNewGoal] = useState({
     title: '',
     description: '',
-    targetAmount: 0,
+    amount: 0,
     deadline: '',
-    category: 'savings' as const,
-    priority: 'medium' as const,
+    category: 'savings' as string,
+    priority: 'medium' as 'low' | 'medium' | 'high',
     icon: '💰',
     color: '#4CAF50'
   });
@@ -403,12 +319,34 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Fetch balances when Plaid is linked
+  // Fetch savings goals from API
+  const fetchSavingsGoals = async () => {
+    if (!user?.id) return;
+    try {
+      setIsGoalsLoading(true);
+      const goalsData = await savingsGoalsService.getSavingsGoals();
+      setGoals(goalsData);
+    } catch (err: any) {
+      console.error('Failed to fetch savings goals:', err);
+      setError(err.response?.data?.message || 'Failed to fetch savings goals');
+    } finally {
+      setIsGoalsLoading(false);
+    }
+  };
+
+  // Fetch balances when user is available
   useEffect(() => {
-    if (!user?.id || isPlaidLinked !== true) return;
-    fetchBalances();
-    // eslint-disable-next-line
+    if (user?.id && isPlaidLinked === true) {
+      fetchBalances();
+    }
   }, [user?.id, isPlaidLinked]);
+
+  // Fetch savings goals when user is available
+  useEffect(() => {
+    if (user?.id) {
+      fetchSavingsGoals();
+    }
+  }, [user?.id]);
 
   // Profile menu handlers
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -527,22 +465,59 @@ const Dashboard: React.FC = () => {
     setSelectedGoal(null);
   };
 
-  const handleAddGoal = () => {
-    const goal: FinancialGoal = {
-      id: Date.now().toString(),
-      ...newGoal,
-      currentAmount: 0,
-      status: 'active',
-      createdAt: new Date().toISOString()
-    };
-    setGoals([...goals, goal]);
-    handleCloseAddGoalDialog();
+  const handleAddGoal = async () => {
+    try {
+      const goalData = {
+        title: newGoal.title,
+        description: newGoal.description,
+        amount: newGoal.amount,
+        current_amount: 0,
+        deadline: newGoal.deadline,
+        category: newGoal.category,
+        priority: newGoal.priority,
+        icon: newGoal.icon,
+        color: newGoal.color
+      };
+      
+      await savingsGoalsService.createSavingsGoal(goalData);
+      
+      // Reset form
+      setNewGoal({
+        title: '',
+        description: '',
+        amount: 0,
+        deadline: '',
+        category: 'savings',
+        priority: 'medium',
+        icon: '💰',
+        color: '#4CAF50'
+      });
+      
+      handleCloseAddGoalDialog();
+      
+      // Refresh goals list
+      await fetchSavingsGoals();
+    } catch (err: any) {
+      console.error('Failed to create savings goal:', err);
+      setError(err.response?.data?.message || 'Failed to create savings goal');
+    }
   };
 
-  const handleDeleteGoal = (goalId: string) => {
-    setGoals(goals.filter(goal => goal.id !== goalId));
-    if (selectedGoal?.id === goalId) {
-      handleCloseGoalDialog();
+  const handleDeleteGoal = async (goalId: number) => {
+    try {
+      await savingsGoalsService.deleteSavingsGoal(goalId.toString());
+      
+      // Close dialog if the deleted goal was selected
+      if (selectedGoal?.id === goalId) {
+        setSelectedGoal(null);
+        setIsGoalDialogOpen(false);
+      }
+      
+      // Refresh goals list
+      await fetchSavingsGoals();
+    } catch (err: any) {
+      console.error('Failed to delete savings goal:', err);
+      setError(err.response?.data?.message || 'Failed to delete savings goal');
     }
   };
 
@@ -555,13 +530,52 @@ const Dashboard: React.FC = () => {
     setNewGoal({
       title: '',
       description: '',
-      targetAmount: 0,
+      amount: 0,
       deadline: '',
       category: 'savings',
       priority: 'medium',
       icon: '💰',
       color: '#4CAF50'
     });
+  };
+
+  const handleOpenEditGoalDialog = (goal: FinancialGoal) => {
+    setEditingGoal(goal);
+    setIsEditGoalDialogOpen(true);
+    setIsGoalDialogOpen(false); // Close the view dialog
+  };
+
+  const handleCloseEditGoalDialog = () => {
+    setIsEditGoalDialogOpen(false);
+    setEditingGoal(null);
+  };
+
+  const handleUpdateGoal = async () => {
+    if (!editingGoal) return;
+    
+    try {
+      const goalData = {
+        title: editingGoal.title,
+        description: editingGoal.description,
+        amount: editingGoal.amount,
+        current_amount: editingGoal.current_amount,
+        deadline: editingGoal.deadline || undefined,
+        category: editingGoal.category || undefined,
+        priority: editingGoal.priority,
+        icon: editingGoal.icon || undefined,
+        color: editingGoal.color || undefined
+      };
+      
+      await savingsGoalsService.updateSavingsGoal(editingGoal.id.toString(), goalData);
+      
+      handleCloseEditGoalDialog();
+      
+      // Refresh goals list
+      await fetchSavingsGoals();
+    } catch (err: any) {
+      console.error('Failed to update savings goal:', err);
+      setError(err.response?.data?.message || 'Failed to update savings goal');
+    }
   };
 
   // Helper for tab navigation
@@ -1276,31 +1290,11 @@ const Dashboard: React.FC = () => {
                   <CardContent sx={{ p: 3 }}>
                     {renderTabNavigation()}
 
-                    {/* Goals Summary Stats */}
-                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    {/* Goals Summary */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 3 }}>
                       <Card
                         elevation={2}
                         sx={{
-                          flex: '1 1 200px',
-                          borderRadius: 2,
-                          background: alpha(theme.palette.success.main, 0.1),
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                        }}
-                      >
-                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                          <Typography variant="h6" fontWeight={700} color="success.main">
-                            {goals.length}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Active Goals
-                          </Typography>
-                        </CardContent>
-                      </Card>
-
-                      <Card
-                        elevation={2}
-                        sx={{
-                          flex: '1 1 200px',
                           borderRadius: 2,
                           background: alpha(theme.palette.info.main, 0.1),
                           border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
@@ -1308,18 +1302,33 @@ const Dashboard: React.FC = () => {
                       >
                         <CardContent sx={{ p: 2, textAlign: 'center' }}>
                           <Typography variant="h6" fontWeight={700} color="info.main">
-                            {formatCurrency(goals.reduce((sum, goal) => sum + goal.currentAmount, 0))}
+                            {formatCurrency(goals.reduce((sum, goal) => sum + goal.amount, 0))}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Total Target
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                      <Card
+                        elevation={2}
+                        sx={{
+                          borderRadius: 2,
+                          background: alpha(theme.palette.success.main, 0.1),
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                        }}
+                      >
+                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                          <Typography variant="h6" fontWeight={700} color="success.main">
+                            {formatCurrency(goals.reduce((sum, goal) => sum + goal.current_amount, 0))}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Total Saved
                           </Typography>
                         </CardContent>
                       </Card>
-
                       <Card
                         elevation={2}
                         sx={{
-                          flex: '1 1 200px',
                           borderRadius: 2,
                           background: alpha(theme.palette.warning.main, 0.1),
                           border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
@@ -1327,7 +1336,7 @@ const Dashboard: React.FC = () => {
                       >
                         <CardContent sx={{ p: 2, textAlign: 'center' }}>
                           <Typography variant="h6" fontWeight={700} color="warning.main">
-                            {goals.filter(goal => getDaysUntilDeadline(goal.deadline) <= 30).length}
+                            {goals.filter(goal => getDaysUntilDeadline(goal.deadline || '') <= 30).length}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Due Soon
@@ -1335,28 +1344,14 @@ const Dashboard: React.FC = () => {
                         </CardContent>
                       </Card>
                     </Box>
-                    
+
                     {/* Add Goal Button */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
                       <Button
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={handleOpenAddGoalDialog}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          px: 4,
-                          py: 1.5,
-                          fontSize: '1rem',
-                          fontWeight: 600,
-                          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                          '&:hover': {
-                            background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
-                            transform: 'translateY(-2px)',
-                            boxShadow: theme.shadows[8]
-                          },
-                          transition: 'all 0.3s ease'
-                        }}
+                        sx={{ borderRadius: 2 }}
                       >
                         Add New Goal
                       </Button>
@@ -1365,29 +1360,30 @@ const Dashboard: React.FC = () => {
                 </Card>
 
                 {/* Goals Grid */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                  {goals.map((goal) => (
-                    <Box
-                      key={goal.id}
-                      sx={{
-                        flex: '1 1 300px',
-                        minWidth: 0
-                      }}
-                    >
+                {isGoalsLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                    <CircularProgress size={40} />
+                  </Box>
+                ) : goals.length > 0 ? (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    {goals.map((goal) => (
                       <Card
+                        key={goal.id}
                         elevation={4}
                         onClick={() => handleGoalClick(goal)}
                         sx={{
+                          flex: '1 1 350px',
+                          minWidth: 0,
                           borderRadius: 2,
                           background: alpha(theme.palette.background.paper, 0.95),
                           backdropFilter: 'blur(20px)',
-                          border: `1px solid ${alpha(goal.color, 0.2)}`,
+                          border: `1px solid ${alpha(goal.color || '#FAC984', 0.2)}`,
                           cursor: 'pointer',
                           transition: 'all 0.3s ease',
                           '&:hover': {
                             transform: 'translateY(-4px)',
                             boxShadow: theme.shadows[12],
-                            border: `1px solid ${goal.color}`
+                            border: `1px solid ${goal.color || '#FAC984'}`
                           }
                         }}
                       >
@@ -1399,14 +1395,14 @@ const Dashboard: React.FC = () => {
                                 width: 50,
                                 height: 50,
                                 borderRadius: 2,
-                                background: alpha(goal.color, 0.1),
+                                background: alpha(goal.color || '#FAC984', 0.1),
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontSize: '24px'
                               }}
                             >
-                              {goal.icon}
+                              {goal.icon || '💰'}
                             </Box>
                             <Box sx={{ flex: 1 }}>
                               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -1452,18 +1448,18 @@ const Dashboard: React.FC = () => {
                                 Progress
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                {getProgressPercentage(goal.currentAmount, goal.targetAmount).toFixed(1)}%
+                                {getProgressPercentage(goal.current_amount, goal.amount).toFixed(1)}%
                               </Typography>
                             </Box>
                             <LinearProgress
                               variant="determinate"
-                              value={getProgressPercentage(goal.currentAmount, goal.targetAmount)}
+                              value={getProgressPercentage(goal.current_amount, goal.amount)}
                               sx={{
                                 height: 8,
                                 borderRadius: 4,
-                                backgroundColor: alpha(goal.color, 0.2),
+                                backgroundColor: alpha(goal.color || '#FAC984', 0.2),
                                 '& .MuiLinearProgress-bar': {
-                                  backgroundColor: goal.color,
+                                  backgroundColor: goal.color || '#FAC984',
                                   borderRadius: 4
                                 }
                               }}
@@ -1476,8 +1472,8 @@ const Dashboard: React.FC = () => {
                               <Typography variant="body2" color="text.secondary">
                                 Saved
                               </Typography>
-                              <Typography variant="h6" fontWeight={700} color={goal.color}>
-                                {formatCurrency(goal.currentAmount)}
+                              <Typography variant="h6" fontWeight={700} color={goal.color || '#FAC984'}>
+                                {formatCurrency(goal.current_amount)}
                               </Typography>
                             </Box>
                             <Box sx={{ textAlign: 'right' }}>
@@ -1485,7 +1481,7 @@ const Dashboard: React.FC = () => {
                                 Target
                               </Typography>
                               <Typography variant="h6" fontWeight={700}>
-                                {formatCurrency(goal.targetAmount)}
+                                {formatCurrency(goal.amount)}
                               </Typography>
                             </Box>
                           </Box>
@@ -1494,17 +1490,44 @@ const Dashboard: React.FC = () => {
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                             <Typography variant="caption" color="text.secondary">
-                              {getDaysUntilDeadline(goal.deadline) > 0 
-                                ? `${getDaysUntilDeadline(goal.deadline)} days left`
+                              {getDaysUntilDeadline(goal.deadline || '') > 0 
+                                ? `${getDaysUntilDeadline(goal.deadline || '')} days left`
                                 : 'Overdue'
                               }
                             </Typography>
                           </Box>
                         </CardContent>
                       </Card>
-                    </Box>
-                  ))}
-                </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <Card
+                    elevation={4}
+                    sx={{
+                      borderRadius: 2,
+                      background: alpha(theme.palette.background.paper, 0.95),
+                      backdropFilter: 'blur(20px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                    }}
+                  >
+                    <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        No savings goals yet
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        Create your first savings goal to start tracking your progress
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleOpenAddGoalDialog}
+                        sx={{ borderRadius: 2 }}
+                      >
+                        Create Your First Goal
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </>
             )}
 
@@ -1751,7 +1774,7 @@ const Dashboard: React.FC = () => {
                     width: 60,
                     height: 60,
                     borderRadius: 2,
-                    background: alpha(selectedGoal.color, 0.1),
+                    background: alpha(selectedGoal.color || '', 0.1),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1769,7 +1792,7 @@ const Dashboard: React.FC = () => {
                       label={selectedGoal.category}
                       size="small"
                       sx={{
-                        backgroundColor: alpha(selectedGoal.color, 0.1),
+                        backgroundColor: alpha(selectedGoal.color || '', 0.1),
                         color: selectedGoal.color,
                         fontWeight: 600
                       }}
@@ -1799,17 +1822,17 @@ const Dashboard: React.FC = () => {
                   <Typography variant="h6" fontWeight={600}>
                     Progress
                   </Typography>
-                  <Typography variant="h6" fontWeight={700} color={selectedGoal.color}>
-                    {getProgressPercentage(selectedGoal.currentAmount, selectedGoal.targetAmount).toFixed(1)}%
+                  <Typography variant="h6" fontWeight={700} color={selectedGoal.color || '#FAC984'}>
+                    {getProgressPercentage(selectedGoal.current_amount, selectedGoal.amount).toFixed(1)}%
                   </Typography>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={getProgressPercentage(selectedGoal.currentAmount, selectedGoal.targetAmount)}
+                  value={getProgressPercentage(selectedGoal.current_amount, selectedGoal.amount)}
                   sx={{
                     height: 12,
                     borderRadius: 6,
-                    backgroundColor: alpha(selectedGoal.color, 0.2),
+                    backgroundColor: alpha(selectedGoal.color || '#FAC984', 0.2),
                     '& .MuiLinearProgress-bar': {
                       backgroundColor: selectedGoal.color,
                       borderRadius: 6
@@ -1833,7 +1856,7 @@ const Dashboard: React.FC = () => {
                       Current Amount
                     </Typography>
                     <Typography variant="h5" fontWeight={700} color="success.main">
-                      {formatCurrency(selectedGoal.currentAmount)}
+                      {formatCurrency(selectedGoal.current_amount)}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1851,7 +1874,7 @@ const Dashboard: React.FC = () => {
                       Target Amount
                     </Typography>
                     <Typography variant="h5" fontWeight={700} color="info.main">
-                      {formatCurrency(selectedGoal.targetAmount)}
+                      {formatCurrency(selectedGoal.amount)}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1872,7 +1895,7 @@ const Dashboard: React.FC = () => {
                     Remaining to Save
                   </Typography>
                   <Typography variant="h5" fontWeight={700} color="warning.main">
-                    {formatCurrency(selectedGoal.targetAmount - selectedGoal.currentAmount)}
+                    {formatCurrency(selectedGoal.amount - selectedGoal.current_amount)}
                   </Typography>
                 </CardContent>
               </Card>
@@ -1885,17 +1908,14 @@ const Dashboard: React.FC = () => {
                     Deadline
                   </Typography>
                   <Typography variant="body1">
-                    {new Date(selectedGoal.deadline).toLocaleDateString('en-US', {
+                    {selectedGoal.deadline ? new Date(selectedGoal.deadline).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
-                    })}
+                    }) : 'No deadline'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {getDaysUntilDeadline(selectedGoal.deadline) > 0 
-                      ? `${getDaysUntilDeadline(selectedGoal.deadline)} days remaining`
-                      : 'Overdue'
-                    }
+                    {selectedGoal.deadline ? `${getDaysUntilDeadline(selectedGoal.deadline)} days remaining` : 'No deadline'}
                   </Typography>
                 </Box>
               </Box>
@@ -1908,6 +1928,7 @@ const Dashboard: React.FC = () => {
               <Button
                 variant="contained"
                 startIcon={<EditIcon />}
+                onClick={() => selectedGoal && handleOpenEditGoalDialog(selectedGoal)}
                 sx={{ borderRadius: 2 }}
               >
                 Edit Goal
@@ -1966,8 +1987,8 @@ const Dashboard: React.FC = () => {
                 fullWidth
                 label="Target Amount"
                 type="number"
-                value={newGoal.targetAmount}
-                onChange={(e) => setNewGoal({ ...newGoal, targetAmount: parseFloat(e.target.value) || 0 })}
+                value={newGoal.amount}
+                onChange={(e) => setNewGoal({ ...newGoal, amount: parseFloat(e.target.value) || 0 })}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
@@ -1992,7 +2013,7 @@ const Dashboard: React.FC = () => {
                 <Select
                   value={newGoal.category}
                   label="Category"
-                  onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value as any })}
+                  onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value as string })}
                 >
                   <MenuItem value="savings">💰 Savings</MenuItem>
                   <MenuItem value="debt">💳 Debt Repayment</MenuItem>
@@ -2007,7 +2028,7 @@ const Dashboard: React.FC = () => {
                 <Select
                   value={newGoal.priority}
                   label="Priority"
-                  onChange={(e) => setNewGoal({ ...newGoal, priority: e.target.value as any })}
+                  onChange={(e) => setNewGoal({ ...newGoal, priority: e.target.value as 'low' | 'medium' | 'high' })}
                 >
                   <MenuItem value="low">Low Priority</MenuItem>
                   <MenuItem value="medium">Medium Priority</MenuItem>
@@ -2023,7 +2044,7 @@ const Dashboard: React.FC = () => {
                 {['💰', '🏠', '✈️', '💻', '📈', '💳', '🛡️', '🎓', '🚗', '🏥', '🎯', '⭐'].map((icon) => (
                   <IconButton
                     key={icon}
-                    onClick={() => setNewGoal({ ...newGoal, icon })}
+                    onClick={() => setNewGoal({ ...newGoal, icon: icon as string })}
                     sx={{
                       fontSize: '24px',
                       border: newGoal.icon === icon ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
@@ -2045,7 +2066,7 @@ const Dashboard: React.FC = () => {
                 {['#4CAF50', '#2196F3', '#FF9800', '#F44336', '#9C27B0', '#00BCD4', '#FF5722', '#795548', '#607D8B', '#E91E63'].map((color) => (
                   <IconButton
                     key={color}
-                    onClick={() => setNewGoal({ ...newGoal, color })}
+                    onClick={() => setNewGoal({ ...newGoal, color: color as string })}
                     sx={{
                       backgroundColor: color,
                       width: 40,
@@ -2109,10 +2130,210 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleAddGoal}
-            disabled={!newGoal.title || !newGoal.description || newGoal.targetAmount <= 0 || !newGoal.deadline}
+            disabled={!newGoal.title || !newGoal.description || newGoal.amount <= 0 || !newGoal.deadline}
             sx={{ borderRadius: 2 }}
           >
             Create Goal
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Goal Dialog */}
+      <Dialog
+        open={isEditGoalDialogOpen}
+        onClose={handleCloseEditGoalDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            background: alpha(theme.palette.background.paper, 0.95),
+            backdropFilter: 'blur(20px)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h5" fontWeight={700}>
+            Edit Financial Goal
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Update your financial goal with custom tracking and automation
+          </Typography>
+        </DialogTitle>
+        
+        <DialogContent sx={{ pt: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+            {/* Basic Information */}
+            <Box sx={{ flex: 1 }}>
+              <TextField
+                fullWidth
+                label="Goal Title"
+                value={editingGoal?.title || ''}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, title: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="Description"
+                multiline
+                rows={3}
+                value={editingGoal?.description || ''}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, description: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="Target Amount"
+                type="number"
+                value={editingGoal?.amount || 0}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, amount: parseFloat(e.target.value) || 0 })}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="Deadline"
+                type="date"
+                value={editingGoal?.deadline || ''}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, deadline: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                sx={{ mb: 2 }}
+              />
+            </Box>
+            
+            {/* Category and Priority */}
+            <Box sx={{ flex: 1 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={editingGoal?.category || ''}
+                  label="Category"
+                  onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, category: e.target.value as string })}
+                >
+                  <MenuItem value="savings">💰 Savings</MenuItem>
+                  <MenuItem value="debt">💳 Debt Repayment</MenuItem>
+                  <MenuItem value="investment">📈 Investment</MenuItem>
+                  <MenuItem value="purchase">🛒 Purchase</MenuItem>
+                  <MenuItem value="emergency">🛡️ Emergency Fund</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Priority</InputLabel>
+                <Select
+                  value={editingGoal?.priority || 'medium'}
+                  label="Priority"
+                  onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, priority: e.target.value as 'low' | 'medium' | 'high' })}
+                >
+                  <MenuItem value="low">Low Priority</MenuItem>
+                  <MenuItem value="medium">Medium Priority</MenuItem>
+                  <MenuItem value="high">High Priority</MenuItem>
+                </Select>
+              </FormControl>
+              
+              {/* Icon Selection */}
+              <Typography variant="subtitle2" gutterBottom>
+                Choose an Icon
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['💰', '🏠', '✈️', '💻', '📈', '💳', '🛡️', '🎓', '🚗', '🏥', '🎯', '⭐'].map((icon) => (
+                  <IconButton
+                    key={icon}
+                    onClick={() => editingGoal && setEditingGoal({ ...editingGoal, icon: icon as string })}
+                    sx={{
+                      fontSize: '24px',
+                      border: editingGoal?.icon === icon ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                      }
+                    }}
+                  >
+                    {icon}
+                  </IconButton>
+                ))}
+              </Box>
+              
+              {/* Color Selection */}
+              <Typography variant="subtitle2" gutterBottom>
+                Choose a Color
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['#4CAF50', '#2196F3', '#FF9800', '#F44336', '#9C27B0', '#00BCD4', '#FF5722', '#795548', '#607D8B', '#E91E63'].map((color) => (
+                  <IconButton
+                    key={color}
+                    onClick={() => editingGoal && setEditingGoal({ ...editingGoal, color: color as string })}
+                    sx={{
+                      backgroundColor: color,
+                      width: 40,
+                      height: 40,
+                      border: editingGoal?.color === color ? `3px solid ${theme.palette.common.white}` : '3px solid transparent',
+                      boxShadow: editingGoal?.color === color ? `0 0 0 2px ${theme.palette.primary.main}` : 'none',
+                      '&:hover': {
+                        transform: 'scale(1.1)'
+                      }
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Box>
+          
+          {/* Automation Suggestions */}
+          <Box sx={{ mt: 3 }}>
+            <Card
+              elevation={2}
+              sx={{
+                borderRadius: 2,
+                background: alpha(theme.palette.info.main, 0.05),
+                border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+              }}
+            >
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  🤖 Automation Suggestions
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Capy can help automate your goal progress tracking:
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Track savings from specific income sources
+                  </Typography>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Monitor spending in related categories
+                  </Typography>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Send reminders when off track
+                  </Typography>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    Suggest budget adjustments
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button onClick={handleCloseEditGoalDialog} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleUpdateGoal}
+            disabled={!editingGoal?.title || !editingGoal?.description || editingGoal?.amount <= 0 || !editingGoal?.deadline}
+            sx={{ borderRadius: 2 }}
+          >
+            Update Goal
           </Button>
         </DialogActions>
       </Dialog>

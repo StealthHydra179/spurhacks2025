@@ -95,19 +95,39 @@ export interface Conversation {
 export interface SavingsGoal {
   id: number;
   user_id: number;
+  title: string;
+  description: string;
   amount: number;
-  start_timestamp: string;
-  end_timestamp: string;
+  current_amount: number;
+  deadline: string | null;
+  category: string | null;
+  priority: 'low' | 'medium' | 'high';
+  icon: string | null;
+  color: string | null;
+  created_at: string;
+  updated_at: string | null;
 }
 
 export interface CreateSavingsGoalRequest {
+  title: string;
+  description?: string;
   amount: number;
-  start_timestamp: string;
-  end_timestamp: string;
+  current_amount?: number;
+  deadline?: string;
+  category?: string;
+  priority?: 'low' | 'medium' | 'high';
+  icon?: string;
+  color?: string;
 }
 
 export interface UpdateSavingsGoalRequest {
+  title?: string;
+  description?: string;
   amount?: number;
-  start_timestamp?: string;
-  end_timestamp?: string;
+  current_amount?: number;
+  deadline?: string;
+  category?: string;
+  priority?: 'low' | 'medium' | 'high';
+  icon?: string;
+  color?: string;
 }
