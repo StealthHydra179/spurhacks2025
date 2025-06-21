@@ -4,11 +4,11 @@
   "version": "1.0.0",
   "main": "server/index.js",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "postgres": "^3.4.7",
     "winston": "^3.17.0"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node server/index.js"

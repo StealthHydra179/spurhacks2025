@@ -4,6 +4,6 @@ const { logger } = require('../logger');
 const TAG = 'db';
 
 const sql = postgres({ /* options */ });
-logger.info(`${TAG} Database connection established`);
+logger.info(`${TAG} Database loaded`);
 
 exports.sql = sql;
