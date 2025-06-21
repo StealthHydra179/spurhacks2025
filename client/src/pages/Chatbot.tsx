@@ -720,47 +720,64 @@ const Chatbot: React.FC = () => {
             </Box>
 
             {/* Message Input */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', p: 2, zIndex: 2, position: 'relative', background: 'transparent' }}>
-              <TextField
-                fullWidth
-                multiline
-                maxRows={4}
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                disabled={sending}
-                variant="outlined"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    background: '#FFE2B6',
-                    boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
-                    border: 'none',
-                    '& fieldset': {
-                      border: 'none',
-                    },
-                  }
-                }}
-              />
-              <Button
-                variant="contained"
-                onClick={sendMessage}
-                disabled={!newMessage.trim() || sending}
-                sx={{
-                  minWidth: 'auto',
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2
-                }}
-              >
-                {sending ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <SendIcon />
-                )}
-              </Button>
-            </Box>
+            {/* Message Input Overlay */}
+<Box
+  sx={{
+    position: 'absolute', // or 'fixed' if you want it stuck to the bottom of the screen
+    bottom: 0,
+    left: 0,
+    right: 0,
+    display: 'flex',
+    gap: 2,
+    alignItems: 'flex-end',
+    p: 2,
+    zIndex: 10,
+    background: 'transparent',
+    pointerEvents: 'none' // allow interactions only on children
+  }}
+>
+  <Box sx={{ flex: 1, pointerEvents: 'auto' }}>
+    <TextField
+      fullWidth
+      multiline
+      maxRows={4}
+      value={newMessage}
+      onChange={(e) => setNewMessage(e.target.value)}
+      onKeyPress={handleKeyPress}
+      placeholder="Type your message..."
+      disabled={sending}
+      variant="standard"
+      InputProps={{
+        disableUnderline: true
+      }}
+      sx={{
+        borderRadius: 2,
+        background: '#FFE2B6',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        px: 2,
+        py: 1.5
+      }}
+    />
+  </Box>
+  <Button
+    variant="contained"
+    onClick={sendMessage}
+    disabled={!newMessage.trim() || sending}
+    sx={{
+      minWidth: 'auto',
+      width: 48,
+      height: 48,
+      borderRadius: 2,
+      pointerEvents: 'auto'
+    }}
+  >
+    {sending ? (
+      <CircularProgress size={20} color="inherit" />
+    ) : (
+      <SendIcon />
+    )}
+  </Button>
+</Box>
           </>
         ) : (
           // No conversation selected state
