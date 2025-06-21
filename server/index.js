@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express()
 const port = 3000
 const {logger} = require('./logger');
@@ -7,8 +8,22 @@ const sql = require('./db/db');
 
 const TAG = 'server_index';
 
-app.use(express.json());
+// CORS middleware for credentials
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173'); // Vite dev server
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true'); // Important for cookies
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
+app.use(express.json());
+app.use(cookieParser()); // Parse cookies
 
 app.get('/', (req, res) => {
   res.send('Hello World!')

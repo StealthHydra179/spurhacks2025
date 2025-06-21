@@ -95,10 +95,49 @@ router.post('/login', async (req, res) => {
     logger.info(`${TAG} User ${username} logged in successfully`);
 });
 
-// // Protected route
-// router.get('/profile', authenticateToken, (req, res) => {
-//   res.json({ message: `Welcome, ${req.user.username}` });
-// });
-//
+// Logout route
+router.post('/logout', (req, res) => {
+    // Clear the httpOnly cookie
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
+    
+    res.json({ message: 'Logout successful' });
+    logger.info(`${TAG} User logged out successfully`);
+});
+
+// Protected route
+router.get('/profile', authenticateToken, async (req, res) => {
+    try {
+        const users = await userDb.getByUsername(req.user.username);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        const user = users[0];
+        // Don't send the hashed password
+        const { hashed_password, ...userProfile } = user;
+        
+        res.json(userProfile);
+    } catch (error) {
+        logger.error(`${TAG} Error fetching profile: ${error.message}`);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// Middleware to validate JWT from cookie
+function authenticateToken(req, res, next) {
+    const token = req.cookies?.token;
+
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+}
 
 module.exports = router;
