@@ -1,12 +1,16 @@
-
-const { Configuration, PlaidApi } = require('plaid');
+const { Configuration, PlaidApi, PlaidEnvironments} = require('plaid');
 const { logger } = require('../logger');
+const dotenv = require('dotenv');
+const path = require('path');
+
+// Load environment variables from the root directory
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const TAG = 'plaid';
 
 // Plaid client configuration - using localhost:8000 as the Plaid server
 const configuration = new Configuration({
-  basePath: 'http://localhost:8000', // Custom Plaid server
+  basePath: PlaidEnvironments.sandbox, // Use lowercase 'sandbox'
   baseOptions: {
     headers: {
       'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
@@ -21,10 +25,53 @@ const client = new PlaidApi(configuration);
 const accessTokens = new Map();
 
 /**
+ * Helper function to log Plaid API errors comprehensively
+ */
+function logPlaidError(error, operation, userId = null) {
+  const userInfo = userId ? ` for user ${userId}` : '';
+  logger.error(`${TAG} Error in ${operation}${userInfo}:`);
+  logger.error(`${TAG} Error message: ${error.message}`);
+  
+  if (error.response) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    logger.error(`${TAG} Plaid API Error Response:`);
+    logger.error(`${TAG} Status: ${error.response.status}`);
+    logger.error(`${TAG} Status Text: ${error.response.statusText}`);
+    logger.error(`${TAG} Headers:`, error.response.headers);
+    logger.error(`${TAG} Data:`, JSON.stringify(error.response.data, null, 2));
+    
+    // Log specific Plaid error details if available
+    if (error.response.data && error.response.data.error_code) {
+      logger.error(`${TAG} Plaid Error Code: ${error.response.data.error_code}`);
+      logger.error(`${TAG} Plaid Error Type: ${error.response.data.error_type}`);
+      logger.error(`${TAG} Plaid Display Message: ${error.response.data.display_message}`);
+      logger.error(`${TAG} Plaid Suggested Action: ${error.response.data.suggested_action}`);
+    }
+  } else if (error.request) {
+    // The request was made but no response was received
+    logger.error(`${TAG} No response received from Plaid API`);
+    logger.error(`${TAG} Request details:`, error.request);
+  } else {
+    // Something happened in setting up the request that triggered an Error
+    logger.error(`${TAG} Error setting up request: ${error.message}`);
+  }
+  
+  // Log the full error stack trace for debugging
+  logger.error(`${TAG} Full error stack:`, error.stack);
+}
+
+/**
  * Step 1: Create a link token for Plaid Link
  */
 async function createLinkToken(userId) {
   try {
+    logger.info(`${TAG} Creating link token for user ${userId}`);
+    
+    // Log environment variables for debugging (without exposing secrets)
+    logger.info(`${TAG} PLAID_CLIENT_ID exists: ${!!process.env.PLAID_CLIENT_ID}`);
+    logger.info(`${TAG} PLAID_SECRET exists: ${!!process.env.PLAID_SECRET}`);
+    
     const request = {
       user: {
         client_user_id: userId.toString(),
@@ -36,11 +83,14 @@ async function createLinkToken(userId) {
     //   webhook: process.env.PLAID_WEBHOOK_URL || 'https://webhook.example.com',
     };
 
+    logger.info(`${TAG} Request payload:`, JSON.stringify(request, null, 2));
     const createTokenResponse = await client.linkTokenCreate(request);
-    logger.info(`${TAG} Link token created for user ${userId}`);
+    
+    logger.info(`${TAG} Link token created successfully for user ${userId}`);
+    logger.info(`${TAG} Response:`, JSON.stringify(createTokenResponse.data, null, 2));
     return createTokenResponse.data;
   } catch (error) {
-    logger.error(`${TAG} Error creating link token: ${error.message}`);
+    logPlaidError(error, 'creating link token', userId);
     throw error;
   }
 }
@@ -50,6 +100,9 @@ async function createLinkToken(userId) {
  */
 async function exchangePublicToken(publicToken, userId) {
   try {
+    logger.info(`${TAG} Exchanging public token for user ${userId}`);
+    logger.info(`${TAG} Public token (first 10 chars): ${publicToken.substring(0, 10)}...`);
+    
     const response = await client.itemPublicTokenExchange({
       public_token: publicToken,
     });
@@ -60,14 +113,15 @@ async function exchangePublicToken(publicToken, userId) {
     // Store the access token (in production, save to database)
     accessTokens.set(userId, { accessToken, itemId });
 
-    logger.info(`${TAG} Public token exchanged for user ${userId}, item ${itemId}`);
+    logger.info(`${TAG} Public token exchanged successfully for user ${userId}, item ${itemId}`);
+    logger.info(`${TAG} Access token (first 10 chars): ${accessToken.substring(0, 10)}...`);
     
     return {
       access_token: accessToken,
       item_id: itemId,
     };
   } catch (error) {
-    logger.error(`${TAG} Error exchanging public token: ${error.message}`);
+    logPlaidError(error, 'exchanging public token', userId);
     throw error;
   }
 }
@@ -369,6 +423,56 @@ async function getPlaidSummary() {
   }
 }
 
+/**
+ * Test Plaid configuration and connectivity
+ */
+async function testPlaidConfiguration() {
+  try {
+    logger.info(`${TAG} Testing Plaid configuration...`);
+    
+    // Check environment variables
+    if (!process.env.PLAID_CLIENT_ID) {
+      throw new Error('PLAID_CLIENT_ID environment variable is not set');
+    }
+    if (!process.env.PLAID_SECRET) {
+      throw new Error('PLAID_SECRET environment variable is not set');
+    }
+    
+    logger.info(`${TAG} Environment variables are set correctly`);
+    logger.info(`${TAG} Using Plaid environment: sandbox`);
+    
+    // Test a simple API call to verify connectivity
+    const testRequest = {
+      user: {
+        client_user_id: 'test-user',
+      },
+      client_name: 'Test App',
+      products: ['auth'],
+      language: 'en',
+      country_codes: ['US'],
+    };
+    
+    logger.info(`${TAG} Testing API connectivity with link token creation...`);
+    const response = await client.linkTokenCreate(testRequest);
+    
+    logger.info(`${TAG} ✅ Plaid configuration test successful!`);
+    logger.info(`${TAG} Link token created: ${response.data.link_token.substring(0, 10)}...`);
+    
+    return {
+      success: true,
+      message: 'Plaid configuration is working correctly',
+      link_token: response.data.link_token
+    };
+  } catch (error) {
+    logPlaidError(error, 'testing Plaid configuration');
+    return {
+      success: false,
+      message: 'Plaid configuration test failed',
+      error: error.message
+    };
+  }
+}
+
 module.exports = {
   createLinkToken,
   exchangePublicToken,
@@ -381,4 +485,5 @@ module.exports = {
   fetchLastDayPlaidInfo,
   fetchAllTransactionsPlaid,
   getPlaidSummary,
+  testPlaidConfiguration,
 };
