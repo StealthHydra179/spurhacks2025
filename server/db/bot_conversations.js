@@ -2,7 +2,6 @@ const { sql } = require("./db");
 const OpenAI = require("openai");
 const { logger } = require("../logger");
 const usersDb = require("./users");
-const plaid = require("../plaid/plaid");
 
 const TAG = "bot_conversations";
 
@@ -35,26 +34,6 @@ function format(transactionData) {
     });
 }
 
-function formatAccountBalances(accountsData) {
-    // Format account balance data for AI context
-    if (!accountsData || !accountsData.accounts) {
-        return [];
-    }
-    
-    logger.info(`${TAG} accountsData: ${JSON.stringify(accountsData)}`);
-    return accountsData.accounts.map((account) => {
-        return {
-            account_name: account.name || "Unknown Account",
-            account_type: account.type || "Unknown",
-            account_subtype: account.subtype || "Unknown",
-            current_balance: account.balances?.current || 0,
-            available_balance: account.balances?.available || 0,
-            currency_code: account.balances?.iso_currency_code || "USD",
-            account_mask: account.mask || "****"
-        };
-    });
-}
-
 /**
  * Generate AI response using OpenAI GPT-4 mini
  */
@@ -73,20 +52,6 @@ async function generateAIResponse(userMessage, userContext = {}, userId = null) 
       } catch (error) {
         logger.warn(`${TAG} Could not fetch personality for user ${userId}: ${error.message}`);
         personalityMode = 0;
-      }
-    }
-
-    // Fetch account balance data if user has connected accounts
-    let accountBalances = [];
-    if (userId && userContext.hasPlaidData) {
-      try {
-        logger.info(`${TAG} Fetching account balances for user ${userId}`);
-        const balanceData = await plaid.getBalances(userId);
-        accountBalances = formatAccountBalances(balanceData);
-        logger.info(`${TAG} Retrieved ${accountBalances.length} account balances`);
-      } catch (error) {
-        logger.warn(`${TAG} Could not fetch account balances for user ${userId}: ${error.message}`);
-        accountBalances = [];
       }
     }
 
@@ -119,7 +84,9 @@ Your first message should be revolutionary and inspiring, emphasizing that we're
 Provide clear, practical advice while being understanding of the user's situation.
 Use a friendly but informative tone that encourages good financial habits.`;
         break;
-    }    const systemPrompt = `You are Capy, a capybara financial assistant for the CapySpend app. 
+    }
+
+    const systemPrompt = `You are Capy, a capybara financial assistant for the CapySpend app. 
 You help users manage their finances, understand their spending patterns, and make better financial decisions.
 Be conversational, supportive, and provide actionable advice.
 Keep responses concise but helpful.
@@ -183,18 +150,14 @@ ${
     : "The user may not have connected their bank accounts yet."
 }
 
-Please provide a helpful response.`;    logger.info(
+Please provide a helpful response.`;
+    logger.info(
       `${TAG} Generating AI response for user message: ${userMessage}`
     );
     logger.info(`${TAG} User has Plaid data: ${userContext.hasPlaidData}`);
     if (userContext.transactionData && userContext.transactionData.length > 0) {
       logger.info(
         `${TAG} Using ${userContext.transactionData.length} transactions for context`
-      );
-    }
-    if (accountBalances && accountBalances.length > 0) {
-      logger.info(
-        `${TAG} Using ${accountBalances.length} account balances for context`
       );
     }
     logger.info(`${TAG} systemPrompt: ${systemPrompt}`);
