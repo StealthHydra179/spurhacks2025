@@ -196,7 +196,9 @@ const Dashboard: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Fix timezone issue: Parse the date string and convert to local timezone
+    const date = new Date(dateString + 'T00:00:00'); // Add time to ensure proper parsing
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
     });

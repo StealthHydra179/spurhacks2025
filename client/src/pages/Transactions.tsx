@@ -304,7 +304,9 @@ const Transactions: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Fix timezone issue: Parse the date string and convert to local timezone
+    const date = new Date(dateString + 'T00:00:00'); // Add time to ensure proper parsing
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -415,7 +417,7 @@ const Transactions: React.FC = () => {
               </Typography>
               {appliedStartDate && appliedEndDate && (
                 <Typography variant="body2" color={alpha(theme.palette.common.white, 0.7)} sx={{ mt: 0.5 }}>
-                  📅 Showing transactions from {new Date(appliedStartDate).toLocaleDateString()} to {new Date(appliedEndDate).toLocaleDateString()}
+                  📅 Showing transactions from {new Date(appliedStartDate + 'T00:00:00').toLocaleDateString()} to {new Date(appliedEndDate + 'T00:00:00').toLocaleDateString()}
                 </Typography>
               )}
             </Box>
