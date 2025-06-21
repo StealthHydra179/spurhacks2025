@@ -15,10 +15,30 @@ router.get('/', function (req, res) {
     });
 })
 
-router.get('/getUsersConversations', async function (req, res) {
+router.get('/getUserConversationSummaries', async function (req, res) {
     const conversations = await botConversationsDb.getUserConversations(req.user.userID)
 
-    return conversations
+    res.json(conversations)
+})
+
+router.get('/getFullConversation/:id', async function (req, res) {
+    const conversationID = req.params.id
+    //todo temp
+    req.user = {}
+    req.user.userID = 1
+    const userID = req.user.userID
+
+    const conversation = await botConversationsDb.getFullConversation(conversationID)
+
+    if (!conversation.summary || !conversation.messages) {
+        return res.status(400).json({ message: "Invalid message"})
+    }
+
+    if (conversation.summary[0].user_id !== userID) {
+        return res.status(401).json({ message: 'Invalid credentials' })
+    }
+
+    return res.status(200).json(conversation)
 })
 
 module.exports = router;
