@@ -142,6 +142,11 @@ export const plaidService = {
     });
     return response.data;
   },
+
+  getBalances: async (userId: string): Promise<any> => {
+    const response = await api.get(`/api/plaid/balances/${userId}`);
+    return response.data;
+  },
 };
 
 export const botConversationService = {
