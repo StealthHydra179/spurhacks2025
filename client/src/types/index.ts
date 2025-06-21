@@ -90,3 +90,24 @@ export interface Conversation {
   summary: ConversationSummary[];
   messages: Message[];
 }
+
+// Savings Goal related types
+export interface SavingsGoal {
+  id: number;
+  user_id: number;
+  amount: number;
+  start_timestamp: string;
+  end_timestamp: string;
+}
+
+export interface CreateSavingsGoalRequest {
+  amount: number;
+  start_timestamp: string;
+  end_timestamp: string;
+}
+
+export interface UpdateSavingsGoalRequest {
+  amount?: number;
+  start_timestamp?: string;
+  end_timestamp?: string;
+}
