@@ -164,7 +164,7 @@ async function getTransactions(userId, startDate, endDate) {
       end_date: endDate || new Date().toISOString().split('T')[0],
     };
 
-    const transactionsResponse = await client.transactionsGet(request);
+    const transactionsResponse = await client.transactionsSync(request);
     logger.info(`${TAG} Retrieved transactions for user ${userId}`);
     return transactionsResponse.data;
   } catch (error) {
