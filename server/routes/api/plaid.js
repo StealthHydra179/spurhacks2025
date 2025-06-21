@@ -4,6 +4,7 @@ const plaid = require('../../plaid/plaid');
 const { logger } = require('../../logger');
 const plaidUsersDb = require('../../db/plaid_users');
 const botConversationsDb = require('../../db/bot_conversations');
+const authenticateToken = require('../../jwt');
 
 const TAG = 'plaid_routes';
 
@@ -32,14 +33,10 @@ function normalizeDate(dateString) {
  * POST /api/plaid/create_link_token
  * Step 1: Create a link token for Plaid Link initialization
  */
-router.post('/create_link_token', async (req, res) => {
+router.post('/create_link_token', authenticateToken, async (req, res) => {
   try {
-    const { user_id } = req.body;
+    const user_id = req.user.userID; // Use authenticated user ID
     
-    if (!user_id) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
-
     const linkTokenData = await plaid.createLinkToken(user_id);
     res.json(linkTokenData);
   } catch (error) {
@@ -52,13 +49,14 @@ router.post('/create_link_token', async (req, res) => {
  * POST /api/plaid/exchange_public_token
  * Step 3: Exchange public token for permanent access token
  */
-router.post('/exchange_public_token', async (req, res) => {
+router.post('/exchange_public_token', authenticateToken, async (req, res) => {
   try {
-    const { public_token, user_id } = req.body;
+    const { public_token } = req.body;
+    const user_id = req.user.userID; // Use authenticated user ID
     
-    if (!public_token || !user_id) {
-      return res.status(400).json({ error: 'Public token and user ID are required' });
-    }    
+    if (!public_token) {
+      return res.status(400).json({ error: 'Public token is required' });
+    }
     
     const tokenData = await plaid.exchangePublicToken(public_token, user_id);
     
@@ -83,9 +81,15 @@ router.post('/exchange_public_token', async (req, res) => {
  * GET /api/plaid/accounts/:user_id
  * Step 4: Get account information for a user
  */
-router.get('/accounts/:user_id', async (req, res) => {
+router.get('/accounts/:user_id', authenticateToken, async (req, res) => {
   try {
     const { user_id } = req.params;
+    const authenticatedUserID = req.user.userID;
+    
+    // Verify the requested user_id matches the authenticated user
+    if (parseInt(user_id) !== authenticatedUserID) {
+      return res.status(403).json({ error: 'Access denied to this user\'s data' });
+    }
     
     const accountsData = await plaid.getAccounts(user_id);
     res.json(accountsData);
@@ -99,10 +103,16 @@ router.get('/accounts/:user_id', async (req, res) => {
  * GET /api/plaid/transactions/:user_id
  * Get transactions for a user
  */
-router.get('/transactions/:user_id', async (req, res) => {
+router.get('/transactions/:user_id', authenticateToken, async (req, res) => {
   try {
     const { user_id } = req.params;
+    const authenticatedUserID = req.user.userID;
     const { start_date, end_date } = req.query;
+    
+    // Verify the requested user_id matches the authenticated user
+    if (parseInt(user_id) !== authenticatedUserID) {
+      return res.status(403).json({ error: 'Access denied to this user\'s data' });
+    }
     
     // Normalize and validate dates
     const normalizedStartDate = normalizeDate(start_date);
@@ -243,9 +253,15 @@ router.get('/transactions/:user_id', async (req, res) => {
  * GET /api/plaid/item-status/:user_id
  * Check if a user has a linked Plaid Item
  */
-router.get('/item-status/:user_id', async (req, res) => {
+router.get('/item-status/:user_id', authenticateToken, async (req, res) => {
   try {
     const { user_id } = req.params;
+    const authenticatedUserID = req.user.userID;
+    
+    // Verify the requested user_id matches the authenticated user
+    if (parseInt(user_id) !== authenticatedUserID) {
+      return res.status(403).json({ error: 'Access denied to this user\'s data' });
+    }
     
     // Log all stored access tokens
     plaid.logStoredAccessTokens();
@@ -376,9 +392,10 @@ router.post('/fetch-all-transactions', async (req, res) => {
  * POST /api/plaid/chat-response
  * Generate AI response for ongoing conversations
  */
-router.post('/chat-response', async (req, res) => {
+router.post('/chat-response', authenticateToken, async (req, res) => {
   try {
     const { conversation_id, user_message } = req.body;
+    const authenticatedUserID = req.user.userID;
     
     if (!conversation_id || !user_message) {
       return res.status(400).json({ error: 'Conversation ID and user message are required' });
@@ -391,6 +408,11 @@ router.post('/chat-response', async (req, res) => {
     }
 
     const user_id = conversation.summary[0].user_id;
+    
+    // Verify the conversation belongs to the authenticated user
+    if (user_id !== authenticatedUserID) {
+      return res.status(403).json({ error: 'Access denied to this conversation' });
+    }
     
     // Build conversation history for context
     const recentMessages = conversation.messages

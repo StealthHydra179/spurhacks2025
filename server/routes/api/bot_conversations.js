@@ -17,7 +17,7 @@ router.get('/', function (req, res) {
     });
 })
 
-router.post('/create', async function (req, res) {
+router.post('/create', authenticateToken, async function (req, res) {
     try {
         const { summary } = req.body;
         
@@ -49,7 +49,7 @@ router.post('/create', async function (req, res) {
     }
 });
 
-router.post('/addMessage/:conversationId', async function (req, res) {
+router.post('/addMessage/:conversationId', authenticateToken, async function (req, res) {
     try {
         const conversationId = req.params.conversationId;
         const { message, sender } = req.body;
@@ -108,7 +108,7 @@ router.post('/addMessage/:conversationId', async function (req, res) {
     }
 });
 
-router.get('/getUserConversationSummaries', async function (req, res) {
+router.get('/getUserConversationSummaries', authenticateToken, async function (req, res) {
     try {
         const userID = req.user.userID;
         const conversations = await botConversationsDb.getUserConversations(userID);
@@ -123,7 +123,7 @@ router.get('/getUserConversationSummaries', async function (req, res) {
     }
 });
 
-router.get('/getFullConversation/:id', async function (req, res) {
+router.get('/getFullConversation/:id', authenticateToken, async function (req, res) {
     try {
         const conversationID = req.params.id;
         
@@ -153,7 +153,7 @@ router.get('/getFullConversation/:id', async function (req, res) {
  * POST /api/bot_conversations/ask-capy
  * Handle "ask capy a question" submission and create/redirect to chatbot conversation
  */
-router.post('/ask-capy', async (req, res) => {
+router.post('/ask-capy', authenticateToken, async (req, res) => {
   try {
     const { user_id, question } = req.body;
     
