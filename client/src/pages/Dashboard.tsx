@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
     const checkPlaidLinked = async () => {
       if (!user?.id) return;
       try {
-        const res = await plaidService.getItemStatus(user.id);
+        const res = await plaidService.getItemStatus(user.id.toString());
         setIsPlaidLinked(res.has_linked_item);
       } catch (err) {
         setIsPlaidLinked(false); // fallback: treat as not linked
