@@ -11,7 +11,9 @@ import {
   Chip,
   Divider,
   useTheme,
-  alpha
+  alpha,
+  TextField,
+  InputAdornment
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -19,13 +21,17 @@ import {
   Logout as LogoutIcon,
   TrendingUp,
   Receipt,
-  MonetizationOn
+  MonetizationOn,
+  Search as SearchIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import capyImage from '../assets/capy.png';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
@@ -64,29 +70,96 @@ const Dashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            <Button
-              variant="contained"
-              startIcon={<LogoutIcon />}
-              onClick={handleLogout}
-              sx={{
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                fontSize: '0.9rem',
-                fontWeight: 500,
-                background: theme.palette.error.main,
-                color: theme.palette.common.white,
-                textTransform: 'none',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  background: theme.palette.error.dark,
-                  transform: 'translateY(-1px)',
-                  boxShadow: `0 3px 8px ${alpha(theme.palette.error.main, 0.3)}`
-                }
-              }}
-            >
-              Logout
-            </Button>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
+              <TextField
+                variant="outlined"
+                placeholder="ask capy a question"
+                size="small"
+                sx={{
+                  minWidth: { xs: 200, sm: 250, md: 300, lg: 400 },
+                  maxWidth: { xs: 250, sm: 350, md: 450, lg: 600 },
+                  width: { xs: '100%', sm: '80%', md: '70%', lg: '60%' },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                    backdropFilter: 'blur(10px)',
+                    '& fieldset': {
+                      borderColor: alpha(theme.palette.primary.main, 0.3),
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.primary.main,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.primary.main,
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.palette.text.primary,
+                    '&::placeholder': {
+                      color: theme.palette.text.secondary,
+                      opacity: 1,
+                    },
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<SettingsIcon />}
+                onClick={() => navigate('/settings')}
+                sx={{
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  background: theme.palette.warning.main,
+                  color: theme.palette.common.white,
+                  textTransform: 'none',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    background: theme.palette.warning.dark,
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 3px 8px ${alpha(theme.palette.warning.main, 0.3)}`
+                  }
+                }}
+              >
+                Settings
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                sx={{
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  background: theme.palette.error.main,
+                  color: theme.palette.common.white,
+                  textTransform: 'none',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    background: theme.palette.error.dark,
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 3px 8px ${alpha(theme.palette.error.main, 0.3)}`
+                  }
+                }}
+              >
+                Logout
+              </Button>
+            </Box>
           </Box>
         </Box>
 
