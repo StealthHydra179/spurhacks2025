@@ -1,13 +1,14 @@
-const dotenv = require('dotenv');
-dotenv.config();
-
-const express = require('express')
+require('dotenv').config();
+const express = require('express');
 const app = express()
 const port = 3000
 const {logger} = require('./logger');
 const sql = require('./db/db'); 
 
 const TAG = 'server_index';
+
+app.use(express.json());
+
 
 app.get('/', (req, res) => {
   res.send('Hello World!')

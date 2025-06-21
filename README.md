@@ -7,6 +7,7 @@ PGUSER=postgres
 PGPASSWORD=_____________________________
 PGPORT=5432
 PGDATABASE=spurhacks2025
+JWT_SECRET=_____________________________
 ```
 To run server
 ```bash
