@@ -887,7 +887,6 @@ const Dashboard: React.FC = () => {
                         sx={{
                           flex: '1 1 200px',
                           borderRadius: 2,
-                          background: alpha(theme.palette.success.main, 0.1),
                           backdropFilter: 'blur(20px)',
                           transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                           cursor: 'pointer',
