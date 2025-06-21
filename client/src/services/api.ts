@@ -96,13 +96,16 @@ export const transactionService = {
 };
 
 export const plaidService = {
-  createLinkToken: async (): Promise<{ link_token: string }> => {
-    const response = await api.post<{ link_token: string }>('/api/plaid/create_link_token');
+  createLinkToken: async (userId: string): Promise<{ link_token: string }> => {
+    const response = await api.post<{ link_token: string }>('/api/plaid/create_link_token', { 
+      user_id: userId
+    });
     return response.data;
   },
-  exchangePublicToken: async (publicToken: string): Promise<{ message: string }> => {
+  exchangePublicToken: async (publicToken: string, userId: string): Promise<{ message: string }> => {
     const response = await api.post<{ message: string }>('/api/plaid/exchange_public_token', { 
-      public_token: publicToken
+      public_token: publicToken,
+      user_id: userId
     });
     return response.data;
   },

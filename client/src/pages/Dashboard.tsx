@@ -603,7 +603,7 @@ const Dashboard: React.FC = () => {
 
               <Card
                 elevation={4}
-                onClick={() => navigate('/transactions')}
+                onClick={() => navigate('/expenses')}
                 sx={{
                   flex: '1 1 200px',
                   borderRadius: 2,
@@ -644,12 +644,14 @@ const Dashboard: React.FC = () => {
 
               <Card
                 elevation={4}
+                onClick={() => navigate('/transactions')}
                 sx={{
                   flex: '1 1 200px',
                   borderRadius: 2,
                   background: alpha(theme.palette.background.paper, 0.95),
                   backdropFilter: 'blur(20px)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  cursor: 'pointer',
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     boxShadow: theme.shadows[12]
