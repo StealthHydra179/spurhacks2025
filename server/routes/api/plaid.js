@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const plaid = require('../../plaid/plaid');
 const { logger } = require('../../logger');
+const plaidUsersDb = require('../../db/plaid_users');
 
 const TAG = 'plaid_routes';
 
@@ -35,14 +36,22 @@ router.post('/exchange_public_token', async (req, res) => {
     
     if (!public_token || !user_id) {
       return res.status(400).json({ error: 'Public token and user ID are required' });
-    }
-
+    }    
+    
     const tokenData = await plaid.exchangePublicToken(public_token, user_id);
+    
+    // Store access token in plaid_users table (users can have multiple access tokens)
+    const plaidUser = await plaidUsersDb.createAccessToken(user_id, tokenData.access_token);
+    logger.info(`${TAG}: Created new plaid_user record ${plaidUser.id} with access token for user ${user_id}`);
+    
     res.json({ 
       message: 'Public token exchange complete',
-      item_id: tokenData.item_id 
+      item_id: tokenData.item_id,
+      plaid_user_id: plaidUser.id
     });
-  } catch (error) {
+
+    
+    } catch (error) {
     logger.error(`${TAG} Error exchanging public token: ${error.message}`);
     res.status(500).json({ error: 'Failed to exchange public token' });
   }
