@@ -142,6 +142,11 @@ export const plaidService = {
     });
     return response.data;
   },
+
+  getBalances: async (userId: string): Promise<any> => {
+    const response = await api.get(`/api/plaid/balances/${userId}`);
+    return response.data;
+  },
 };
 
 export const botConversationService = {
@@ -168,6 +173,11 @@ export const botConversationService = {
       message: message,
       sender: sender
     });
+    return response.data;
+  },
+
+  deleteConversation: async (conversationId: string): Promise<{ message: string; status: string }> => {
+    const response = await api.delete<{ message: string; status: string }>(`/api/bot_conversations/deleteConversation/${conversationId}`);
     return response.data;
   },
 };

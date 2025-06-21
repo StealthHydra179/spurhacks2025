@@ -179,6 +179,60 @@ router.get(
   }
 );
 
+router.delete(
+  "/deleteConversation/:id",
+  authenticateToken,
+  async function (req, res) {
+    try {
+      const conversationID = req.params.id;
+      const userID = req.user.userID;
+
+      // Validate conversation ID
+      if (!conversationID) {
+        return res.status(400).json({
+          message: "Conversation ID is required",
+          status: "error",
+        });
+      }
+
+      // Delete the conversation and all its messages
+      await botConversationsDb.deleteConversation(conversationID, userID);
+
+      logger.info(
+        `${TAG}: Deleted conversation ${conversationID} for user ${userID}`
+      );
+
+      res.status(200).json({
+        message: "Conversation deleted successfully",
+        status: "success",
+      });
+    } catch (error) {
+      logger.error(
+        `${TAG}: Error deleting conversation: ${error.message}`
+      );
+      
+      if (error.message === 'Conversation not found') {
+        return res.status(404).json({
+          message: "Conversation not found",
+          status: "error",
+        });
+      }
+      
+      if (error.message === 'Access denied to this conversation') {
+        return res.status(403).json({
+          message: "Access denied to this conversation",
+          status: "error",
+        });
+      }
+      
+      res.status(500).json({
+        message: "Internal server error",
+        status: "error",
+      });
+    }
+  }
+);
+
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 
 /**

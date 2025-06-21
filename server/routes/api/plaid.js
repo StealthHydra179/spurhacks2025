@@ -271,37 +271,21 @@ router.get("/transactions/:user_id", authenticateToken, async (req, res) => {
   }
 });
 
-// /**
-//  * GET /api/plaid/balances/:user_id
-//  * Get account balances for a user
-//  */
-// router.get('/balances/:user_id', async (req, res) => {
-//   try {
-//     const { user_id } = req.params;
+/**
+ * GET /api/plaid/balances/:user_id
+ * Get account balances for a user
+ */
+router.get('/balances/:user_id', authenticateToken, async (req, res) => {
+  try {
+    const { user_id } = req.params;
 
-//     const balancesData = await plaid.getBalances(user_id);
-//     res.json(balancesData);
-//   } catch (error) {
-//     logger.error(`${TAG} Error getting balances: ${error.message}`);
-//     res.status(500).json({ error: 'Failed to get balances' });
-//   }
-// });
-
-// /**
-//  * GET /api/plaid/identity/:user_id
-//  * Get identity information for a user
-//  */
-// router.get('/identity/:user_id', async (req, res) => {
-//   try {
-//     const { user_id } = req.params;
-
-//     const identityData = await plaid.getIdentity(user_id);
-//     res.json(identityData);
-//   } catch (error) {
-//     logger.error(`${TAG} Error getting identity: ${error.message}`);
-//     res.status(500).json({ error: 'Failed to get identity' });
-//   }
-// });
+    const balancesData = await plaid.getBalances(user_id);
+    res.json(balancesData);
+  } catch (error) {
+    logger.error(`${TAG} Error getting balances: ${error.message}`);
+    res.status(500).json({ error: 'Failed to get balances' });
+  }
+});
 
 /**
  * GET /api/plaid/item-status/:user_id
