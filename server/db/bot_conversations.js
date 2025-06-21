@@ -1,4 +1,54 @@
 const {sql} = require('./db');
+const OpenAI = require('openai');
+const { logger } = require('../logger');
+
+const TAG = 'bot_conversations';
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+/**
+ * Generate AI response using OpenAI GPT-4 mini
+ */
+async function generateAIResponse(userMessage, userContext = {}) {
+  try {
+    const systemPrompt = `You are Capy, a friendly and helpful capybara financial assistant for the CapySpend app. 
+You help users manage their finances, understand their spending patterns, and make better financial decisions.
+Be conversational, supportive, and provide actionable advice.
+Keep responses concise but helpful.
+If you need specific financial data to answer a question, let the user know what information would be helpful.`;
+
+    const userPrompt = `User question: ${userMessage}
+    
+Context: The user is using CapySpend, a personal finance app that connects to their bank accounts via Plaid.
+${userContext.hasPlaidData ? 'The user has connected their bank accounts.' : 'The user may not have connected their bank accounts yet.'}
+
+Please provide a helpful response.`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          "role": "system",
+          "content": systemPrompt
+        },
+        {
+          "role": "user", 
+          "content": userPrompt
+        }
+      ],
+      max_tokens: 500,
+      temperature: 0.7,
+    });
+
+    return completion.choices[0].message.content;
+  } catch (error) {
+    logger.error(`${TAG} Error generating AI response: ${error.message}`);
+    return "I'm sorry, I'm having trouble generating a response right now. Please try again later, or feel free to ask me about your finances and spending habits!";
+  }
+}
 
 async function getByID(id) {
     return await sql`SELECT * FROM bot_conversations WHERE id = ${id}`
@@ -48,5 +98,6 @@ module.exports = {
     getUserConversations: getUserConversations,
     getFullConversation: getFullConversation,
     createConversation: createConversation,
-    addMessageToConversation: addMessageToConversation
+    addMessageToConversation: addMessageToConversation,
+    generateAIResponse: generateAIResponse
 };

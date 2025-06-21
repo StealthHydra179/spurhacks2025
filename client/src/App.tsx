@@ -10,6 +10,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Settings from './pages/Settings'
 import Transactions from './pages/Transactions'
+import Chatbot from './pages/Chatbot'
 import { theme } from './theme'
 
 function App() {
@@ -50,12 +51,27 @@ function App() {
                 <Settings />
               </ProtectedRoute>
             } 
-          />
-          <Route 
+          />          <Route 
             path="/transactions"
             element={
               <ProtectedRoute>
                 <Transactions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <Chatbot />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/chat/:conversationId"
+            element={
+              <ProtectedRoute>
+                <Chatbot />
               </ProtectedRoute>
             } 
           />

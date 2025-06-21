@@ -1,13 +1,11 @@
 import axios from 'axios';
 import type { 
   User, 
-  LoginRequest, 
-  RegisterRequest, 
-  AuthResponse, 
   Transaction, 
   CreateTransactionRequest, 
   UpdateTransactionRequest,
-  ApiResponse 
+  ConversationSummary,
+  Conversation
 } from '../types';
 
 // Create axios instance with base configuration
@@ -125,6 +123,42 @@ export const plaidService = {
     // The response is now just an array, so wrap it in the expected format
     return { transactions: response.data };
   },
+
+  getChatResponse: async (conversationId: number, userMessage: string): Promise<any> => {
+    const response = await api.post('/api/plaid/chat-response', {
+      conversation_id: conversationId,
+      user_message: userMessage
+    });
+    return response.data;
+  },
 };
 
-export default api; 
+export const botConversationService = {
+  getUserConversationSummaries: async (): Promise<ConversationSummary[]> => {
+    const response = await api.get<ConversationSummary[]>('/api/bot_conversations/getUserConversationSummaries');
+    return response.data;
+  },
+
+  getFullConversation: async (conversationId: string): Promise<Conversation> => {
+    const response = await api.get<Conversation>(`/api/bot_conversations/getFullConversation/${conversationId}`);
+    return response.data;
+  },
+
+  askCapy: async (userId: number, question: string): Promise<{ conversation_id: number }> => {
+    const response = await api.post<{ conversation_id: number }>('/api/bot_conversations/ask-capy', {
+      user_id: userId,
+      question: question
+    });
+    return response.data;
+  },
+
+  addMessage: async (conversationId: string, message: string, sender: 'user' | 'bot'): Promise<any> => {
+    const response = await api.post(`/api/bot_conversations/addMessage/${conversationId}`, {
+      message: message,
+      sender: sender
+    });
+    return response.data;
+  },
+};
+
+export default api;

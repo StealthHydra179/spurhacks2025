@@ -3,6 +3,7 @@ const router = express.Router();
 const plaid = require('../../plaid/plaid');
 const { logger } = require('../../logger');
 const plaidUsersDb = require('../../db/plaid_users');
+const botConversationsDb = require('../../db/bot_conversations');
 
 const TAG = 'plaid_routes';
 
@@ -368,6 +369,62 @@ router.post('/fetch-all-transactions', async (req, res) => {
   } catch (error) {
     logger.error(`${TAG} Error in manual fetch all transactions: ${error.message}`);
     res.status(500).json({ error: 'Failed to fetch all transactions' });
+  }
+});
+
+/**
+ * POST /api/plaid/chat-response
+ * Generate AI response for ongoing conversations
+ */
+router.post('/chat-response', async (req, res) => {
+  try {
+    const { conversation_id, user_message } = req.body;
+    
+    if (!conversation_id || !user_message) {
+      return res.status(400).json({ error: 'Conversation ID and user message are required' });
+    }
+
+    // Get conversation context
+    const conversation = await botConversationsDb.getFullConversation(conversation_id);
+    if (!conversation.summary || conversation.summary.length === 0) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    const user_id = conversation.summary[0].user_id;
+    
+    // Build conversation history for context
+    const recentMessages = conversation.messages
+      .slice(-6) // Get last 6 messages for context
+      .map(msg => `${msg.sender}: ${msg.message}`)
+      .join('\n');
+    
+    const contextualMessage = `Recent conversation history:
+${recentMessages}
+
+Current user message: ${user_message}`;
+    
+    // Check if user has Plaid data for context
+    const plaidUsers = await plaidUsersDb.getByUserID(user_id);
+    const userContext = {
+      hasPlaidData: plaidUsers && plaidUsers.length > 0
+    };
+      // Generate AI response with conversation context
+    const aiResponse = await botConversationsDb.generateAIResponse(contextualMessage, userContext);
+    
+    // Add AI response to the conversation
+    const newMessage = await botConversationsDb.addMessageToConversation(conversation_id, aiResponse, 'bot');
+    
+    logger.info(`${TAG}: Generated AI response for conversation ${conversation_id}`);
+    
+    res.json({
+      success: true,
+      message: aiResponse,
+      message_data: newMessage
+    });
+    
+  } catch (error) {
+    logger.error(`${TAG} Error generating chat response: ${error.message}`);
+    res.status(500).json({ error: 'Failed to generate response' });
   }
 });
 
