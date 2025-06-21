@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import { useAuth } from '../context/AuthContext';
 import {
   Box,
   Typography,
@@ -40,11 +41,13 @@ const Chatbot: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const messagesEndRef = useRef<HTMLDivElement>(null);  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
-  const [newMessage, setNewMessage] = useState('');  const [loading, setLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState('');const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [botTyping, setBotTyping] = useState(false);
   const [creatingConversation, setCreatingConversation] = useState(false);
@@ -109,9 +112,14 @@ const Chatbot: React.FC = () => {
     
     // Close mobile drawer if open
     setMobileDrawerOpen(false);
-    
-    const question = 'Hello! I\'d like to start a new conversation about my finances.';    try {
-      const data = await botConversationService.askCapy(1, question); // TODO: Get actual user ID from auth context
+      const question = 'Hello! I\'d like to start a new conversation about my finances.';    
+    try {
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
+      
+      const data = await botConversationService.askCapy(user.id, question);
       
       // Set the new conversation ID immediately to prevent race conditions
       const newConversationId = data.conversation_id.toString();

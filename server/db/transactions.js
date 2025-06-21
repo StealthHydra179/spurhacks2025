@@ -1,4 +1,4 @@
-const {sql} = require('./db');
+const { sql } = require("./db");
 //
 // async function getByID(id) {
 //     return await sql`SELECT * FROM users WHERE id = ${id}`;
@@ -13,12 +13,11 @@ const {sql} = require('./db');
 // }
 
 async function getByID(id) {
-    return await sql`SELECT * FROM transactions WHERE id = ${id}`
+  return await sql`SELECT * FROM transactions WHERE id = ${id}`;
 }
 
-
 module.exports = {
-    getByID: getByID,
-    // getByUsername: getByUsername,
-    // setUser: setUser
+  getByID: getByID,
+  // getByUsername: getByUsername,
+  // setUser: setUser
 };

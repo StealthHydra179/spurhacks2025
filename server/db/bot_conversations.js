@@ -1,8 +1,8 @@
-const {sql} = require('./db');
-const OpenAI = require('openai');
-const { logger } = require('../logger');
+const { sql } = require("./db");
+const OpenAI = require("openai");
+const { logger } = require("../logger");
 
-const TAG = 'bot_conversations';
+const TAG = "bot_conversations";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -13,7 +13,8 @@ const openai = new OpenAI({
  * Generate AI response using OpenAI GPT-4 mini
  */
 async function generateAIResponse(userMessage, userContext = {}) {
-  try {    const systemPrompt = `You are Capy, a friendly and helpful capybara financial assistant for the CapySpend app. 
+  try {
+    const systemPrompt = `You are Capy, a friendly and helpful capybara financial assistant for the CapySpend app. 
 You help users manage their finances, understand their spending patterns, and make better financial decisions.
 Be conversational, supportive, and provide actionable advice.
 Keep responses concise but helpful.
@@ -38,34 +39,43 @@ Mention that you are not a financial advisor, but you can provide general financ
 Recent Transaction Data:
 ${JSON.stringify(userContext.transactionData)}
 
-`;    
+`;
 
-// const formatTransactionData = (transactions) => {
-//       if (!transactions || transactions.length === 0) {
-//         return 'No transaction data available.';
-//       }
-      
-//       // Format recent transactions for AI analysis
-//     //   const recentTransactions = transactions.slice(0, 10); // Last 10 transactions
-//     //   return recentTransactions.map(t => 
-//     //     `Date: ${t.transaction_time?.toISOString().split('T')[0] || 'Unknown'}, ` +
-//     //     `Amount: $${Math.abs(t.amount || 0).toFixed(2)}, ` +
-//     //     `Merchant: ${t.merchant_name || 'Unknown'}, ` +
-//     //     `Category: ${t.category_primary || 'Unknown'}, ` +
-//     //     `Account: ${t.account_name || 'Unknown'}`
-//     //   ).join('\n');
-//         return transactions
-//     };
+    // const formatTransactionData = (transactions) => {
+    //       if (!transactions || transactions.length === 0) {
+    //         return 'No transaction data available.';
+    //       }
+
+    //       // Format recent transactions for AI analysis
+    //     //   const recentTransactions = transactions.slice(0, 10); // Last 10 transactions
+    //     //   return recentTransactions.map(t =>
+    //     //     `Date: ${t.transaction_time?.toISOString().split('T')[0] || 'Unknown'}, ` +
+    //     //     `Amount: $${Math.abs(t.amount || 0).toFixed(2)}, ` +
+    //     //     `Merchant: ${t.merchant_name || 'Unknown'}, ` +
+    //     //     `Category: ${t.category_primary || 'Unknown'}, ` +
+    //     //     `Account: ${t.account_name || 'Unknown'}`
+    //     //   ).join('\n');
+    //         return transactions
+    //     };
 
     const userPrompt = `User question: ${userMessage}
     
 Context: The user is using CapySpend, a personal finance app that connects to their bank accounts via Plaid.
-${userContext.hasPlaidData ? 'The user has connected their bank accounts.' : 'The user may not have connected their bank accounts yet.'}
+${
+  userContext.hasPlaidData
+    ? "The user has connected their bank accounts."
+    : "The user may not have connected their bank accounts yet."
+}
 
-Please provide a helpful response.`;    logger.info(`${TAG} Generating AI response for user message: ${userMessage}`);
+Please provide a helpful response.`;
+    logger.info(
+      `${TAG} Generating AI response for user message: ${userMessage}`
+    );
     logger.info(`${TAG} User has Plaid data: ${userContext.hasPlaidData}`);
     if (userContext.transactionData && userContext.transactionData.length > 0) {
-      logger.info(`${TAG} Using ${userContext.transactionData.length} transactions for context`);
+      logger.info(
+        `${TAG} Using ${userContext.transactionData.length} transactions for context`
+      );
     }
     logger.info(`${TAG} systemPrompt: ${systemPrompt}`);
 
@@ -73,13 +83,13 @@ Please provide a helpful response.`;    logger.info(`${TAG} Generating AI respon
       model: "gpt-4o-mini",
       messages: [
         {
-          "role": "system",
-          "content": systemPrompt
+          role: "system",
+          content: systemPrompt,
         },
         {
-          "role": "user", 
-          "content": userPrompt
-        }
+          role: "user",
+          content: userPrompt,
+        },
       ],
       max_tokens: 500,
       temperature: 0.7,
@@ -93,53 +103,54 @@ Please provide a helpful response.`;    logger.info(`${TAG} Generating AI respon
 }
 
 async function getByID(id) {
-    return await sql`SELECT * FROM bot_conversations WHERE id = ${id}`
+  return await sql`SELECT * FROM bot_conversations WHERE id = ${id}`;
 }
 
-async function getUserConversations(userID){
-    return await sql`SELECT * FROM bot_conversations WHERE user_id = ${userID}`
+async function getUserConversations(userID) {
+  return await sql`SELECT * FROM bot_conversations WHERE user_id = ${userID}`;
 }
 
 async function getFullConversation(conversationID) {
-    const summary = await getByID(conversationID)
-    const messages = await sql`SELECT * FROM conversation_message WHERE conversation_id = ${conversationID}`
-    return {summary: summary, messages: messages}
+  const summary = await getByID(conversationID);
+  const messages =
+    await sql`SELECT * FROM conversation_message WHERE conversation_id = ${conversationID}`;
+  return { summary: summary, messages: messages };
 }
 
 async function createConversation(userID, summary) {
-    const result = await sql`
+  const result = await sql`
         INSERT INTO bot_conversations (user_id, summary, create_timestamp)
         VALUES (${userID}, ${summary}, NOW())
         RETURNING id, user_id, summary, create_timestamp
-    `
-    return result[0]
+    `;
+  return result[0];
 }
 
 async function addMessageToConversation(conversationID, message, sender) {
-    // Get the highest message_number for this conversation
-    const maxMessageResult = await sql`
+  // Get the highest message_number for this conversation
+  const maxMessageResult = await sql`
         SELECT COALESCE(MAX(message_number), 0) as max_message_number 
         FROM conversation_message 
         WHERE conversation_id = ${conversationID}
-    `
-    
-    const nextMessageNumber = maxMessageResult[0].max_message_number + 1
-    
-    // Insert the new message
-    const result = await sql`
+    `;
+
+  const nextMessageNumber = maxMessageResult[0].max_message_number + 1;
+
+  // Insert the new message
+  const result = await sql`
         INSERT INTO conversation_message (conversation_id, message, message_number, sender, message_timestamp)
         VALUES (${conversationID}, ${message}, ${nextMessageNumber}, ${sender}, NOW())
         RETURNING id, conversation_id, message, message_number, sender, message_timestamp
-    `
-    
-    return result[0]
+    `;
+
+  return result[0];
 }
 
 module.exports = {
-    getByID: getByID,
-    getUserConversations: getUserConversations,
-    getFullConversation: getFullConversation,
-    createConversation: createConversation,
-    addMessageToConversation: addMessageToConversation,
-    generateAIResponse: generateAIResponse
+  getByID: getByID,
+  getUserConversations: getUserConversations,
+  getFullConversation: getFullConversation,
+  createConversation: createConversation,
+  addMessageToConversation: addMessageToConversation,
+  generateAIResponse: generateAIResponse,
 };

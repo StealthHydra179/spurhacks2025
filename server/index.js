@@ -1,21 +1,24 @@
-require('dotenv').config();
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const app = express()
-const port = 3000
-const {logger} = require('./logger');
-const sql = require('./db/db'); 
+require("dotenv").config();
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const app = express();
+const port = 3000;
+const { logger } = require("./logger");
+const sql = require("./db/db");
 
-const TAG = 'server_index';
+const TAG = "server_index";
 
 // CORS middleware for credentials
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173'); // Vite dev server
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true'); // Important for cookies
-  
-  if (req.method === 'OPTIONS') {
+  res.header("Access-Control-Allow-Origin", "http://localhost:5173"); // Vite dev server
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Credentials", "true"); // Important for cookies
+
+  if (req.method === "OPTIONS") {
     res.sendStatus(200);
   } else {
     next();
@@ -25,44 +28,50 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(cookieParser()); // Parse cookies
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
-const apiUsers = require('./routes/api/users');
-app.use('/api/users', apiUsers);
-const apiTransactions = require('./routes/api/transactions');
-app.use('/api/transactions', apiTransactions);
-const apiBotConversations = require('./routes/api/bot_conversations');
-app.use('/api/bot_conversations', apiBotConversations);
-const apiPlaid = require('./routes/api/plaid');
-app.use('/api/plaid', apiPlaid);
+const apiUsers = require("./routes/api/users");
+app.use("/api/users", apiUsers);
+const apiTransactions = require("./routes/api/transactions");
+app.use("/api/transactions", apiTransactions);
+const apiBotConversations = require("./routes/api/bot_conversations");
+app.use("/api/bot_conversations", apiBotConversations);
+const apiPlaid = require("./routes/api/plaid");
+app.use("/api/plaid", apiPlaid);
 
 app.listen(port, () => {
-  logger.info(`${TAG} Server listening on port ${port}`)
-  
+  logger.info(`${TAG} Server listening on port ${port}`);
+
   // Initialize Plaid data fetching after server starts
   setTimeout(() => {
     initializePlaidDataFetching();
   }, 5000); // Wait 5 seconds for server to fully initialize
-})
+});
 
 // Initialize Plaid data fetching
 async function initializePlaidDataFetching() {
-  const plaid = require('./plaid/plaid');
-  
+  const plaid = require("./plaid/plaid");
+
   // Fetch plaid information once on boot
   try {
     logger.info(`${TAG} Fetching initial Plaid information on server boot`);
     const summary = await plaid.getPlaidSummary();
     logger.info(`${TAG} Plaid summary: ${JSON.stringify(summary)}`);
-    
+
     if (summary.connectedUsers > 0) {
       const initialData = await plaid.fetchPlaidInfo();
-      logger.info(`${TAG} Initial Plaid data fetched successfully for ${Object.keys(initialData).length} users`);
+      logger.info(
+        `${TAG} Initial Plaid data fetched successfully for ${
+          Object.keys(initialData).length
+        } users`
+      );
     }
   } catch (error) {
-    logger.error(`${TAG} Error fetching initial plaid information: ${error.message}`);
+    logger.error(
+      `${TAG} Error fetching initial plaid information: ${error.message}`
+    );
   }
 
   // Set an interval to fetch plaid information every 12 hours
@@ -82,7 +91,9 @@ async function initializePlaidDataFetching() {
       const data = await plaid.fetchLastDayPlaidInfo();
       logger.info(`${TAG} Last day's transactions fetched successfully`);
     } catch (error) {
-      logger.error(`${TAG} Error fetching last day's transactions: ${error.message}`);
+      logger.error(
+        `${TAG} Error fetching last day's transactions: ${error.message}`
+      );
     }
   }, 60 * 60 * 1000); // 1 hour in milliseconds
 
