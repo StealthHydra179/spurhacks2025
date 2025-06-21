@@ -45,6 +45,13 @@ router.post('/register', async (req, res) => {
     }
     const { username, password } = req.body;
 
+    // Comprehensive email validation using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(req.body.email)) {
+        logger.warn(`${TAG} Registration failed: Invalid email address "${req.body.email}"`);
+        return res.status(400).json({ message: 'Invalid email address' });
+    }
+
     const userExists = await userDb.getByUsername(username);
     if (userExists.length !== 0) {
         logger.warn(`${TAG} Registration failed: User already exists with username ${username}`);
@@ -74,8 +81,6 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({message: 'User not found'})
     }
     const user = users[0]
-    logger.info(`${JSON.stringify(user)}`)
-    logger.info(`${password}`)
 
     if (!user || !(await bcrypt.compare( password, user.hashed_password))) {
         return res.status(401).json({ message: 'Invalid credentials' });
