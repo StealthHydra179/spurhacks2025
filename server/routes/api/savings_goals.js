@@ -2,12 +2,12 @@ var express = require("express");
 var router = express.Router();
 const { logger } = require("../../logger");
 const savingsGoalsDb = require("../../db/savings_goals");
-const { authenticateJWT } = require("../../jwt");
+const authenticateToken = require("../../jwt");
 
 const TAG = "api_savings_goals";
 
 // Get all savings goals for the authenticated user
-router.get("/", authenticateJWT, async function (req, res) {
+router.get("/", authenticateToken, async function (req, res) {
   try {
     const userId = req.user.userID;
     logger.info(`${TAG} Fetching savings goals for user: ${userId}`);
@@ -29,7 +29,7 @@ router.get("/", authenticateJWT, async function (req, res) {
 });
 
 // Get a specific savings goal by ID
-router.get("/:id", authenticateJWT, async function (req, res) {
+router.get("/:id", authenticateToken, async function (req, res) {
   try {
     const userId = req.user.userID;
     const goalId = req.params.id;
@@ -69,7 +69,7 @@ router.get("/:id", authenticateJWT, async function (req, res) {
 });
 
 // Create a new savings goal
-router.post("/", authenticateJWT, async function (req, res) {
+router.post("/", authenticateToken, async function (req, res) {
   try {
     const userId = req.user.userID;
     const { amount, start_timestamp, end_timestamp } = req.body;
@@ -136,7 +136,7 @@ router.post("/", authenticateJWT, async function (req, res) {
 });
 
 // Update a savings goal
-router.put("/:id", authenticateJWT, async function (req, res) {
+router.put("/:id", authenticateToken, async function (req, res) {
   try {
     const userId = req.user.userID;
     const goalId = req.params.id;
@@ -213,7 +213,7 @@ router.put("/:id", authenticateJWT, async function (req, res) {
 });
 
 // Delete a savings goal
-router.delete("/:id", authenticateJWT, async function (req, res) {
+router.delete("/:id", authenticateToken, async function (req, res) {
   try {
     const userId = req.user.userID;
     const goalId = req.params.id;
