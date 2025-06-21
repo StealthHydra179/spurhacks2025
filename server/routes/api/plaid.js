@@ -64,22 +64,22 @@ router.get('/accounts/:user_id', async (req, res) => {
   }
 });
 
-// /**
-//  * GET /api/plaid/transactions/:user_id
-//  * Get transactions for a user
-//  */
-// router.get('/transactions/:user_id', async (req, res) => {
-//   try {
-//     const { user_id } = req.params;
-//     const { start_date, end_date } = req.query;
+/**
+ * GET /api/plaid/transactions/:user_id
+ * Get transactions for a user
+ */
+router.get('/transactions/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { start_date, end_date } = req.query;
     
-//     const transactionsData = await plaid.getTransactions(user_id, start_date, end_date);
-//     res.json(transactionsData);
-//   } catch (error) {
-//     logger.error(`${TAG} Error getting transactions: ${error.message}`);
-//     res.status(500).json({ error: 'Failed to get transactions' });
-//   }
-// });
+    const transactionsData = await plaid.getTransactions(user_id, start_date, end_date);
+    res.json(transactionsData);
+  } catch (error) {
+    logger.error(`${TAG} Error getting transactions: ${error.message}`);
+    res.status(500).json({ error: 'Failed to get transactions' });
+  }
+});
 
 // /**
 //  * GET /api/plaid/balances/:user_id

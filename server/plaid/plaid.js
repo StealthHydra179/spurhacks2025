@@ -76,7 +76,7 @@ async function createLinkToken(userId) {
       user: {
         client_user_id: userId.toString(),
       },
-      client_name: 'CappySpend App',
+      client_name: 'CapySpend App',
       products: ['auth', 'transactions'],
       language: 'en',
       country_codes: ['US'],

@@ -110,6 +110,20 @@ export const plaidService = {
     });
     return response.data;
   },
+
+  getItemStatus: async (userId: string): Promise<{ has_linked_item: boolean }> => {
+    const response = await api.get<{ has_linked_item: boolean }>(`/api/plaid/item-status/${userId}`);
+    return response.data;
+  },
+
+  getTransactions: async (userId: string, startDate?: string, endDate?: string): Promise<{ transactions: any[] }> => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    const response = await api.get<{ transactions: any[] }>(`/api/plaid/transactions/${userId}?${params.toString()}`);
+    return response.data;
+  },
 };
 
 export default api; 

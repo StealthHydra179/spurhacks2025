@@ -53,6 +53,23 @@ const Settings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Check initial item status
+  React.useEffect(() => {
+    const checkItemStatus = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const response = await plaidService.getItemStatus(user.id.toString());
+        setIsBankLinked(response.has_linked_item);
+      } catch (err: any) {
+        console.error('Failed to check item status:', err);
+        // Don't set error here as it's not critical for the UI
+      }
+    };
+
+    checkItemStatus();
+  }, [user?.id]);
+
   // Fetch link token from backend
   React.useEffect(() => {
     const fetchLinkToken = async () => {

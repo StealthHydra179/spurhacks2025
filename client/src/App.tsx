@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Settings from './pages/Settings'
+import Transactions from './pages/Transactions'
 import { theme } from './theme'
 
 function App() {
@@ -47,6 +48,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/transactions"
+            element={
+              <ProtectedRoute>
+                <Transactions />
               </ProtectedRoute>
             } 
           />
