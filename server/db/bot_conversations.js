@@ -18,7 +18,7 @@ function format(transactionData) {
     //payment chanel
     //currency code
     //location
-
+  logger.info(`${TAG} transactionDATA: ${JSON.stringify(transactionData)}`)
     return transactionData.map((transaction) => {
         return {
             original_amount: transaction.original_amount || 0,
@@ -29,6 +29,7 @@ function format(transactionData) {
             payment_channel: transaction.payment_channel || "Unknown",
             iso_currency_code: transaction.iso_currency_code || "USD",
             location: transaction.location || "Unknown",
+            merchant_name: transaction.merchant_name || "Unknown",
         };
     });
 }
