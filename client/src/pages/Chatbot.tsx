@@ -36,7 +36,7 @@ import {
   Menu as MenuIcon,
   Chat as ChatIcon
 } from '@mui/icons-material';
-import capyImage from '../assets/capy.png';
+import capySVG from '../assets/capyy.svg';
 import { botConversationService, plaidService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
@@ -260,7 +260,7 @@ const Chatbot: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Box
             component="img"
-            src={capyImage}
+            src={capySVG}
             alt="Capy"
             sx={{ width: 32, height: 32, objectFit: 'contain' }}
           />
@@ -323,7 +323,7 @@ const Chatbot: React.FC = () => {
                         background: theme.palette.primary.main
                       }}
                     >
-                      <img src={capyImage} alt="Bot" style={{ width: 18, height: 18 }} />
+                      <img src={capySVG} alt="Bot" style={{ width: 18, height: 18 }} />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
@@ -433,10 +433,27 @@ const Chatbot: React.FC = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          position: 'relative'
+          background: '#FFF3E0',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        {/* Capybara SVG in bottom left, behind input box */}
+        <Box
+          sx={{
+            position: 'absolute',
+            left: 0,
+            bottom: 10,
+            zIndex: 1,
+            opacity: 1,
+            width: { xs: 150, sm: 220, md: 250
+            },
+            height: 'auto',
+            pointerEvents: 'none',
+          }}
+        >
+          <img src={capySVG} alt="Capybara SVG" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        </Box>
         {selectedConversation ? (
           <>
             {/* Chat Header */}
@@ -458,7 +475,7 @@ const Chatbot: React.FC = () => {
                 )}
                 <Box
                   component="img"
-                  src={capyImage}
+                  src={capySVG}
                   alt="Capy"
                   sx={{ width: 32, height: 32, objectFit: 'contain' }}
                 />
@@ -478,7 +495,7 @@ const Chatbot: React.FC = () => {
               sx={{
                 flex: 1,
                 overflowY: 'auto',
-                p: 2,
+                p: '16px 40px 16px 16px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2
@@ -491,9 +508,13 @@ const Chatbot: React.FC = () => {
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: 2,
-                    justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start'
+                    width: '100%',
+                    justifyContent: 'flex-end',
+                    flexDirection: 'row',
                   }}
-                >                  {message.sender === 'bot' && (
+                >
+                  {/* Avatar always first, Paper always last */}
+                  {message.sender === 'bot' && (
                     <Avatar
                       sx={{
                         width: 32,
@@ -501,23 +522,39 @@ const Chatbot: React.FC = () => {
                         background: theme.palette.primary.main
                       }}
                     >
-                      <img src={capyImage} alt="Bot" style={{ width: 18, height: 18 }} />
+                      <img src={capySVG} alt="Capy" style={{ width: 18, height: 18 }} />
                     </Avatar>
                   )}
-                  
+                  {message.sender === 'user' && (
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        background: theme.palette.secondary.main
+                      }}
+                    >
+                      <PersonIcon sx={{ fontSize: 18 }} />
+                    </Avatar>
+                  )}
                   <Paper
                     elevation={1}
                     sx={{
                       p: 2,
                       maxWidth: '70%',
                       borderRadius: 2,
-                      background: message.sender === 'user' 
-                        ? theme.palette.primary.main 
-                        : alpha(theme.palette.background.paper, 0.9),
-                      color: message.sender === 'user' 
-                        ? theme.palette.primary.contrastText 
-                        : theme.palette.text.primary
-                    }}                  >                    {message.sender === 'bot' ? (
+                      background: message.sender === 'user'
+                        ? '#FFE2B6'
+                        : '#FFFCF9',
+                      color: message.sender === 'user'
+                        ? theme.palette.text.primary
+                        : theme.palette.text.primary,
+                      boxShadow: message.sender === 'user' ? '0 2px 8px 0 rgba(0,0,0,0.08)' : undefined,
+                      ml: 0,
+                      mr: 0,
+                      mb: message.sender === 'bot' ? { xs: 10, sm: 15, md: 20} : 0,
+                    }}
+                  >
+                    {message.sender === 'bot' ? (
                       <Box className="markdown-content">
                         <ReactMarkdown
                           components={{
@@ -628,79 +665,42 @@ const Chatbot: React.FC = () => {
                       {new Date(message.message_timestamp).toLocaleTimeString()}
                     </Typography>
                   </Paper>
-
-                  {message.sender === 'user' && (
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        background: theme.palette.secondary.main
-                      }}
-                    >
-                      <PersonIcon sx={{ fontSize: 18 }} />
-                    </Avatar>                  )}
                 </Box>
               ))}
               
               {/* Bot typing indicator */}
               {botTyping && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 2,
-                    justifyContent: 'flex-start'
-                  }}
-                >                  <Avatar
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      background: theme.palette.primary.main
-                    }}
-                  >
-                    <img src={capyImage} alt="Bot" style={{ width: 18, height: 18 }} />
-                  </Avatar>
-                    <Paper
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2, ml: { xs: '150px', sm: '200px', md: '250px' } }}>
+                  <Paper
                     elevation={1}
                     sx={{
                       p: 2,
                       borderRadius: 2,
-                      background: alpha(theme.palette.background.paper, 0.9),
+                      background: '#FFFCF9',
                       color: theme.palette.text.primary,
-                      minWidth: 60,
-                      '& .typing-dots': {
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        height: 20,
-                        '& .dot': {
-                          width: 6,
-                          height: 6,
-                          borderRadius: '50%',
-                          backgroundColor: theme.palette.text.secondary,
-                          animation: 'typing-bounce 1.4s infinite ease-in-out',
-                          '&:nth-of-type(1)': { animationDelay: '0s' },
-                          '&:nth-of-type(2)': { animationDelay: '0.2s' },
-                          '&:nth-of-type(3)': { animationDelay: '0.4s' }
-                        }
-                      },
-                      '@keyframes typing-bounce': {
-                        '0%, 80%, 100%': {
-                          opacity: 0.3,
-                          transform: 'scale(0.8)'
-                        },
-                        '40%': {
-                          opacity: 1,
-                          transform: 'scale(1)'
-                        }
-                      }
+                      fontSize: '1.25rem',
+                      fontWeight: 500,
+                      boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
+                      minWidth: 80,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
                     }}
                   >
-                    <Box className="typing-dots">
-                      <Box className="dot" />
-                      <Box className="dot" />
-                      <Box className="dot" />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <span>Typing</span>
+                      <Box sx={{ display: 'inline-flex', ml: 0.5 }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0s' }} />
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.2s' }} />
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.4s' }} />
+                      </Box>
                     </Box>
+                    <style>{`
+                      @keyframes typing-bounce {
+                        0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+                        40% { opacity: 1; transform: scale(1); }
+                      }
+                    `}</style>
                   </Paper>
                 </Box>
               )}
@@ -709,52 +709,47 @@ const Chatbot: React.FC = () => {
             </Box>
 
             {/* Message Input */}
-            <Paper
-              elevation={1}
-              sx={{
-                p: 2,
-                background: alpha(theme.palette.background.paper, 0.95),
-                backdropFilter: 'blur(20px)',
-                borderRadius: 0,
-                borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-              }}
-            >
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
-                <TextField
-                  fullWidth
-                  multiline
-                  maxRows={4}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
-                  disabled={sending}
-                  variant="outlined"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2
-                    }
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  onClick={sendMessage}
-                  disabled={!newMessage.trim() || sending}
-                  sx={{
-                    minWidth: 'auto',
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2
-                  }}
-                >
-                  {sending ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <SendIcon />
-                  )}
-                </Button>
-              </Box>
-            </Paper>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', p: 2, zIndex: 2, position: 'relative', background: 'transparent' }}>
+              <TextField
+                fullWidth
+                multiline
+                maxRows={4}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                disabled={sending}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    background: '#FFE2B6',
+                    boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
+                    border: 'none',
+                    '& fieldset': {
+                      border: 'none',
+                    },
+                  }
+                }}
+              />
+              <Button
+                variant="contained"
+                onClick={sendMessage}
+                disabled={!newMessage.trim() || sending}
+                sx={{
+                  minWidth: 'auto',
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2
+                }}
+              >
+                {sending ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <SendIcon />
+                )}
+              </Button>
+            </Box>
           </>
         ) : (
           // No conversation selected state
@@ -781,9 +776,9 @@ const Chatbot: React.FC = () => {
             )}
             <Box
               component="img"
-              src={capyImage}
+              src={capySVG}
               alt="Capy"
-              sx={{ width: 80, height: 80, objectFit: 'contain', opacity: 0.6 }}
+              sx={{ width: 80, height: 80, objectFit: 'contain', opacity: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))'}}
             />
             <Typography variant="h5" fontWeight={600} color="text.secondary">
               Welcome to Capy Chat
@@ -801,6 +796,7 @@ const Chatbot: React.FC = () => {
             </Button></Box>
         )}
       </Box>
+<<<<<<< Updated upstream
 
       {/* New Conversation Loading Overlay */}
       {creatingConversation && (
@@ -918,6 +914,8 @@ const Chatbot: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+=======
+>>>>>>> Stashed changes
     </Box>
   );
 };
