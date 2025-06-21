@@ -68,4 +68,25 @@ export interface JWTPayload {
   userID: number;
   iat: number;
   exp: number;
-} 
+}
+
+// Bot conversation related types
+export interface Message {
+  id: number;
+  message: string;
+  sender: 'user' | 'bot';
+  message_timestamp: string;
+  message_number: number;
+}
+
+export interface ConversationSummary {
+  id: number;
+  user_id: number;
+  summary: string;
+  create_timestamp: string;
+}
+
+export interface Conversation {
+  summary: ConversationSummary[];
+  messages: Message[];
+}

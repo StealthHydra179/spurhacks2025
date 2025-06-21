@@ -24,7 +24,6 @@ import {
 } from '@mui/material';
 import {
   Person as PersonIcon,
-  AccountBalance as AccountBalanceIcon,
   Logout as LogoutIcon,
   TrendingUp,
   Receipt,
@@ -36,6 +35,7 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import capyImage from '../assets/capy.png';
 import { useNavigate } from 'react-router-dom';
+import { botConversationService } from '../services/api';
 
 interface PlaidTransaction {
   transaction_id: string;
@@ -84,6 +84,7 @@ const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary>({
     income: 0,
@@ -244,6 +245,27 @@ const Dashboard: React.FC = () => {
     handleProfileMenuClose();
     await logout();
   };
+  const handleSearchSubmit = async (e: React.FormEvent | React.KeyboardEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    try {
+      // Call the ask-capy API to create a new conversation
+      const data = await botConversationService.askCapy(user?.id || 1, searchQuery);
+      // Navigate to the new conversation
+      navigate(`/chat/${data.conversation_id}`);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      // Fallback: just navigate to chat page
+      navigate('/chat');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit(e);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -294,46 +316,50 @@ const Dashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
-              <TextField
-                variant="outlined"
-                placeholder="ask capy a question"
-                size="small"
-                sx={{
-                  minWidth: { xs: 200, sm: 250, md: 300, lg: 400 },
-                  maxWidth: { xs: 250, sm: 350, md: 450, lg: 600 },
-                  width: { xs: '100%', sm: '80%', md: '70%', lg: '60%' },
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                    backdropFilter: 'blur(10px)',
-                    '& fieldset': {
-                      borderColor: alpha(theme.palette.primary.main, 0.3),
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
+              <form onSubmit={handleSearchSubmit} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <TextField
+                  variant="outlined"
+                  placeholder="ask capy a question"
+                  size="small"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  sx={{
+                    minWidth: { xs: 200, sm: 250, md: 300, lg: 400 },
+                    maxWidth: { xs: 250, sm: 350, md: 450, lg: 600 },
+                    width: { xs: '100%', sm: '80%', md: '70%', lg: '60%' },
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                      backdropFilter: 'blur(10px)',
+                      '& fieldset': {
+                        borderColor: alpha(theme.palette.primary.main, 0.3),
+                      },
+                      '&:hover fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
                     },
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.primary.main,
+                    '& .MuiInputBase-input': {
+                      color: theme.palette.text.primary,
+                      '&::placeholder': {
+                        color: theme.palette.text.secondary,
+                        opacity: 1,
+                      },
                     },
-                    '&.Mui-focused fieldset': {
-                      borderColor: theme.palette.primary.main,
-                    },
-                  },
-                  '& .MuiInputBase-input': {
-                    color: theme.palette.text.primary,
-                    '&::placeholder': {
-                      color: theme.palette.text.secondary,
-                      opacity: 1,
-                    },
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </form>
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
