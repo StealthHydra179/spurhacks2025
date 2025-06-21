@@ -30,8 +30,6 @@ import {
   InputLabel,
   Select
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs, { Dayjs } from 'dayjs';
 import {
   Person as PersonIcon,
   Logout as LogoutIcon,
@@ -140,22 +138,11 @@ const Dashboard: React.FC = () => {
   const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
   const [isEditGoalDialogOpen, setIsEditGoalDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<FinancialGoal | null>(null);
-  const [editingGoalForm, setEditingGoalForm] = useState({
-    title: '',
-    description: '',
-    amount: 0,
-    current_amount: 0,
-    deadline: null as Dayjs | null,
-    category: 'savings' as string,
-    priority: 'medium' as 'low' | 'medium' | 'high',
-    icon: '💰',
-    color: '#4CAF50'
-  });
   const [newGoal, setNewGoal] = useState({
     title: '',
     description: '',
     amount: 0,
-    deadline: null as Dayjs | null,
+    deadline: '',
     category: 'savings' as string,
     priority: 'medium' as 'low' | 'medium' | 'high',
     icon: '💰',
@@ -441,16 +428,11 @@ const Dashboard: React.FC = () => {
   };
 
   const getDaysUntilDeadline = (deadline: string) => {
-    const deadlineDate = new Date(deadline);
     const today = new Date();
+    const deadlineDate = new Date(deadline);
     const diffTime = deadlineDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
-  };
-
-  const isDateValid = (date: Dayjs | null): boolean => {
-    if (!date) return false;
-    return date.isAfter(dayjs(), 'day') || date.isSame(dayjs(), 'day');
   };
 
   const getPriorityColor = (priority: string) => {
@@ -490,7 +472,7 @@ const Dashboard: React.FC = () => {
         description: newGoal.description,
         amount: newGoal.amount,
         current_amount: 0,
-        deadline: newGoal.deadline?.toISOString() || undefined,
+        deadline: newGoal.deadline,
         category: newGoal.category,
         priority: newGoal.priority,
         icon: newGoal.icon,
@@ -504,7 +486,7 @@ const Dashboard: React.FC = () => {
         title: '',
         description: '',
         amount: 0,
-        deadline: null as Dayjs | null,
+        deadline: '',
         category: 'savings',
         priority: 'medium',
         icon: '💰',
@@ -549,7 +531,7 @@ const Dashboard: React.FC = () => {
       title: '',
       description: '',
       amount: 0,
-      deadline: null as Dayjs | null,
+      deadline: '',
       category: 'savings',
       priority: 'medium',
       icon: '💰',
@@ -559,17 +541,6 @@ const Dashboard: React.FC = () => {
 
   const handleOpenEditGoalDialog = (goal: FinancialGoal) => {
     setEditingGoal(goal);
-    setEditingGoalForm({
-      title: goal.title,
-      description: goal.description,
-      amount: goal.amount,
-      current_amount: goal.current_amount,
-      deadline: goal.deadline ? dayjs(goal.deadline) : null,
-      category: goal.category || 'savings',
-      priority: goal.priority,
-      icon: goal.icon || '💰',
-      color: goal.color || '#4CAF50'
-    });
     setIsEditGoalDialogOpen(true);
     setIsGoalDialogOpen(false); // Close the view dialog
   };
@@ -584,15 +555,15 @@ const Dashboard: React.FC = () => {
     
     try {
       const goalData = {
-        title: editingGoalForm.title,
-        description: editingGoalForm.description,
-        amount: editingGoalForm.amount,
-        current_amount: editingGoalForm.current_amount,
-        deadline: editingGoalForm.deadline?.toISOString() || undefined,
-        category: editingGoalForm.category || undefined,
-        priority: editingGoalForm.priority,
-        icon: editingGoalForm.icon || undefined,
-        color: editingGoalForm.color || undefined
+        title: editingGoal.title,
+        description: editingGoal.description,
+        amount: editingGoal.amount,
+        current_amount: editingGoal.current_amount,
+        deadline: editingGoal.deadline || undefined,
+        category: editingGoal.category || undefined,
+        priority: editingGoal.priority,
+        icon: editingGoal.icon || undefined,
+        color: editingGoal.color || undefined
       };
       
       await savingsGoalsService.updateSavingsGoal(editingGoal.id.toString(), goalData);
@@ -2024,21 +1995,14 @@ const Dashboard: React.FC = () => {
                 sx={{ mb: 2 }}
               />
               
-              <DatePicker
+              <TextField
+                fullWidth
                 label="Deadline"
+                type="date"
                 value={newGoal.deadline}
-                onChange={(newValue) => setNewGoal({ ...newGoal, deadline: newValue })}
-                minDate={dayjs()}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    sx: { mb: 2 },
-                    error: newGoal.deadline ? !isDateValid(newGoal.deadline) : false,
-                    helperText: newGoal.deadline && !isDateValid(newGoal.deadline) 
-                      ? 'Deadline cannot be in the past' 
-                      : ''
-                  }
-                }}
+                onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                sx={{ mb: 2 }}
               />
             </Box>
             
@@ -2204,8 +2168,8 @@ const Dashboard: React.FC = () => {
               <TextField
                 fullWidth
                 label="Goal Title"
-                value={editingGoalForm.title}
-                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, title: e.target.value })}
+                value={editingGoal?.title || ''}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, title: e.target.value })}
                 sx={{ mb: 2 }}
               />
               
@@ -2214,8 +2178,8 @@ const Dashboard: React.FC = () => {
                 label="Description"
                 multiline
                 rows={3}
-                value={editingGoalForm.description}
-                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, description: e.target.value })}
+                value={editingGoal?.description || ''}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, description: e.target.value })}
                 sx={{ mb: 2 }}
               />
               
@@ -2223,29 +2187,22 @@ const Dashboard: React.FC = () => {
                 fullWidth
                 label="Target Amount"
                 type="number"
-                value={editingGoalForm.amount}
-                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, amount: parseFloat(e.target.value) || 0 })}
+                value={editingGoal?.amount || 0}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, amount: parseFloat(e.target.value) || 0 })}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
                 sx={{ mb: 2 }}
               />
               
-              <DatePicker
+              <TextField
+                fullWidth
                 label="Deadline"
-                value={editingGoalForm.deadline}
-                onChange={(newValue) => setEditingGoalForm({ ...editingGoalForm, deadline: newValue })}
-                minDate={dayjs()}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    sx: { mb: 2 },
-                    error: editingGoalForm.deadline ? !isDateValid(editingGoalForm.deadline) : false,
-                    helperText: editingGoalForm.deadline && !isDateValid(editingGoalForm.deadline) 
-                      ? 'Deadline cannot be in the past' 
-                      : ''
-                  }
-                }}
+                type="date"
+                value={editingGoal?.deadline || ''}
+                onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, deadline: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                sx={{ mb: 2 }}
               />
             </Box>
             
@@ -2254,9 +2211,9 @@ const Dashboard: React.FC = () => {
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Category</InputLabel>
                 <Select
-                  value={editingGoalForm.category}
+                  value={editingGoal?.category || ''}
                   label="Category"
-                  onChange={(e) => setEditingGoalForm({ ...editingGoalForm, category: e.target.value as string })}
+                  onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, category: e.target.value as string })}
                 >
                   <MenuItem value="savings">💰 Savings</MenuItem>
                   <MenuItem value="debt">💳 Debt Repayment</MenuItem>
@@ -2269,9 +2226,9 @@ const Dashboard: React.FC = () => {
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Priority</InputLabel>
                 <Select
-                  value={editingGoalForm.priority}
+                  value={editingGoal?.priority || 'medium'}
                   label="Priority"
-                  onChange={(e) => setEditingGoalForm({ ...editingGoalForm, priority: e.target.value as 'low' | 'medium' | 'high' })}
+                  onChange={(e) => editingGoal && setEditingGoal({ ...editingGoal, priority: e.target.value as 'low' | 'medium' | 'high' })}
                 >
                   <MenuItem value="low">Low Priority</MenuItem>
                   <MenuItem value="medium">Medium Priority</MenuItem>
@@ -2287,10 +2244,10 @@ const Dashboard: React.FC = () => {
                 {['💰', '🏠', '✈️', '💻', '📈', '💳', '🛡️', '🎓', '🚗', '🏥', '🎯', '⭐'].map((icon) => (
                   <IconButton
                     key={icon}
-                    onClick={() => setEditingGoalForm({ ...editingGoalForm, icon: icon as string })}
+                    onClick={() => editingGoal && setEditingGoal({ ...editingGoal, icon: icon as string })}
                     sx={{
                       fontSize: '24px',
-                      border: editingGoalForm.icon === icon ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      border: editingGoal?.icon === icon ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
                       '&:hover': {
                         backgroundColor: alpha(theme.palette.primary.main, 0.1)
                       }
@@ -2309,13 +2266,13 @@ const Dashboard: React.FC = () => {
                 {['#4CAF50', '#2196F3', '#FF9800', '#F44336', '#9C27B0', '#00BCD4', '#FF5722', '#795548', '#607D8B', '#E91E63'].map((color) => (
                   <IconButton
                     key={color}
-                    onClick={() => setEditingGoalForm({ ...editingGoalForm, color: color as string })}
+                    onClick={() => editingGoal && setEditingGoal({ ...editingGoal, color: color as string })}
                     sx={{
                       backgroundColor: color,
                       width: 40,
                       height: 40,
-                      border: editingGoalForm.color === color ? `3px solid ${theme.palette.common.white}` : '3px solid transparent',
-                      boxShadow: editingGoalForm.color === color ? `0 0 0 2px ${theme.palette.primary.main}` : 'none',
+                      border: editingGoal?.color === color ? `3px solid ${theme.palette.common.white}` : '3px solid transparent',
+                      boxShadow: editingGoal?.color === color ? `0 0 0 2px ${theme.palette.primary.main}` : 'none',
                       '&:hover': {
                         transform: 'scale(1.1)'
                       }
@@ -2373,7 +2330,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleUpdateGoal}
-            disabled={!editingGoalForm.title || !editingGoalForm.description || editingGoalForm.amount <= 0 || !editingGoalForm.deadline}
+            disabled={!editingGoal?.title || !editingGoal?.description || editingGoal?.amount <= 0 || !editingGoal?.deadline}
             sx={{ borderRadius: 2 }}
           >
             Update Goal

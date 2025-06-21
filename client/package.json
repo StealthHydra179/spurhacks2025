@@ -17,7 +17,6 @@
     "@mui/x-date-pickers": "^8.5.3",
     "axios": "^1.10.0",
     "date-fns": "^4.1.0",
-    "dayjs": "^1.11.13",
     "i": "^0.3.7",
     "jsonwebtoken": "^9.0.2",
     "react": "^19.1.0",
