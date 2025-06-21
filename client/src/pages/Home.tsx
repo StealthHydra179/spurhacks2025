@@ -1,39 +1,52 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
   Card,
   CardContent,
-  Typography,
-  Container,
   Avatar,
-  Button,
-  Paper,
   useTheme,
   alpha,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Chip
+  Stack
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
-  Person as PersonIcon,
-  Email as EmailIcon,
-  Logout as LogoutIcon,
-  AccountBalance as AccountBalanceIcon,
-  TrendingUp as TrendingUpIcon,
-  Notifications as NotificationsIcon,
-  Settings as SettingsIcon
+  Home as HomeIcon,
+  Security as SecurityIcon,
+  Speed as SpeedIcon,
+  Analytics as AnalyticsIcon,
+  Login as LoginIcon,
+  PersonAdd as RegisterIcon,
+  Dashboard as DashboardIcon
 } from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext';
+import capyImage from '../assets/capy.png';
 
 const Home: React.FC = () => {
-  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const theme = useTheme();
 
-  const handleLogout = async () => {
-    await logout();
-  };
+  const features = [
+    {
+      icon: <SecurityIcon sx={{ fontSize: 40 }} />,
+      title: 'Secure Authentication',
+      description: 'Bank-level security with JWT tokens and HTTP-only cookies'
+    },
+    {
+      icon: <SpeedIcon sx={{ fontSize: 40 }} />,
+      title: 'Real-time Tracking',
+      description: 'Monitor your spending and income in real-time with instant updates'
+    },
+    {
+      icon: <AnalyticsIcon sx={{ fontSize: 40 }} />,
+      title: 'Smart Analytics',
+      description: 'Get insights into your spending patterns and financial health'
+    }
+  ];
 
   return (
     <Box
@@ -57,284 +70,219 @@ const Home: React.FC = () => {
         }
       }}
     >
-      {/* App Bar */}
-      <AppBar 
-        position="sticky" 
-        elevation={0}
-        sx={{
-          background: alpha(theme.palette.background.paper, 0.95),
-          backdropFilter: 'blur(20px)',
-          borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-          zIndex: 1100
-        }}
-      >
-        <Toolbar>
-          <Avatar
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Header */}
+        <Box sx={{ py: 4, textAlign: 'center' }}>
+          <Box
+            component="img"
+            src={capyImage}
+            alt="CapySpend Logo"
             sx={{
-              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-              mr: 2,
-              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+              width: 100,
+              height: 100,
+              objectFit: 'contain',
+              mx: 'auto',
+              mb: 3,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.4)}`
             }}
-          >
-            <DashboardIcon />
-          </Avatar>
+          />
+          
           <Typography
-            variant="h6"
-            component="div"
+            variant="h2"
+            component="h1"
+            fontWeight={800}
             sx={{
-              flexGrow: 1,
-              fontWeight: 700,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              mb: 2,
+              background: `linear-gradient(135deg, ${theme.palette.common.white} 0%, ${alpha(theme.palette.common.white, 0.8)} 100%)`,
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              WebkitTextFillColor: 'transparent',
+              textShadow: `0 4px 8px ${alpha(theme.palette.common.black, 0.3)}`
             }}
           >
-            SpurHacks 2025 Dashboard
+            CapySpend
           </Typography>
-          <IconButton color="inherit" sx={{ mr: 1 }}>
-            <NotificationsIcon />
-          </IconButton>
-          <IconButton color="inherit" sx={{ mr: 1 }}>
-            <SettingsIcon />
-          </IconButton>
-          <Button
-            onClick={handleLogout}
-            variant="outlined"
-            startIcon={<LogoutIcon />}
+          
+          <Typography
+            variant="h5"
             sx={{
-              borderRadius: 2,
-              borderColor: alpha(theme.palette.primary.main, 0.5),
-              color: theme.palette.primary.main,
-              '&:hover': {
-                borderColor: theme.palette.primary.main,
-                background: alpha(theme.palette.primary.main, 0.1)
-              }
+              mb: 4,
+              color: alpha(theme.palette.common.white, 0.9),
+              fontWeight: 300,
+              maxWidth: 600,
+              mx: 'auto'
             }}
           >
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
+            Your personal finance companion with advanced security and real-time tracking
+          </Typography>
 
-      <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 1 }}>
-        {/* Welcome Section */}
-        <Card
-          elevation={24}
-          sx={{
-            borderRadius: 4,
-            backdropFilter: 'blur(20px)',
-            background: alpha(theme.palette.background.paper, 0.95),
-            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
-            mb: 4,
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: theme.shadows[24]
-            }
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Avatar
+          {/* Action Buttons */}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            justifyContent="center"
+            sx={{ mb: 6 }}
+          >
+            {isAuthenticated ? (
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<DashboardIcon />}
+                onClick={() => navigate('/dashboard')}
                 sx={{
-                  width: 80,
-                  height: 80,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                  mr: 3,
-                  boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.4)}`
+                  py: 2,
+                  px: 4,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  borderRadius: 3,
+                  background: alpha(theme.palette.common.white, 0.2),
+                  backdropFilter: 'blur(20px)',
+                  border: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
+                  color: theme.palette.common.white,
+                  '&:hover': {
+                    background: alpha(theme.palette.common.white, 0.3),
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.common.black, 0.3)}`
+                  }
                 }}
               >
-                <PersonIcon sx={{ fontSize: 40 }} />
-              </Avatar>
-              <Box>
-                <Typography
-                  variant="h4"
-                  component="h1"
+                Go to Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<LoginIcon />}
+                  onClick={() => navigate('/login')}
                   sx={{
-                    fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    mb: 1
+                    py: 2,
+                    px: 4,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: 3,
+                    background: alpha(theme.palette.common.white, 0.2),
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
+                    color: theme.palette.common.white,
+                    '&:hover': {
+                      background: alpha(theme.palette.common.white, 0.3),
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 8px 25px ${alpha(theme.palette.common.black, 0.3)}`
+                    }
                   }}
                 >
-                  Welcome back, {user?.username}!
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <EmailIcon color="action" />
-                  <Typography variant="body1" color="text.secondary">
-                    {user?.email}
+                  Sign In
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<RegisterIcon />}
+                  onClick={() => navigate('/register')}
+                  sx={{
+                    py: 2,
+                    px: 4,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: 3,
+                    borderColor: alpha(theme.palette.common.white, 0.5),
+                    color: theme.palette.common.white,
+                    backdropFilter: 'blur(20px)',
+                    '&:hover': {
+                      borderColor: theme.palette.common.white,
+                      background: alpha(theme.palette.common.white, 0.1),
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 8px 25px ${alpha(theme.palette.common.black, 0.3)}`
+                    }
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
+          </Stack>
+        </Box>
+
+        {/* Features Section */}
+        <Box sx={{ py: 6 }}>
+          <Typography
+            variant="h3"
+            component="h2"
+            textAlign="center"
+            sx={{
+              mb: 6,
+              color: theme.palette.common.white,
+              fontWeight: 700
+            }}
+          >
+            Why Choose CapySpend?
+          </Typography>
+          
+          <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {features.map((feature, index) => (
+              <Card
+                key={index}
+                elevation={12}
+                sx={{
+                  flex: '1 1 300px',
+                  borderRadius: 4,
+                  background: alpha(theme.palette.background.paper, 0.95),
+                  backdropFilter: 'blur(20px)',
+                  border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.3)}`
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                  <Avatar
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                      mx: 'auto',
+                      mb: 3,
+                      boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.4)}`
+                    }}
+                  >
+                    {feature.icon}
+                  </Avatar>
+                  <Typography variant="h5" component="h3" fontWeight={600} gutterBottom>
+                    {feature.title}
                   </Typography>
-                  <Chip
-                    label="Verified"
-                    color="success"
-                    size="small"
-                    sx={{ ml: 2 }}
-                  />
-                </Box>
-              </Box>
-            </Box>
-            <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>
-              Welcome to your SpurHacks 2025 dashboard. Here you can manage your hackathon journey, 
-              track your progress, and access all the tools you need for an amazing experience.
-            </Typography>
-          </CardContent>
-        </Card>        {/* Dashboard Cards */}
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: 'repeat(2, 1fr)',
-              lg: 'repeat(3, 1fr)'
-            },
-            gap: 3
-          }}
-        >
-          <Paper
-            elevation={12}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              background: alpha(theme.palette.background.paper, 0.9),
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: theme.shadows[20],
-                borderColor: alpha(theme.palette.primary.main, 0.3)
-              }
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
-                  mr: 2
-                }}
-              >
-                <TrendingUpIcon />
-              </Avatar>
-              <Typography variant="h6" fontWeight={600}>
-                Progress Tracker
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Track your hackathon milestones and achievements throughout the event.
-            </Typography>
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                borderRadius: 2,
-                background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`
-                }
-              }}
-            >
-              View Progress
-            </Button>
-          </Paper>
+                  <Typography variant="body1" color="text.secondary">
+                    {feature.description}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Box>
 
-          <Paper
-            elevation={12}
+        {/* Footer */}
+        <Box sx={{ py: 6, textAlign: 'center' }}>
+          <Typography
+            variant="body2"
             sx={{
-              p: 3,
-              borderRadius: 3,
-              background: alpha(theme.palette.background.paper, 0.9),
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: theme.shadows[20],
-                borderColor: alpha(theme.palette.secondary.main, 0.3)
-              }
+              color: alpha(theme.palette.common.white, 0.7),
+              fontWeight: 300
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.light} 100%)`,
-                  mr: 2
-                }}
-              >
-                <AccountBalanceIcon />
-              </Avatar>
-              <Typography variant="h6" fontWeight={600}>
-                Financial Tools
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Access Plaid integration and financial management tools for your projects.
-            </Typography>
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                borderRadius: 2,
-                background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.light} 100%)`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`
-                }
-              }}
-            >
-              Explore Tools
-            </Button>
-          </Paper>
-
-          <Paper
-            elevation={12}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              background: alpha(theme.palette.background.paper, 0.9),
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: theme.shadows[20],
-                borderColor: alpha(theme.palette.info.main, 0.3)
-              }
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
-                  mr: 2
-                }}
-              >
-                <DashboardIcon />
-              </Avatar>
-              <Typography variant="h6" fontWeight={600}>
-                Project Hub
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Manage your hackathon projects, collaborate with teammates, and submit your work.
-            </Typography>
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                borderRadius: 2,
-                background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${theme.palette.info.dark} 0%, ${theme.palette.info.main} 100%)`
-                }
-              }}
-            >
-              Open Hub
-            </Button>
-          </Paper>
+            © 2025 CapySpend. Built with ❤️ for secure personal finance management.
+          </Typography>
         </Box>
       </Container>
+
+      <style>
+        {`
+          @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+          }
+        `}
+      </style>
     </Box>
   );
 };

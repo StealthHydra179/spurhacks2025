@@ -76,7 +76,7 @@ async function createLinkToken(userId) {
       user: {
         client_user_id: userId.toString(),
       },
-      client_name: 'SpurHacks 2025 App',
+      client_name: 'CappySpend App',
       products: ['auth', 'transactions'],
       language: 'en',
       country_codes: ['US'],
