@@ -41,9 +41,6 @@ import {
 import capySVG from '../assets/capyy.svg';
 import capyImage from '../assets/capy.png';
 import communistHat from '../assets/communist-hat.svg';
-import fixedCapy from '../assets/fixedcapy.svg';
-import openMouth from '../assets/openmouth.svg';
-import closeMouth from '../assets/closemouth.svg';
 import { botConversationService, plaidService, authService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
@@ -73,15 +70,13 @@ const Chatbot: React.FC = () => {
   const [userPersonality, setUserPersonality] = useState<number>(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [textVisible, setTextVisible] = useState(true);
-  const [botThinking, setBotThinking] = useState(false);
-  const [botTalking, setBotTalking] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   useEffect(() => {
     scrollToBottom();
-  }, [selectedConversation?.messages, botThinking, botTalking]);
+  }, [selectedConversation?.messages, botTyping]);
 
   useEffect(() => {
     fetchConversations();
@@ -129,21 +124,7 @@ const Chatbot: React.FC = () => {
 
   const fetchConversation = async (id: string) => {
     try {
-      console.log('📥 Fetching conversation:', id);
       const data = await botConversationService.getFullConversation(id);
-      console.log('📥 Conversation data received:', data);
-      console.log('📥 Messages count:', data.messages?.length || 0);
-      
-      // Log each message to see what's in the conversation
-      if (data.messages && data.messages.length > 0) {
-        console.log('📥 Messages in conversation:');
-        data.messages.forEach((msg, index) => {
-          console.log(`  ${index + 1}. [${msg.sender}] ${msg.message.substring(0, 50)}...`);
-        });
-      } else {
-        console.log('📥 No messages found in conversation');
-      }
-      
       setSelectedConversation(data);
       setCurrentConversationId(id);
       setBotTyping(false); // Clear typing indicator when switching conversations
@@ -151,14 +132,11 @@ const Chatbot: React.FC = () => {
         setMobileDrawerOpen(false);
       }
     } catch (error) {
-      console.error('❌ Error fetching conversation:', error);
+      console.error('Error fetching conversation:', error);
       setBotTyping(false); // Clear typing indicator on error
-    }
-  };
-
-  const createNewConversation = async () => {
+    }  };const createNewConversation = async () => {
     if (creatingConversation) return; // Prevent multiple simultaneous requests
-    setCreatingConversation(true);
+      setCreatingConversation(true);
     
     // Clear current conversation immediately to hide old chat
     setSelectedConversation(null);
@@ -166,7 +144,7 @@ const Chatbot: React.FC = () => {
     
     // Close mobile drawer if open
     setMobileDrawerOpen(false);
-    const question = 'Hello! I\'d like to start a new conversation about my finances.';    
+      const question = 'Hello! I\'d like to start a new conversation about my finances.';    
     try {
       if (!user) {
         console.error('User not authenticated');
@@ -185,7 +163,7 @@ const Chatbot: React.FC = () => {
       // Then refresh conversations list and load conversation data
       await fetchConversations();
       await fetchConversation(newConversationId);
-      // Check if conversation has messages, if not wait a bit longer
+        // Check if conversation has messages, if not wait a bit longer
       let attempts = 0;
       const maxAttempts = 10; // Maximum 5 seconds (10 * 500ms)
       
@@ -210,72 +188,42 @@ const Chatbot: React.FC = () => {
       console.error('Error creating conversation:', error);
       setCreatingConversation(false);
     }
-  };
-
-  const sendMessage = async () => {
+  };const sendMessage = async () => {
     if (!newMessage.trim() || sending || !currentConversationId) return;
 
     setSending(true);
     const messageToSend = newMessage;
-    setNewMessage('');
-    
-    // Start thinking animation
-    setBotThinking(true);
-    setBotTalking(false);
-    
-    try {
+    setNewMessage('');    try {
       await botConversationService.addMessage(currentConversationId, messageToSend, 'user');
       await fetchConversation(currentConversationId);
       
-      // Keep thinking for 2 seconds, then start talking and response generation
-      setTimeout(() => {
-        setBotThinking(false);
-        setBotTalking(true); // Start talking immediately
-        
-        // Start bot response generation
-        addBotResponse(messageToSend);
-      }, 2000); // Show thinking for 2 seconds
-      
+      // Add bot response with typing indicator
+      setTimeout(async () => {
+        setBotTyping(true); // Show typing indicator
+        await addBotResponse(messageToSend);
+      }, 500); // Small delay to make it feel more natural
     } catch (error) {
       console.error('Error sending message:', error);
       setNewMessage(messageToSend);
-      setBotThinking(false);
-      setBotTalking(false);
+      setBotTyping(false);
     } finally {
       setSending(false);
     }
-  };
-
-  const addBotResponse = async (userMessage: string) => {
+  };  const addBotResponse = async (userMessage: string) => {
     if (!currentConversationId) return;
 
     try {
-      console.log('🔄 Starting bot response generation...');
-      
       // Call the chat response endpoint to get AI response
-      const response = await plaidService.getChatResponse(parseInt(currentConversationId), userMessage);
-      console.log('✅ Chat response received:', response);
-      
-      // Wait a moment for the server to process the response
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await plaidService.getChatResponse(parseInt(currentConversationId), userMessage);
       
       // Refresh the conversation to show the new bot message
       await fetchConversation(currentConversationId);
-      console.log('✅ Conversation refreshed');
       await fetchConversations(); // Update sidebar with latest message time
-      
-      // Keep talking animation for 5 seconds after response is complete
-      setTimeout(() => {
-        setBotTalking(false);
-        console.log('🛑 Talking animation stopped');
-      }, 5000);
-      
     } catch (error) {
-      console.error('❌ Error adding bot response:', error);
-      // Even if there's an error, keep talking for a bit then stop
-      setTimeout(() => {
-        setBotTalking(false);
-      }, 3000);
+      console.error('Error adding bot response:', error);
+    } finally {
+      // Hide bot typing indicator
+      setBotTyping(false);
     }
   };
 
@@ -285,7 +233,6 @@ const Chatbot: React.FC = () => {
       sendMessage();
     }
   };
-
   const handleConversationSelect = async (conversation: ConversationSummary) => {
     await fetchConversation(conversation.id.toString());
   };
@@ -655,7 +602,7 @@ const Chatbot: React.FC = () => {
           }}
         >
           <Box sx={{ position: 'relative' }}>
-            <img src={fixedCapy} alt="Capybara" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+            <img src={capySVG} alt="Capybara SVG" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
             {userPersonality === 2 && (
               <Box
                 component="img"
@@ -672,79 +619,6 @@ const Chatbot: React.FC = () => {
                 }}
               />
             )}
-            {/* Animated talking mouth - only when talking, not thinking */}
-            {botTalking && !botThinking && (
-              <Box
-                component="img"
-                src={openMouth}
-                alt="Talking Mouth"
-                sx={{
-                  position: 'absolute',
-                  bottom: '46%',
-                  left: '73%',
-                  transform: 'translateX(-50%)',
-                  width: '15%',
-                  height: 'auto',
-                  zIndex: 3,
-                  animation: 'talk 0.6s ease-in-out infinite',
-                  '@keyframes talk': {
-                    '0%, 49%': {
-                      opacity: 1,
-                      transform: 'translateX(-50%) scale(1)'
-                    },
-                    '50%, 100%': {
-                      opacity: 0,
-                      transform: 'translateX(-50%) scale(1)'
-                    }
-                  }
-                }}
-              />
-            )}
-            {/* Closed mouth - when not talking OR when thinking */}
-            {(!botTalking || botThinking) && (
-              <Box
-                component="img"
-                src={closeMouth}
-                alt="Closed Mouth"
-                sx={{
-                  position: 'absolute',
-                  bottom: '48%',
-                  left: '71%',
-                  transform: 'translateX(-50%)',
-                  width: '15%',
-                  height: 'auto',
-                  zIndex: 3,
-                }}
-              />
-            )}
-            {/* Animated closed mouth during talking - only when talking, not thinking */}
-            {botTalking && !botThinking && (
-              <Box
-                component="img"
-                src={closeMouth}
-                alt="Closed Mouth"
-                sx={{
-                  position: 'absolute',
-                  bottom: '48%',
-                  left: '71%',
-                  transform: 'translateX(-50%)',
-                  width: '15%',
-                  height: 'auto',
-                  zIndex: 3,
-                  animation: 'talkClosed 0.6s ease-in-out infinite',
-                  '@keyframes talkClosed': {
-                    '0%, 49%': {
-                      opacity: 0,
-                      transform: 'translateX(-50%) scale(1)'
-                    },
-                    '50%, 100%': {
-                      opacity: 1,
-                      transform: 'translateX(-50%) scale(1)'
-                    }
-                  }
-                }}
-              />
-            )}
           </Box>
         </Box>
         {selectedConversation ? (
@@ -754,11 +628,10 @@ const Chatbot: React.FC = () => {
               sx={{
                 flex: 1,
                 overflowY: 'auto',
-                p: '8px 40px 20% 16px',
+                p: '16px 40px 16px 16px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 2,
-                pt: 1
+                gap: 2
               }}
             >
               {selectedConversation.messages?.map((message) => (
@@ -801,7 +674,7 @@ const Chatbot: React.FC = () => {
                       boxShadow: message.sender === 'user' ? '0 2px 8px 0 rgba(0,0,0,0.08)' : undefined,
                       ml: 0,
                       mr: 0,
-                      mb: message.sender === 'bot' ? { xs: 2, sm: 3, md: 4} : 0,
+                      mb: message.sender === 'bot' ? { xs: 10, sm: 15, md: 20} : 0,
                     }}
                   >
                     {message.sender === 'bot' ? (
@@ -929,27 +802,18 @@ const Chatbot: React.FC = () => {
                 </Box>
               ))}
               
-              {/* Bot thinking indicator */}
-              {botThinking && (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, width: '100%', justifyContent: 'flex-start', flexDirection: 'row', mb: 7, ml: { xs: '150px', sm: '200px', md: '250px' } }}>
-                  <Avatar
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      background: theme.palette.primary.main,
-                      flexShrink: 0
-                    }}
-                  >
-                    <img src={capyImage} alt="Capy" style={{ width: '70%', height: '70%', objectFit: 'contain', display: 'block', margin: 'auto' }} />
-                  </Avatar>
+              {/* Bot typing indicator */}
+              {botTyping && (
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 7, ml: { xs: '150px', sm: '200px', md: '250px' } }}>
                   <Paper
                     elevation={1}
                     sx={{
                       p: 2,
-                      maxWidth: '70%',
                       borderRadius: 2,
                       background: '#FFFCF9',
                       color: theme.palette.text.primary,
+                      fontSize: '1.25rem',
+                      fontWeight: 500,
                       boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
                       minWidth: 80,
                       display: 'flex',
@@ -958,14 +822,15 @@ const Chatbot: React.FC = () => {
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Box sx={{ display: 'inline-flex' }}>
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'thinking-dots 1.4s infinite ease-in-out', animationDelay: '0s' }} />
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'thinking-dots 1.4s infinite ease-in-out', animationDelay: '0.2s' }} />
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'thinking-dots 1.4s infinite ease-in-out', animationDelay: '0.4s' }} />
+                      <span>Thinking</span>
+                      <Box sx={{ display: 'inline-flex', ml: 0.5 }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0s' }} />
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.2s' }} />
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.4s' }} />
                       </Box>
                     </Box>
                     <style>{`
-                      @keyframes thinking-dots {
+                      @keyframes typing-bounce {
                         0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
                         40% { opacity: 1; transform: scale(1); }
                       }
