@@ -30,25 +30,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing authentication on component mount
-  React.useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        // Try to fetch user profile to check if user is authenticated
-        const userData = await authService.getProfile();
-        setUser(userData);
-        setIsAuthenticated(true);
-      } catch (error) {
-        // User is not authenticated or session expired
-        setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // // Check for existing authentication on component mount
+  // React.useEffect(() => {
+  //   const checkAuthStatus = async () => {
+  //     try {
+  //       // Try to fetch user profile to check if user is authenticated
+  //       const userData = await authService.getProfile();
+  //       setUser(userData);
+  //       setIsAuthenticated(true);
+  //     } catch (error) {
+  //       // User is not authenticated or session expired
+  //       setIsAuthenticated(false);
+  //       setUser(null);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    checkAuthStatus();
-  }, []);
+  //   checkAuthStatus();
+  // }, []);
 
   const login = async (username: string, password: string) => {
     try {
