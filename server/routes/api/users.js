@@ -142,6 +142,65 @@ router.get("/profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Set user personality
+router.post("/personality", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userID;
+    const personalityMode = req.body.personality;
+
+    // Validate personality mode is a valid integer (-1, 0, or 1)
+    if (personalityMode === undefined || personalityMode === null) {
+      return res.status(400).json({ message: "Personality mode is required" });
+    }
+
+    const validModes = [-1, 0, 1];
+    if (!validModes.includes(personalityMode)) {
+      return res.status(400).json({ 
+        message: "Invalid personality mode. Must be -1 (less aggressive), 0 (normal), or 1 (more aggressive)" 
+      });
+    }
+
+    await userDb.setUserPersonality(userId, personalityMode);
+    logger.info(`${TAG} Personality mode ${personalityMode} set for user ID: ${userId}`);
+    
+    res.json({ 
+      message: "Personality updated successfully",
+      personality: personalityMode,
+      status: "success"
+    });
+  } catch (error) {
+    logger.error(`${TAG} Error setting user personality: ${error.message}`);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Get user personality
+router.get("/personality", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userID;
+    const personality = await userDb.getUserPersonality(userId);
+    
+    if (personality === null) {
+      return res.status(404).json({ 
+        message: "Personality not found for user",
+        personality: null
+      });
+    }
+
+    logger.info(`${TAG} Personality mode ${personality} retrieved for user ID: ${userId}`);
+    res.json({ 
+      personality: personality,
+      personality_description: personality === -1 ? "less aggressive" : 
+                             personality === 0 ? "normal" : 
+                             personality === 1 ? "more aggressive" : "unknown",
+      status: "success"
+    });
+  } catch (error) {
+    logger.error(`${TAG} Error getting user personality: ${error.message}`);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 // Middleware to validate JWT from cookie
 function authenticateToken(req, res, next) {
   const token = req.cookies?.token;

@@ -1,0 +1,2 @@
+-- No database changes needed - using existing mode column for personality
+-- mode is INTEGER: 0 = normal, -1 = less aggressive, 1 = more aggressive
