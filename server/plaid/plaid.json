@@ -1,0 +1,2295 @@
+{
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",      "transactions": [        {
+          "date_transacted": "2025-06-22",
+          "date_posted": "2025-06-23",
+          "amount": 24.75,
+          "description": "COFFEE SHOP - BLUE BOTTLE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-21",
+          "date_posted": "2025-06-22",
+          "amount": 487.34,
+          "description": "EMERGENCY VET VISIT - PET HOSPITAL NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-20",
+          "date_posted": "2025-06-21",
+          "amount": 127.83,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-19",
+          "date_posted": "2025-06-20",
+          "amount": 8.50,
+          "description": "COFFEE SHOP - CORNER DELI",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-18",
+          "date_posted": "2025-06-19",
+          "amount": 98.45,
+          "description": "ELECTRIC BILL - CON EDISON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-17",
+          "date_posted": "2025-06-18",
+          "amount": 345.99,
+          "description": "FURNITURE STORE - IKEA NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-15",
+          "date_posted": "2025-06-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-14",
+          "date_posted": "2025-06-15",
+          "amount": 15.25,
+          "description": "BODEGA - SNACKS AND DRINKS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-12",
+          "date_posted": "2025-06-13",
+          "amount": 89.76,
+          "description": "RESTAURANT - PIZZA PLACE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-11",
+          "date_posted": "2025-06-12",
+          "amount": 73.20,
+          "description": "UBER RIDES (3 TRIPS)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-10",
+          "date_posted": "2025-06-11",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-09",
+          "date_posted": "2025-06-10",
+          "amount": 199.99,
+          "description": "ELECTRONICS - BEST BUY NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-08",
+          "date_posted": "2025-06-09",
+          "amount": 46.78,
+          "description": "PHARMACY - CVS DRUGSTORE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-07",
+          "date_posted": "2025-06-08",
+          "amount": 12.99,
+          "description": "FOOD TRUCK - LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-05",
+          "date_posted": "2025-06-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-04",
+          "date_posted": "2025-06-05",
+          "amount": 67.45,
+          "description": "GROCERY STORE - FRESH MARKET",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-03",
+          "date_posted": "2025-06-04",
+          "amount": 23.99,
+          "description": "SUBWAY METROCARD REFILL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-02",
+          "date_posted": "2025-06-03",
+          "amount": 156.89,
+          "description": "DINNER DATE - UPSCALE RESTAURANT NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-06-01",
+          "date_posted": "2025-06-02",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-30",
+          "date_posted": "2025-05-31",
+          "amount": 78.45,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-29",
+          "amount": 125.00,
+          "description": "GAS BILL - NATIONAL GRID",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-25",
+          "date_posted": "2025-05-26",
+          "amount": 34.99,
+          "description": "STREAMING SERVICE - NETFLIX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-22",
+          "date_posted": "2025-05-23",
+          "amount": 45.67,
+          "description": "RESTAURANT - ITALIAN BISTRO NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-20",
+          "date_posted": "2025-05-21",
+          "amount": 189.99,
+          "description": "CLOTHING STORE - MACYS NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-18",
+          "date_posted": "2025-05-19",
+          "amount": 56.78,
+          "description": "UBER RIDE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-15",
+          "date_posted": "2025-05-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-12",
+          "date_posted": "2025-05-13",
+          "amount": 23.45,
+          "description": "COFFEE SHOP - STARBUCKS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-10",
+          "date_posted": "2025-05-11",
+          "amount": 67.89,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-08",
+          "date_posted": "2025-05-09",
+          "amount": 15.99,
+          "description": "STREAMING SERVICE - SPOTIFY",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-05",
+          "date_posted": "2025-05-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-03",
+          "date_posted": "2025-05-04",
+          "amount": 120.00,
+          "description": "GYM MEMBERSHIP - EQUINOX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-01",
+          "date_posted": "2025-05-02",
+          "amount": 89.45,
+          "description": "RESTAURANT - SUSHI PLACE NYC",
+          "currency": "USD"
+        },        {
+          "date_transacted": "2025-04-30",
+          "date_posted": "2025-05-01",
+          "amount": 87.50,
+          "description": "SPECIALTY COFFEE - ARTISAN ROASTERS NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-29",
+          "date_posted": "2025-04-30",
+          "amount": 1899.99,
+          "description": "EMERGENCY HOME REPAIR - PLUMBING NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-28",
+          "date_posted": "2025-04-29",
+          "amount": 15.75,
+          "description": "PARKING METER - DOWNTOWN NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-27",
+          "date_posted": "2025-04-28",
+          "amount": 145.80,
+          "description": "WINE STORE - RARE BOTTLE PURCHASE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-26",
+          "date_posted": "2025-04-27",
+          "amount": 32.45,
+          "description": "BOOKSTORE - TECHNICAL MANUALS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-25",
+          "date_posted": "2025-04-26",
+          "amount": 254.90,
+          "description": "GROCERY STORE - ORGANIC MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-24",
+          "date_posted": "2025-04-25",
+          "amount": 78.25,
+          "description": "CAR WASH & DETAILING SERVICE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-23",
+          "date_posted": "2025-04-24",
+          "amount": 8.99,
+          "description": "COFFEE SHOP - QUICK GRAB",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-22",
+          "date_posted": "2025-04-23",
+          "amount": 198.67,
+          "description": "ELECTRIC BILL - CON EDISON (HIGH USAGE)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-21",
+          "date_posted": "2025-04-22",
+          "amount": 567.89,
+          "description": "SPORTING GOODS - BICYCLE TUNE-UP NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-20",
+          "date_posted": "2025-04-21",
+          "amount": 112.23,
+          "description": "RESTAURANT - UPSCALE MEXICAN NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-19",
+          "date_posted": "2025-04-20",
+          "amount": 29.99,
+          "description": "DIGITAL SUBSCRIPTION - PREMIUM APP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-18",
+          "date_posted": "2025-04-19",
+          "amount": 389.56,
+          "description": "DENTAL CLEANING & X-RAYS - NYC DENTAL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-17",
+          "date_posted": "2025-04-18",
+          "amount": 67.45,
+          "description": "RIDESHARE - AIRPORT TRIP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-16",
+          "date_posted": "2025-04-17",
+          "amount": 23.50,
+          "description": "FOOD TRUCK - GOURMET LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-15",
+          "date_posted": "2025-04-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-14",
+          "date_posted": "2025-04-15",
+          "amount": 189.99,
+          "description": "ELECTRONICS - WIRELESS HEADPHONES",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-13",
+          "date_posted": "2025-04-14",
+          "amount": 12.75,
+          "description": "COFFEE SHOP - MORNING BREW",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-12",
+          "date_posted": "2025-04-13",
+          "amount": 89.00,
+          "description": "UBER RIDES - WEEKEND TRIPS (MULTIPLE)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-11",
+          "date_posted": "2025-04-12",
+          "amount": 345.67,
+          "description": "VETERINARIAN - ANNUAL CHECK-UP & SHOTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-10",
+          "date_posted": "2025-04-11",
+          "amount": 167.34,
+          "description": "GROCERY STORE - WHOLE FOODS WEEKLY SHOP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-09",
+          "date_posted": "2025-04-10",
+          "amount": 45.80,
+          "description": "GAS STATION - MOBIL NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-08",
+          "date_posted": "2025-04-09",
+          "amount": 125.67,
+          "description": "INTERNET BILL - SPECTRUM (UPGRADE)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-07",
+          "date_posted": "2025-04-08",
+          "amount": 78.90,
+          "description": "PHARMACY - PRESCRIPTION & VITAMINS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-06",
+          "date_posted": "2025-04-07",
+          "amount": 234.50,
+          "description": "DEPARTMENT STORE - SPRING CLOTHING NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-05",
+          "date_posted": "2025-04-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-04",
+          "date_posted": "2025-04-05",
+          "amount": 98.25,
+          "description": "HARDWARE STORE - HOME DEPOT NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-03",
+          "date_posted": "2025-04-04",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-02",
+          "date_posted": "2025-04-03",
+          "amount": 134.99,
+          "description": "RESTAURANT - FINE DINING DATE NIGHT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-01",
+          "date_posted": "2025-04-02",
+          "amount": 87.89,
+          "description": "PHARMACY - CVS DRUGSTORE & TOILETRIES",
+          "currency": "USD"
+        },        {
+          "date_transacted": "2025-03-30",
+          "date_posted": "2025-03-31",
+          "amount": 298.45,
+          "description": "GROCERY STORE - PREMIUM ORGANIC MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-29",
+          "date_posted": "2025-03-30",
+          "amount": 67.50,
+          "description": "TAXI RIDE - YELLOW CAB NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-28",
+          "date_posted": "2025-03-29",
+          "amount": 189.00,
+          "description": "GAS BILL - NATIONAL GRID (WINTER SPIKE)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-27",
+          "date_posted": "2025-03-28",
+          "amount": 1245.99,
+          "description": "COMPUTER REPAIR - APPLE STORE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-26",
+          "date_posted": "2025-03-27",
+          "amount": 45.80,
+          "description": "COFFEE SHOP - ARTISAN BREW NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-25",
+          "date_posted": "2025-03-26",
+          "amount": 123.00,
+          "description": "RIDESHARE - MULTIPLE LYFT RIDES",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-24",
+          "date_posted": "2025-03-25",
+          "amount": 89.99,
+          "description": "SUBSCRIPTION - ANNUAL SOFTWARE LICENSE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-23",
+          "date_posted": "2025-03-24",
+          "amount": 15.75,
+          "description": "FOOD TRUCK - KOREAN BBQ",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-22",
+          "date_posted": "2025-03-23",
+          "amount": 389.99,
+          "description": "CLOTHING STORE - DESIGNER OUTLET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-21",
+          "date_posted": "2025-03-22",
+          "amount": 78.25,
+          "description": "HAIR SALON - CUT & STYLE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-20",
+          "date_posted": "2025-03-21",
+          "amount": 167.99,
+          "description": "ELECTRIC BILL - CON EDISON (HIGH USAGE)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-19",
+          "date_posted": "2025-03-20",
+          "amount": 234.56,
+          "description": "HOME GOODS - WILLIAMS SONOMA NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-18",
+          "date_posted": "2025-03-19",
+          "amount": 98.78,
+          "description": "RESTAURANT - FUSION CUISINE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-17",
+          "date_posted": "2025-03-18",
+          "amount": 45.99,
+          "description": "PARKING GARAGE - DOWNTOWN NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-16",
+          "date_posted": "2025-03-17",
+          "amount": 12.50,
+          "description": "COFFEE SHOP - QUICK STOP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-15",
+          "date_posted": "2025-03-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-14",
+          "date_posted": "2025-03-15",
+          "amount": 567.89,
+          "description": "EMERGENCY MEDICAL - URGENT CARE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-13",
+          "date_posted": "2025-03-14",
+          "amount": 34.75,
+          "description": "DRUG STORE - WALGREENS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-12",
+          "date_posted": "2025-03-13",
+          "amount": 145.23,
+          "description": "GROCERY STORE - GOURMET DELI NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-11",
+          "date_posted": "2025-03-12",
+          "amount": 89.50,
+          "description": "GAS STATION - SHELL (LONG TRIP)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-10",
+          "date_posted": "2025-03-11",
+          "amount": 67.45,
+          "description": "COFFEE SHOP - WEEKEND SPECIALTY BREW",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-09",
+          "date_posted": "2025-03-10",
+          "amount": 23.99,
+          "description": "CONVENIENCE STORE - BODEGA NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-08",
+          "date_posted": "2025-03-09",
+          "amount": 49.99,
+          "description": "STREAMING SERVICE - NETFLIX & HULU BUNDLE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-07",
+          "date_posted": "2025-03-08",
+          "amount": 178.90,
+          "description": "SPORTING GOODS - RUNNING GEAR NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-06",
+          "date_posted": "2025-03-07",
+          "amount": 456.78,
+          "description": "FURNITURE - OFFICE CHAIR & DESK NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-05",
+          "date_posted": "2025-03-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-04",
+          "date_posted": "2025-03-05",
+          "amount": 127.45,
+          "description": "RESTAURANT - STEAKHOUSE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-03",
+          "date_posted": "2025-03-04",
+          "amount": 156.67,
+          "description": "INTERNET BILL - SPECTRUM (PREMIUM PACKAGE)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-02",
+          "date_posted": "2025-03-03",
+          "amount": 89.99,
+          "description": "MOBILE APP - PREMIUM SUBSCRIPTIONS",
+          "currency": "USD"
+        },        {
+          "date_transacted": "2025-03-01",
+          "date_posted": "2025-03-02",
+          "amount": 234.50,
+          "description": "DEPARTMENT STORE - BLOOMINGDALES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-01",
+          "date_posted": "2025-03-02",
+          "amount": 120.00,
+          "description": "GYM MEMBERSHIP - EQUINOX",
+          "currency": "USD"
+        },        {
+          "date_transacted": "2025-02-28",
+          "date_posted": "2025-03-01",
+          "amount": 145.90,
+          "description": "RESTAURANT - VALENTINE'S DINNER NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-27",
+          "date_posted": "2025-02-28",
+          "amount": 789.99,
+          "description": "CAR REPAIR - TRANSMISSION SERVICE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-26",
+          "date_posted": "2025-02-27",
+          "amount": 67.25,
+          "description": "COFFEE SHOP - WEEKEND SPECIAL NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-25",
+          "date_posted": "2025-02-26",
+          "amount": 29.99,
+          "description": "STREAMING SERVICE - SPOTIFY PREMIUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-24",
+          "date_posted": "2025-02-25",
+          "amount": 234.78,
+          "description": "ELECTRONICS - COMPUTER ACCESSORIES",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-23",
+          "date_posted": "2025-02-24",
+          "amount": 45.60,
+          "description": "RIDESHARE - LATE NIGHT LYFT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-22",
+          "date_posted": "2025-02-23",
+          "amount": 189.45,
+          "description": "GROCERY STORE - WINTER STOCK-UP NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-21",
+          "date_posted": "2025-02-22",
+          "amount": 98.50,
+          "description": "BOOKSTORE - TECHNICAL BOOKS & MAGAZINES",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-20",
+          "date_posted": "2025-02-21",
+          "amount": 278.67,
+          "description": "ELECTRIC BILL - CON EDISON (WINTER HIGH)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-19",
+          "date_posted": "2025-02-20",
+          "amount": 156.89,
+          "description": "PHARMACY - PRESCRIPTION REFILLS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-18",
+          "date_posted": "2025-02-19",
+          "amount": 123.89,
+          "description": "RESTAURANT - UPSCALE SUSHI NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-17",
+          "date_posted": "2025-02-18",
+          "amount": 78.25,
+          "description": "GAS STATION - WINTER FILL-UP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-16",
+          "date_posted": "2025-02-17",
+          "amount": 34.99,
+          "description": "COFFEE SHOP - ARTISAN BLEND",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-15",
+          "date_posted": "2025-02-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-14",
+          "date_posted": "2025-02-15",
+          "amount": 345.99,
+          "description": "VALENTINE'S GIFTS - JEWELRY STORE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-13",
+          "date_posted": "2025-02-14",
+          "amount": 23.50,
+          "description": "PARKING METER - DOWNTOWN NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-12",
+          "date_posted": "2025-02-13",
+          "amount": 189.78,
+          "description": "MOBILE PHONE - VERIZON (DEVICE PAYMENT)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-11",
+          "date_posted": "2025-02-12",
+          "amount": 89.99,
+          "description": "WINTER CLOTHING - OUTLET STORE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-10",
+          "date_posted": "2025-02-11",
+          "amount": 167.67,
+          "description": "GROCERY STORE - ORGANIC WHOLE FOODS NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-09",
+          "date_posted": "2025-02-10",
+          "amount": 456.78,
+          "description": "HOME IMPROVEMENT - WINTER REPAIRS NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-08",
+          "date_posted": "2025-02-09",
+          "amount": 289.56,
+          "description": "DOCTOR VISIT - SPECIALIST NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-07",
+          "date_posted": "2025-02-08",
+          "amount": 67.99,
+          "description": "RIDESHARE - UBER TO APPOINTMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-06",
+          "date_posted": "2025-02-07",
+          "amount": 45.25,
+          "description": "CONVENIENCE STORE - EMERGENCY SUPPLIES",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-05",
+          "date_posted": "2025-02-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-04",
+          "date_posted": "2025-02-05",
+          "amount": 234.99,
+          "description": "HARDWARE STORE - WINTER TOOLS NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-03",
+          "date_posted": "2025-02-04",
+          "amount": 198.00,
+          "description": "GAS BILL - NATIONAL GRID (WINTER PEAK)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-02",
+          "date_posted": "2025-02-03",
+          "amount": 123.45,
+          "description": "RESTAURANT - COZY WINTER BRUNCH NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-01",
+          "date_posted": "2025-02-02",
+          "amount": 87.50,
+          "description": "COFFEE SHOP - MONTHLY COLD BREW PASS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-30",
+          "date_posted": "2025-01-31",
+          "amount": 67.45,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-28",
+          "date_posted": "2025-01-29",
+          "amount": 89.99,
+          "description": "ELECTRIC BILL - CON EDISON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-25",
+          "date_posted": "2025-01-26",
+          "amount": 120.00,
+          "description": "GYM MEMBERSHIP - EQUINOX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-22",
+          "date_posted": "2025-01-23",
+          "amount": 78.90,
+          "description": "RESTAURANT - PIZZA PLACE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-20",
+          "date_posted": "2025-01-21",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-18",
+          "date_posted": "2025-01-19",
+          "amount": 45.67,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-15",
+          "date_posted": "2025-01-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-12",
+          "date_posted": "2025-01-13",
+          "amount": 23.45,
+          "description": "COFFEE SHOP - STARBUCKS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-10",
+          "date_posted": "2025-01-11",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-08",
+          "date_posted": "2025-01-09",
+          "amount": 67.89,
+          "description": "PHARMACY - CVS DRUGSTORE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-05",
+          "date_posted": "2025-01-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-03",
+          "date_posted": "2025-01-04",
+          "amount": 125.00,
+          "description": "GAS BILL - NATIONAL GRID",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-01",
+          "date_posted": "2025-01-02",
+          "amount": 150.00,
+          "description": "NEW YEARS EVE CELEBRATION",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-30",
+          "date_posted": "2024-12-31",
+          "amount": 89.45,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-28",
+          "date_posted": "2024-12-29",
+          "amount": 78.90,
+          "description": "RESTAURANT - ITALIAN BISTRO NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-25",
+          "date_posted": "2024-12-26",
+          "amount": 345.67,
+          "description": "HOLIDAY GIFTS - AMAZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-22",
+          "date_posted": "2024-12-23",
+          "amount": 67.23,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-20",
+          "date_posted": "2024-12-21",
+          "amount": 145.67,
+          "description": "ELECTRIC BILL - CON EDISON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-18",
+          "date_posted": "2024-12-19",
+          "amount": 56.78,
+          "description": "UBER RIDE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-15",
+          "date_posted": "2024-12-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-12",
+          "date_posted": "2024-12-13",
+          "amount": 189.99,
+          "description": "CLOTHING STORE - WINTER COAT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-10",
+          "date_posted": "2024-12-11",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-08",
+          "date_posted": "2024-12-09",
+          "amount": 34.99,
+          "description": "STREAMING SERVICE - NETFLIX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-05",
+          "date_posted": "2024-12-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-03",
+          "date_posted": "2024-12-04",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-01",
+          "date_posted": "2024-12-02",
+          "amount": 120.00,
+          "description": "GYM MEMBERSHIP - EQUINOX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-28",
+          "date_posted": "2024-11-29",
+          "amount": 89.45,
+          "description": "THANKSGIVING DINNER SUPPLIES",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-25",
+          "date_posted": "2024-11-26",
+          "amount": 234.99,
+          "description": "BLACK FRIDAY SHOPPING - BEST BUY",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-22",
+          "date_posted": "2024-11-23",
+          "amount": 67.89,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-20",
+          "date_posted": "2024-11-21",
+          "amount": 125.00,
+          "description": "GAS BILL - NATIONAL GRID",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-18",
+          "date_posted": "2024-11-19",
+          "amount": 78.90,
+          "description": "RESTAURANT - MEXICAN GRILL NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-15",
+          "date_posted": "2024-11-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-12",
+          "date_posted": "2024-11-13",
+          "amount": 89.99,
+          "description": "ELECTRIC BILL - CON EDISON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-10",
+          "date_posted": "2024-11-11",
+          "amount": 45.67,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-08",
+          "date_posted": "2024-11-09",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-05",
+          "date_posted": "2024-11-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-03",
+          "date_posted": "2024-11-04",
+          "amount": 23.45,
+          "description": "COFFEE SHOP - STARBUCKS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-01",
+          "date_posted": "2024-11-02",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-30",
+          "date_posted": "2024-10-31",
+          "amount": 67.89,
+          "description": "HALLOWEEN COSTUME - PARTY STORE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-28",
+          "date_posted": "2024-10-29",
+          "amount": 78.45,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-25",
+          "date_posted": "2024-10-26",
+          "amount": 89.99,
+          "description": "ELECTRIC BILL - CON EDISON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-22",
+          "date_posted": "2024-10-23",
+          "amount": 123.45,
+          "description": "DOCTOR VISIT - NYC MEDICAL CENTER",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-20",
+          "date_posted": "2024-10-21",
+          "amount": 56.78,
+          "description": "RESTAURANT - THAI CUISINE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-18",
+          "date_posted": "2024-10-19",
+          "amount": 67.23,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-15",
+          "date_posted": "2024-10-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-12",
+          "date_posted": "2024-10-13",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-10",
+          "date_posted": "2024-10-11",
+          "amount": 125.00,
+          "description": "GAS BILL - NATIONAL GRID",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-08",
+          "date_posted": "2024-10-09",
+          "amount": 34.50,
+          "description": "COFFEE SHOP - LOCAL ROASTERS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-05",
+          "date_posted": "2024-10-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-03",
+          "date_posted": "2024-10-04",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-01",
+          "date_posted": "2024-10-02",
+          "amount": 120.00,
+          "description": "GYM MEMBERSHIP - EQUINOX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-30",
+          "date_posted": "2024-10-01",
+          "amount": 89.99,
+          "description": "BACK TO SCHOOL SUPPLIES - STAPLES",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-28",
+          "date_posted": "2024-09-29",
+          "amount": 67.45,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-25",
+          "date_posted": "2024-09-26",
+          "amount": 78.90,
+          "description": "RESTAURANT - THAI CUISINE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-22",
+          "date_posted": "2024-09-23",
+          "amount": 145.67,
+          "description": "ELECTRIC BILL - CON EDISON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-20",
+          "date_posted": "2024-09-21",
+          "amount": 45.67,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-18",
+          "date_posted": "2024-09-19",
+          "amount": 234.56,
+          "description": "DENTIST VISIT - NYC DENTAL CARE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-15",
+          "date_posted": "2024-09-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-12",
+          "date_posted": "2024-09-13",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-10",
+          "date_posted": "2024-09-11",
+          "amount": 89.45,
+          "description": "RESTAURANT - BURGER JOINT NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-08",
+          "date_posted": "2024-09-09",
+          "amount": 23.45,
+          "description": "COFFEE SHOP - STARBUCKS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-05",
+          "date_posted": "2024-09-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-03",
+          "date_posted": "2024-09-04",
+          "amount": 125.00,
+          "description": "GAS BILL - NATIONAL GRID",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-01",
+          "date_posted": "2024-09-02",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-30",
+          "date_posted": "2024-08-31",
+          "amount": 78.90,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-28",
+          "date_posted": "2024-08-29",
+          "amount": 189.99,
+          "description": "CLOTHING STORE - SUMMER SALE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-25",
+          "date_posted": "2024-08-26",
+          "amount": 67.89,
+          "description": "RESTAURANT - PIZZA PLACE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-22",
+          "date_posted": "2024-08-23",
+          "amount": 145.67,
+          "description": "ELECTRIC BILL - CON EDISON (HIGH SUMMER)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-20",
+          "date_posted": "2024-08-21",
+          "amount": 234.56,
+          "description": "SUMMER VACATION - HOTEL BOOKING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-18",
+          "date_posted": "2024-08-19",
+          "amount": 56.78,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-15",
+          "date_posted": "2024-08-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-12",
+          "date_posted": "2024-08-13",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-10",
+          "date_posted": "2024-08-11",
+          "amount": 125.00,
+          "description": "GAS BILL - NATIONAL GRID",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-08",
+          "date_posted": "2024-08-09",
+          "amount": 89.45,
+          "description": "RESTAURANT - SUSHI PLACE NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-05",
+          "date_posted": "2024-08-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-03",
+          "date_posted": "2024-08-04",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-01",
+          "date_posted": "2024-08-02",
+          "amount": 120.00,
+          "description": "GYM MEMBERSHIP - EQUINOX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-30",
+          "date_posted": "2024-07-31",
+          "amount": 78.45,
+          "description": "GROCERY STORE - TRADER JOES NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-28",
+          "date_posted": "2024-07-29",
+          "amount": 89.45,
+          "description": "SUMMER CONCERT TICKETS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-25",
+          "date_posted": "2024-07-26",
+          "amount": 56.78,
+          "description": "RESTAURANT - BURGER JOINT NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-22",
+          "date_posted": "2024-07-23",
+          "amount": 167.89,
+          "description": "ELECTRIC BILL - CON EDISON (HIGH SUMMER)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-20",
+          "date_posted": "2024-07-21",
+          "amount": 67.23,
+          "description": "GROCERY STORE - WHOLE FOODS MARKET NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-18",
+          "date_posted": "2024-07-19",
+          "amount": 45.67,
+          "description": "UBER RIDE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-15",
+          "date_posted": "2024-07-16",
+          "amount": -3250.00,
+          "description": "PAYROLL DEPOSIT - TECH COMPANY INC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-12",
+          "date_posted": "2024-07-13",
+          "amount": 156.78,
+          "description": "MOBILE PHONE - VERIZON",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-10",
+          "date_posted": "2024-07-11",
+          "amount": 125.00,
+          "description": "GAS BILL - NATIONAL GRID",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-08",
+          "date_posted": "2024-07-09",
+          "amount": 34.50,
+          "description": "COFFEE SHOP - LOCAL ROASTERS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-05",
+          "date_posted": "2024-07-06",
+          "amount": 2200.00,
+          "description": "RENT PAYMENT - BROADWAY APARTMENTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-07-03",
+          "date_posted": "2024-07-04",
+          "amount": 95.67,
+          "description": "INTERNET BILL - SPECTRUM",
+          "currency": "USD"
+        },        {
+          "date_transacted": "2024-07-01",
+          "date_posted": "2024-07-02",
+          "amount": 120.00,
+          "description": "GYM MEMBERSHIP - EQUINOX",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-30",
+          "date_posted": "2024-07-01",
+          "amount": 3.50,
+          "description": "COFFEE SHOP - SMALL LOCAL CAFE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-29",
+          "date_posted": "2024-06-30",
+          "amount": 127.89,
+          "description": "GROCERY STORE - BUDGET WEEKLY SHOP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-28",
+          "date_posted": "2024-06-29",
+          "amount": 15.25,
+          "description": "FOOD TRUCK - CHEAP LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-27",
+          "date_posted": "2024-06-28",
+          "amount": 234.56,
+          "description": "MEDICAL EMERGENCY - URGENT CARE VISIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-26",
+          "date_posted": "2024-06-27",
+          "amount": 8.99,
+          "description": "CONVENIENCE STORE - QUICK SNACKS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-25",
+          "date_posted": "2024-06-26",
+          "amount": 67.23,
+          "description": "ELECTRIC BILL - CON EDISON (LOW USAGE)",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-24",
+          "date_posted": "2024-06-25",
+          "amount": 1.99,
+          "description": "MOBILE APP - SINGLE PURCHASE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-23",
+          "date_posted": "2024-06-24",
+          "amount": 456.78,
+          "description": "RENT PORTION - SHARED APARTMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-22",
+          "date_posted": "2024-06-23",
+          "amount": 12.50,
+          "description": "PARKING METER - 2 HOURS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-21",
+          "date_posted": "2024-06-22",
+          "amount": 789.99,
+          "description": "UNEXPECTED EXPENSE - BIKE THEFT REPLACEMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-20",
+          "date_posted": "2024-06-21",
+          "amount": 23.45,
+          "description": "GROCERY STORE - DISCOUNT MARKET",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-19",
+          "date_posted": "2024-06-20",
+          "amount": 5.75,
+          "description": "COFFEE SHOP - BASIC BREW",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-18",
+          "date_posted": "2024-06-19",
+          "amount": 89.34,
+          "description": "MOBILE PHONE - BASIC PLAN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-17",
+          "date_posted": "2024-06-18",
+          "amount": 34.67,
+          "description": "RESTAURANT - CHEAP EATS NYC",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-16",
+          "date_posted": "2024-06-17",
+          "amount": 2.25,
+          "description": "VENDING MACHINE - SNACK",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-15",
+          "date_posted": "2024-06-16",
+          "amount": -2100.00,
+          "description": "PAYROLL DEPOSIT - PART-TIME JOB",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-14",
+          "date_posted": "2024-06-15",
+          "amount": 678.90,
+          "description": "EMERGENCY REPAIR - LAPTOP SCREEN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-13",
+          "date_posted": "2024-06-14",
+          "amount": 45.67,
+          "description": "GROCERY STORE - WEEKLY BASICS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-12",
+          "date_posted": "2024-06-13",
+          "amount": 15.99,
+          "description": "STREAMING - SINGLE MONTH TRIAL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-11",
+          "date_posted": "2024-06-12",
+          "amount": 7.50,
+          "description": "PUBLIC TRANSPORT - DAY PASS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-10",
+          "date_posted": "2024-06-11",
+          "amount": 234.56,
+          "description": "UNEXPECTED BILL - UTILITIES CATCH-UP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-09",
+          "date_posted": "2024-06-10",
+          "amount": 12.75,
+          "description": "FOOD TRUCK - QUICK BITE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-08",
+          "date_posted": "2024-06-09",
+          "amount": 4.25,
+          "description": "COFFEE SHOP - CORNER STORE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-07",
+          "date_posted": "2024-06-08",
+          "amount": 567.89,
+          "description": "EMERGENCY DENTAL - TOOTH PAIN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-06",
+          "date_posted": "2024-06-07",
+          "amount": 23.50,
+          "description": "GROCERY STORE - DISCOUNT CHAIN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-05",
+          "date_posted": "2024-06-06",
+          "amount": 890.00,
+          "description": "RENT PAYMENT - STUDIO APARTMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-04",
+          "date_posted": "2024-06-05",
+          "amount": 34.99,
+          "description": "INTERNET - BASIC PLAN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-03",
+          "date_posted": "2024-06-04",
+          "amount": 6.75,
+          "description": "CONVENIENCE STORE - ESSENTIALS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-02",
+          "date_posted": "2024-06-03",
+          "amount": 18.99,
+          "description": "RESTAURANT - FAST FOOD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-01",
+          "date_posted": "2024-06-02",
+          "amount": 45.67,
+          "description": "GAS BILL - SUMMER LOW",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-31",
+          "date_posted": "2024-06-01",
+          "amount": 1234.56,
+          "description": "MAJOR UNEXPECTED - CAR BREAKDOWN TOWING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-30",
+          "date_posted": "2024-05-31",
+          "amount": 12.25,
+          "description": "COFFEE SHOP - MORNING PICKUP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-29",
+          "date_posted": "2024-05-30",
+          "amount": 3.99,
+          "description": "VENDING MACHINE - DRINK",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-28",
+          "date_posted": "2024-05-29",
+          "amount": 67.89,
+          "description": "GROCERY STORE - BUDGET SHOPPING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-27",
+          "date_posted": "2024-05-28",
+          "amount": 234.50,
+          "description": "EMERGENCY EXPENSE - BROKEN PHONE SCREEN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-26",
+          "date_posted": "2024-05-27",
+          "amount": 8.50,
+          "description": "FOOD TRUCK - LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-25",
+          "date_posted": "2024-05-26",
+          "amount": 15.75,
+          "description": "CONVENIENCE STORE - WEEKLY BASICS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-24",
+          "date_posted": "2024-05-25",
+          "amount": 456.78,
+          "description": "SURPRISE EXPENSE - LAPTOP BATTERY REPLACEMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-23",
+          "date_posted": "2024-05-24",
+          "amount": 23.99,
+          "description": "RESTAURANT - CHEAP PIZZA",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-22",
+          "date_posted": "2024-05-23",
+          "amount": 5.25,
+          "description": "COFFEE SHOP - SMALL SIZE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-21",
+          "date_posted": "2024-05-22",
+          "amount": 34.67,
+          "description": "GROCERY STORE - DISCOUNT ITEMS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-20",
+          "date_posted": "2024-05-21",
+          "amount": 189.99,
+          "description": "UNEXPECTED MEDICAL - PRESCRIPTION REFILL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-19",
+          "date_posted": "2024-05-20",
+          "amount": 12.50,
+          "description": "PUBLIC TRANSPORT - WEEKLY PASS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-18",
+          "date_posted": "2024-05-19",
+          "amount": 7.99,
+          "description": "CONVENIENCE STORE - QUICK GRAB",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-17",
+          "date_posted": "2024-05-18",
+          "amount": 345.67,
+          "description": "EMERGENCY REPAIR - APARTMENT HEATER",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-16",
+          "date_posted": "2024-05-17",
+          "amount": 45.23,
+          "description": "RESTAURANT - BUDGET MEAL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-15",
+          "date_posted": "2024-05-16",
+          "amount": -2100.00,
+          "description": "PAYROLL DEPOSIT - PART-TIME JOB",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-14",
+          "date_posted": "2024-05-15",
+          "amount": 23.75,
+          "description": "GROCERY STORE - ESSENTIALS ONLY",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-13",
+          "date_posted": "2024-05-14",
+          "amount": 1.50,
+          "description": "VENDING MACHINE - SMALL SNACK",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-12",
+          "date_posted": "2024-05-13",
+          "amount": 678.90,
+          "description": "MASSIVE VARIANCE - SURPRISE MEDICAL BILL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-11",
+          "date_posted": "2024-05-12",
+          "amount": 15.99,
+          "description": "FOOD TRUCK - DINNER",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-10",
+          "date_posted": "2024-05-11",
+          "amount": 4.75,
+          "description": "COFFEE SHOP - BASIC COFFEE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-09",
+          "date_posted": "2024-05-10",
+          "amount": 234.56,
+          "description": "HUGE VARIANCE - EMERGENCY VET BILL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-08",
+          "date_posted": "2024-05-09",
+          "amount": 12.25,
+          "description": "CONVENIENCE STORE - WEEKLY SHOP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-07",
+          "date_posted": "2024-05-08",
+          "amount": 67.89,
+          "description": "ELECTRIC BILL - BASIC USAGE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-06",
+          "date_posted": "2024-05-07",
+          "amount": 8.99,
+          "description": "RESTAURANT - FAST FOOD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-05",
+          "date_posted": "2024-05-06",
+          "amount": 890.00,
+          "description": "RENT PAYMENT - STUDIO APARTMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-04",
+          "date_posted": "2024-05-05",
+          "amount": 567.89,
+          "description": "EXTREME VARIANCE - SURPRISE INSURANCE DEDUCTIBLE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-03",
+          "date_posted": "2024-05-04",
+          "amount": 34.67,
+          "description": "GROCERY STORE - DISCOUNT CHAIN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-02",
+          "date_posted": "2024-05-03",
+          "amount": 6.25,
+          "description": "COFFEE SHOP - SMALL LOCAL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-01",
+          "date_posted": "2024-05-02",
+          "amount": 89.34,
+          "description": "MOBILE PHONE - BASIC PLAN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-30",
+          "date_posted": "2024-05-01",
+          "amount": 1567.89,
+          "description": "MASSIVE VARIANCE - EMERGENCY APARTMENT DEPOSIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-29",
+          "date_posted": "2024-04-30",
+          "amount": 23.50,
+          "description": "RESTAURANT - CHEAP DINNER",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-28",
+          "date_posted": "2024-04-29",
+          "amount": 4.99,
+          "description": "CONVENIENCE STORE - SINGLE ITEM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-27",
+          "date_posted": "2024-04-28",
+          "amount": 345.67,
+          "description": "HIGH VARIANCE - EMERGENCY DENTAL WORK",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-26",
+          "date_posted": "2024-04-27",
+          "amount": 12.75,
+          "description": "FOOD TRUCK - LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-25",
+          "date_posted": "2024-04-26",
+          "amount": 3.25,
+          "description": "VENDING MACHINE - DRINK",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-24",
+          "date_posted": "2024-04-25",
+          "amount": 67.89,
+          "description": "GROCERY STORE - BUDGET WEEKLY",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-23",
+          "date_posted": "2024-04-24",
+          "amount": 234.56,
+          "description": "SURPRISE EXPENSE - TEXTBOOKS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-22",
+          "date_posted": "2024-04-23",
+          "amount": 15.99,
+          "description": "COFFEE SHOP - STUDY SESSION",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-21",
+          "date_posted": "2024-04-22",
+          "amount": 8.50,
+          "description": "CONVENIENCE STORE - BASICS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-20",
+          "date_posted": "2024-04-21",
+          "amount": 456.78,
+          "description": "EXTREME VARIANCE - SURPRISE CAR REPAIR",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-19",
+          "date_posted": "2024-04-20",
+          "amount": 34.67,
+          "description": "RESTAURANT - BUDGET MEAL",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-18",
+          "date_posted": "2024-04-19",
+          "amount": 5.75,
+          "description": "COFFEE SHOP - SMALL SIZE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-17",
+          "date_posted": "2024-04-18",
+          "amount": 123.45,
+          "description": "MODERATE VARIANCE - DOCTOR VISIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-16",
+          "date_posted": "2024-04-17",
+          "amount": 23.99,
+          "description": "GROCERY STORE - ESSENTIALS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-15",
+          "date_posted": "2024-04-16",
+          "amount": -2100.00,
+          "description": "PAYROLL DEPOSIT - PART-TIME JOB",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-14",
+          "date_posted": "2024-04-15",
+          "amount": 789.01,
+          "description": "HUGE VARIANCE - EMERGENCY ROOM VISIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-13",
+          "date_posted": "2024-04-14",
+          "amount": 12.50,
+          "description": "FOOD TRUCK - QUICK LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-12",
+          "date_posted": "2024-04-13",
+          "amount": 6.25,
+          "description": "CONVENIENCE STORE - SNACK",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-11",
+          "date_posted": "2024-04-12",
+          "amount": 45.67,
+          "description": "GROCERY STORE - DISCOUNT SHOPPING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-10",
+          "date_posted": "2024-04-11",
+          "amount": 2345.67,
+          "description": "MASSIVE VARIANCE - SURPRISE TUITION PAYMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-09",
+          "date_posted": "2024-04-10",
+          "amount": 15.75,
+          "description": "RESTAURANT - FAST FOOD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-08",
+          "date_posted": "2024-04-09",
+          "amount": 34.99,
+          "description": "INTERNET - BASIC PLAN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-07",
+          "date_posted": "2024-04-08",
+          "amount": 8.99,
+          "description": "COFFEE SHOP - CORNER CAFE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-06",
+          "date_posted": "2024-04-07",
+          "amount": 567.89,
+          "description": "HIGH VARIANCE - SURPRISE MOVING COSTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-05",
+          "date_posted": "2024-04-06",
+          "amount": 890.00,
+          "description": "RENT PAYMENT - STUDIO APARTMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-04",
+          "date_posted": "2024-04-05",
+          "amount": 23.50,
+          "description": "GROCERY STORE - BASIC NEEDS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-03",
+          "date_posted": "2024-04-04",
+          "amount": 89.34,
+          "description": "MOBILE PHONE - BASIC PLAN",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-02",
+          "date_posted": "2024-04-03",
+          "amount": 4.75,
+          "description": "VENDING MACHINE - QUICK SNACK",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-01",
+          "date_posted": "2024-04-02",
+          "amount": 12.25,
+          "description": "CONVENIENCE STORE - ESSENTIALS",
+          "currency": "USD"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John Smith"
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "New York",
+              "street": "10003 Broadway Road",
+              "postal_code": "10003",
+              "region": "NY"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",      "transactions": [
+        {
+          "date_transacted": "2025-06-15",
+          "date_posted": "2025-06-16",
+          "amount": -500.00,
+          "description": "TRANSFER FROM CHECKING - MONTHLY SAVINGS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-05-01",
+          "date_posted": "2025-05-02",
+          "amount": -12.34,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-04-15",
+          "date_posted": "2025-04-16",
+          "amount": -500.00,
+          "description": "TRANSFER FROM CHECKING - MONTHLY SAVINGS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-20",
+          "date_posted": "2025-03-21",
+          "amount": 1500.00,
+          "description": "WITHDRAWAL - EMERGENCY CAR REPAIR",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-03-01",
+          "date_posted": "2025-03-02",
+          "amount": -11.67,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-02-15",
+          "date_posted": "2025-02-16",
+          "amount": -500.00,
+          "description": "TRANSFER FROM CHECKING - MONTHLY SAVINGS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-01-01",
+          "date_posted": "2025-01-02",
+          "amount": -9.78,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-31",
+          "date_posted": "2025-01-01",
+          "amount": -1000.00,
+          "description": "YEAR-END BONUS DEPOSIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-12-01",
+          "date_posted": "2024-12-02",
+          "amount": -9.56,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-11-25",
+          "date_posted": "2024-11-26",
+          "amount": 800.00,
+          "description": "WITHDRAWAL - HOLIDAY GIFT FUND",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-10-01",
+          "date_posted": "2024-10-02",
+          "amount": -8.89,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-09-15",
+          "date_posted": "2024-09-16",
+          "amount": -500.00,
+          "description": "TRANSFER FROM CHECKING - MONTHLY SAVINGS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-08-20",
+          "date_posted": "2024-08-21",
+          "amount": 1200.00,
+          "description": "WITHDRAWAL - VACATION FUND",
+          "currency": "USD"
+        },        {
+          "date_transacted": "2024-07-01",
+          "date_posted": "2024-07-02",
+          "amount": -7.89,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-15",
+          "date_posted": "2024-06-16",
+          "amount": -75.00,
+          "description": "TRANSFER FROM CHECKING - SMALL SAVINGS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-06-01",
+          "date_posted": "2024-06-02",
+          "amount": -4.23,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-20",
+          "date_posted": "2024-05-21",
+          "amount": 234.56,
+          "description": "WITHDRAWAL - EMERGENCY EXPENSE",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-05-01",
+          "date_posted": "2024-05-02",
+          "amount": -3.45,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-25",
+          "date_posted": "2024-04-26",
+          "amount": 567.89,
+          "description": "WITHDRAWAL - TUITION PAYMENT HELP",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2024-04-01",
+          "date_posted": "2024-04-02",
+          "amount": -2.15,
+          "description": "INTEREST PAYMENT - SAVINGS ACCOUNT",
+          "currency": "USD"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John Smith"
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "New York",
+              "street": "10003 Broadway Road",
+              "postal_code": "10003",
+              "region": "NY"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

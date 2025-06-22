@@ -75,6 +75,7 @@ async function generateInsights(transactions, prompt, apiKey = null) {
  */
 async function categorizeTransaction(transaction, apiKey = null) {
   try {
+    throw new Error("LLM categorization is currently disabled. Please use the fallback categorization method instead.");
     // Use provided API key or fall back to environment variable
     const openaiApiKey = apiKey || process.env.OPENAI_API_KEY;
 
