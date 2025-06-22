@@ -42,6 +42,8 @@ const apiPlaid = require("./routes/api/plaid");
 app.use("/api/plaid", apiPlaid);
 const apiSavingsGoals = require("./routes/api/savings_goals");
 app.use("/api/savings_goals", apiSavingsGoals);
+const apiBudgets = require("./routes/api/budgets");
+app.use("/api/budgets", apiBudgets);
 
 app.listen(port, () => {
   logger.info(`${TAG} Server listening on port ${port}`);
