@@ -1,5 +1,5 @@
 # CapySpend 
-<img src="client/src/assets/neutral-capy.svg" alt="Capy the Capybara" width="150" height="150">
+<img src="https://github.com/StealthHydra179/spurhacks2025/raw/main/client/src/assets/neutral-capy.svg" alt="Capy the Capybara" width="150" height="150">
 
 ## Inspiration
 Managing personal finances can be incredibly overwhelming, especially when trying to create and maintain a budget manually. Many people struggle with:
@@ -14,10 +14,10 @@ Managing personal finances can be incredibly overwhelming, especially when tryin
 
 **The Solution**: CapySpend was born from the idea that financial management should be **automated, intelligent, and user-friendly**. By leveraging AI and secure bank integration, we eliminate the manual work while providing personalized, actionable financial advice. Instead of spending hours on spreadsheets, users can focus on what matters most: **achieving their financial goals**.
 
-## What does CapySpend do?
+## What Does CapySpend Do?
 CapySpend is a personal finance management website that helps users track their spending, manage budgets, and gain insights into their financial habits. It integrates with Plaid to securely connect to users' bank accounts and provides a user-friendly interface for managing finances, while implementing an AI assistant to offer personalized financial advice and insights based on the user's financial information.
 
-## How does CapySpend work?
+## How Does CapySpend Work?
 CapySpend works by integrating with Plaid and the OpenAI API to provide a comprehensive personal finance management solution. Users can securely connect their bank accounts through Plaid, allowing the application to access transaction data, account balances, and other financial information. The AI assistant uses this data to analyze spending patterns, suggest budget adjustments, and provide personalized financial advice. The application also features a user-friendly interface for managing budgets, tracking expenses, and visualizing financial health.
 
 ## Technologies Used
@@ -25,8 +25,8 @@ CapySpend works by integrating with Plaid and the OpenAI API to provide a compre
 - **Backend**: Node.js, Express
 - **Database**: PostgreSQL
 - **APIs**: Plaid API for bank account integration, OpenAI API for AI assistant functionality
-- **Authentication**: JWT for secure user authentication
-- **Design**: 
+- **Authentication**: JSON Web Tokens (JWT) for secure user authentication
+- **Design**: Figma for UI/UX design, Material-UI for responsive design components
 
 ## Features
 **Key features:**
@@ -34,14 +34,17 @@ CapySpend works by integrating with Plaid and the OpenAI API to provide a compre
 - **Personal Finance Management**: Users can create budgets, track expenses, and set financial goals.
 - **AI Assistant**: An AI-powered assistant provides personalized financial advice, helps users understand their spending habits, and suggests ways to save money.
 - **Goal Setting and Tracking**: Users can set financial goals, such as saving for a vacation or paying off debt, and track their progress towards these goals.
+- **AI Budgeting**: The AI assistant can automatically create and adjust budgets based on user spending patterns, ensuring that users stay on track with their financial goals.
 
 **Additional Features:**
 - **Expense Categorization**: Automatically categorize transactions to help users understand where their money is going.
-- **Visualizations**: Interactive charts and graphs to visualize spending patterns and budget performance.
+- **Visualizations**: Interactive charts and graphs to visualize spending patterns, past transactions, and budget performance.
 - **Different Modes**: Users can switch between different modes, such as "Conservative" for more conservative advice or "Aggressive" for more risk-taking strategies, allowing the AI assistant to tailor its recommendations based on the user's financial goals and risk tolerance.
 
-## How we built it
+## How We Built CapySpend
 The CapySpend application is split into 2 components: the client (frontend) and the server (backend). The client is built using React and Vite, providing a responsive and user-friendly interface. The server is built with Node.js and Express, handling API requests, user authentication, and integration with Plaid and OpenAI APIs.
+
+After defining the buisiness requirements, we identified the technologies that we believed were the best fit for this hackthon. We then designed the database schema to store the information requirements, followed up by the developing the server and client components.
 
 **Client**:
 - **React**: The client is built using React, providing a dynamic and interactive user interface.
@@ -52,9 +55,9 @@ The CapySpend application is split into 2 components: the client (frontend) and 
 
 **Server**:
 - **Node.js**: The server is built using Node.js, providing a robust backend for
-    - **Express**: The server uses Express.js to handle HTTP requests and manage routes for the application.
+    - **Express**: The server uses Express.js to handle HTTP requests and manage routes for the application. Additionally, it provides middleware for parsing JSON requests, handling CORS, and handling authentication.
     - **Winston**: Winston is used for logging server activities, errors, and important events, providing insights into server operations and storing persistent logs.
-- **PostgreSQL**: The database is managed using PostgreSQL, storing user data, transaction history, and budget information.
+- **PostgreSQL**: The database is built on PostgreSQL, storing user data, transaction history, and budget information.
 - **Plaid API**: The server integrates with the Plaid API to securely connect to users' bank accounts, fetch transaction data, and manage user accounts.
 - **OpenAI API**: The server uses the OpenAI API to power the AI assistant, and the server provides context consisting of user financial data to the AI model for personalized advice.
 - **Restful API**: The server exposes RESTful API endpoints for the client to interact with, allowing users to manage their accounts, budgets, and transactions.
@@ -73,7 +76,7 @@ The database consists of 7 tables:
 
 ## Challenges Faced
 
-## Accomplishments that we're proud of
+## Accomplishments That We Are Proud Of
 
 **Agentic AI Capabilities**: We're particularly proud of implementing advanced agentic features that enable our AI assistant to not just provide advice, but to take direct action on user data. The AI can:
 
@@ -91,7 +94,7 @@ The database consists of 7 tables:
 
 **Modern, Responsive UI**: Built a beautiful, intuitive interface using Material-UI that works seamlessly across desktop and mobile devices, providing an excellent user experience.
 
-## What we learned
+## What We Learned
 
 **Agentic AI and Tool Calls**: We gained deep insights into implementing agentic AI systems that can take action on user data:
 
@@ -131,7 +134,7 @@ The database consists of 7 tables:
 
 - **Responsive Design**: Mastered creating interfaces that work seamlessly across different devices and screen sizes while maintaining functionality and usability.
 
-## What's next for CapySpend
+## CapySpend's Future
 
 **Enhanced AI Capabilities**:
 - **Investment Recommendations**: Expand the AI to provide personalized investment advice based on user risk tolerance, financial goals, and market conditions
@@ -174,3 +177,6 @@ The database consists of 7 tables:
 - **Regulatory Compliance**: Ensure compliance with financial regulations across different jurisdictions
 - **Data Portability**: Allow users to easily export their financial data in standard formats
 - **Privacy Controls**: Give users granular control over what data is shared and with whom
+
+
+> Authors: [Aiden Ma](https://github.com/StealthHydra179), [Darren Chu](https://github.com/darren10101), [Daniel Zhang](https://github.com/zdann15), and [Feiyang Xu](https://github.com/Feiyang0303)
