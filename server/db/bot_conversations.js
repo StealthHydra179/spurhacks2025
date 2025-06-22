@@ -217,6 +217,12 @@ ${savingsGoals.length > 0 ? `
 User's Savings Goals and Progress:
 ${JSON.stringify(savingsGoals, null, 2)}
 
+CREATE_GOAL FUNCTION:
+- use this tool call when the user expresses interest in saving for a specific purpose
+- only use the tool call after confirming with the user that they want to add a goal to their account
+- the tool call will create a new savings goal with the provided details
+- after doing the tool call, return a message confirming the goal was created successfully and that the user can see it in their dashboard
+
 GOALS GUIDANCE:
 - Use the progress_percentage to understand how close the user is to their goals
 - Consider days_until_deadline when giving advice about urgency
@@ -277,23 +283,165 @@ Please provide a helpful response.`;    logger.info(
     }
     logger.info(`${TAG} systemPrompt: ${systemPrompt}`);
 
-    const completion = await openai.chat.completions.create({
+    const input = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ]
+    const tools = [
+      {
+        "type": "function",
+        "name": "create_goal",
+        "description": "Creates a savings goal when the user expresses interest in saving for a specific purpose.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Name of the savings goal (required)"
+            },
+            "amount": {
+              "type": "number",
+              "description": "Target amount for the savings goal (required, must be greater than 0)"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description of the savings goal (optional)"
+            },
+            "deadline": {
+              "type": "string",
+              "description": "End date for the savings goal in YYYY-MM-DD format (optional)"
+            },
+            "category": {
+              "type": "string",
+              "description": "Category of the goal: savings, debt, investment, purchase, emergency (optional)"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "Priority level (optional, defaults to medium)"
+            },
+            "icon": {
+              "type": "string",
+              "description": "Icon for the goal. Must be one of: 💰 (money), 🏠 (house), ✈️ (travel), 💻 (technology), 📈 (investment), 💳 (debt), 🛡️ (emergency), 🎓 (education), 🚗 (car), 🏥 (health), 🎯 (target), ⭐ (star) (optional)"
+            },
+            "color": {
+              "type": "string",
+              "description": "Color for the goal (hex color code like #4CAF50) (optional)"
+            },
+            "current_amount": {
+              "type": "number",
+              "description": "Current progress amount (optional, defaults to 0)"
+            }
+          },
+          "required": ["title", "amount", "description", "deadline", "category", "priority", "icon", "color", "current_amount"],
+          "additionalProperties": false
+        },
+        "strict": true
+      }
+    ]
+    const completion = await openai.responses.create({
       model: "gpt-4.1",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        },
-      ],
-      max_tokens: 1500,
-      temperature: 0.7,
+      input: input,
+      tools: tools
     });
 
-    return completion.choices[0].message.content;
+    logger.info(`${TAG} OpenAI API call successful`);
+    logger.info(`${TAG} Response received, output length: ${completion.output_text?.length || 0} characters`);
+    
+    // Handle tool calls if any
+    let hasToolCalls = false;
+    for (const toolCall of completion.output) {
+      if (toolCall.type !== "function_call") {
+          continue;
+      }
+
+      hasToolCalls = true;
+      const name = toolCall.name;
+      const args = JSON.parse(toolCall.arguments);
+      
+      logger.info(`${TAG} Processing tool call: ${name} with call_id: ${toolCall.call_id}`);
+      
+      if(name === "create_goal") {
+        logger.info(`${TAG} Creating savings goal with args:`, args);
+        
+        try {
+          // Map the tool call arguments to the database format
+          const goalData = {
+            title: args.title,
+            description: args.description,
+            amount: args.amount,
+            deadline: args.deadline,
+            category: args.category,
+            priority: args.priority,
+            icon: args.icon,
+            color: args.color,
+            current_amount: args.current_amount || 0
+          };
+          
+          const result = await savingsGoalsDb.create(userId, goalData);
+          
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: `Savings goal "${result.title}" created successfully with ID: ${result.id}. Target amount: $${result.amount}, Deadline: ${result.deadline ? new Date(result.deadline).toLocaleDateString() : 'No deadline'}`
+          });
+          
+          logger.info(`${TAG} Savings goal created successfully with ID: ${result.id}`);
+        } catch (error) {
+          logger.error(`${TAG} Error creating savings goal: ${error.message}`);
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: `Failed to create savings goal: ${error.message}`
+          });
+        }
+      }
+    }
+    
+    // If there were tool calls, make a second API call to get the final response
+    if (hasToolCalls) {
+      logger.info(`${TAG} Making follow-up API call after tool execution`);
+      try {
+        const finalResponse = await openai.responses.create({
+          model: "gpt-4.1",
+          input: input
+          // No tools needed for follow-up call
+        });
+        logger.info(`${TAG} Final response received after tool execution: ${finalResponse.output_text?.substring(0, 100)}...`);
+        
+        // Validate the final response
+        if (!finalResponse.output_text || finalResponse.output_text.trim() === '') {
+          logger.error(`${TAG} Empty final response after tool execution`);
+          const toolResults = input.filter(msg => msg.type === "function_call_output")
+            .map(msg => msg.output)
+            .join("\n");
+          return `I've processed your request. ${toolResults}`;
+        }
+        
+        return finalResponse.output_text;
+      } catch (error) {
+        logger.error(`${TAG} Error in follow-up API call: ${error.message}`);
+        // If follow-up fails, return a fallback message with the tool results
+        const toolResults = input.filter(msg => msg.type === "function_call_output")
+          .map(msg => msg.output)
+          .join("\n");
+        return `I've processed your request. ${toolResults}`;
+      }
+    }
+
+    // Validate the original response
+    if (!completion.output_text || completion.output_text.trim() === '') {
+      logger.error(`${TAG} Empty original response from OpenAI`);
+      return "I'm sorry, I'm having trouble generating a response right now. Please try again.";
+    }
+
+    return completion.output_text;
   } catch (error) {
     logger.error(`${TAG} Error generating AI response: ${error.message}`);
     return "I'm sorry, I'm having trouble generating a response right now. Please try again later, or feel free to ask me about your finances and spending habits!";

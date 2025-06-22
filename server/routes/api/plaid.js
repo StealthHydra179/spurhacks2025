@@ -494,6 +494,17 @@ Current user message: ${user_message}`;
       user_id
     );
 
+    logger.info(`${TAG}: AI response received: ${aiResponse ? aiResponse.substring(0, 100) + '...' : 'EMPTY RESPONSE'}`);
+
+    // Validate the response
+    if (!aiResponse || aiResponse.trim() === '') {
+      logger.error(`${TAG}: Empty AI response received for conversation ${conversation_id}`);
+      return res.status(500).json({ 
+        error: "Failed to generate response",
+        message: "I'm sorry, I'm having trouble generating a response right now. Please try again."
+      });
+    }
+
     // Add AI response to the conversation
     const newMessage = await botConversationsDb.addMessageToConversation(
       conversation_id,
