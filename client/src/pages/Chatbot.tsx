@@ -45,13 +45,38 @@ import {
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import capySVG from '../assets/capyy.svg';
+import communistCapy from '../assets/communist-capy.svg';
+import babyCapy from '../assets/baby-capy.svg';
+import conservativeCapy from '../assets/conservative-capy.svg';
+import riskyCapy from '../assets/risky-capy.svg';
+import neutralCapy from '../assets/neutral-capy.svg';
 import capyImage from '../assets/capy.png';
-import communistHat from '../assets/communist-hat.svg';
 import { botConversationService, plaidService, authService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
 const DRAWER_WIDTH = 320;
 const COLLAPSED_DRAWER_WIDTH = 80;
+
+// Function to get the appropriate capy image based on personality
+const getCapyImage = (personality: number) => {
+  // Map personality numbers to specific capy images
+  // For now, we'll use the available capySVG for all personalities
+  // In the future, you can import and return specific capy images for each personality
+  switch (personality) {
+    case -1: // Conservative
+      return conservativeCapy;
+    case 0:  // Neutral
+      return neutralCapy;
+    case 1:  // Risky
+      return riskyCapy;
+    case 2:  // Communist
+      return communistCapy;
+    case 3:  // Baby
+      return babyCapy;
+    default:
+      return capySVG;
+  }
+};
 
 const Chatbot: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
@@ -76,9 +101,10 @@ const Chatbot: React.FC = () => {
   const [userPersonality, setUserPersonality] = useState<number>(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [textVisible, setTextVisible] = useState(true);
+  const [loadingConversation, setLoadingConversation] = useState(true);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView();
   };
   useEffect(() => {
     scrollToBottom();
@@ -102,6 +128,20 @@ const Chatbot: React.FC = () => {
       navigate(`/chat/${mostRecent.id}`, { replace: true });
     }
   }, [conversationId, conversations, creatingConversation]);
+
+  // Load conversation when URL changes
+  useEffect(() => {
+    if (conversationId && conversationId !== currentConversationId) {
+      fetchConversation(conversationId);
+    }
+  }, [conversationId]);
+
+  // Load conversations and user personality on component mount
+  useEffect(() => {
+    fetchConversations();
+    fetchUserPersonality();
+  }, []);
+
   const fetchConversations = async () => {
     try {
       const data = await botConversationService.getUserConversationSummaries();
@@ -130,81 +170,77 @@ const Chatbot: React.FC = () => {
 
   const fetchConversation = async (id: string) => {
     try {
-      const data = await botConversationService.getFullConversation(id);
-      setSelectedConversation(data);
-      setCurrentConversationId(id);
-      setBotTyping(false); // Clear typing indicator when switching conversations
-      if (isMobile) {
-        setMobileDrawerOpen(false);
+      setLoadingConversation(true);
+      const conversation = await botConversationService.getFullConversation(id);
+      
+      if (conversation && conversation.messages) {
+        setSelectedConversation(conversation);
+        setCurrentConversationId(id);
+        // Ensure messages are sorted by message_number
+        const sortedMessages = conversation.messages.sort((a, b) => a.message_number - b.message_number);
+        setSelectedConversation({
+          ...conversation,
+          messages: sortedMessages
+        });
       }
     } catch (error) {
       console.error('Error fetching conversation:', error);
-      setBotTyping(false); // Clear typing indicator on error
-    }  };
+    } finally {
+      setLoadingConversation(false);
+    }
+  };
 
   const createNewConversation = async () => {
     if (creatingConversation) return; // Prevent multiple simultaneous requests
     setCreatingConversation(true);
     
-    // Clear current conversation immediately to hide old chat
-    setSelectedConversation(null);
-    setCurrentConversationId(null);
-    
-    // Close mobile drawer if open
-    setMobileDrawerOpen(false);
-    const question = 'Hello! I\'d like to start a new conversation about my finances.';    
     try {
-      if (!user) {
-        console.error('User not authenticated');
-        return;
-      }
+      // Create a new conversation
+      const result = await botConversationService.askCapy(user?.id || 0, "Hello");
       
-      const data = await botConversationService.askCapy(user.id, question);
-      
-      // Set the new conversation ID immediately to prevent race conditions
-      const newConversationId = data.conversation_id.toString();
-      setCurrentConversationId(newConversationId);
-      
-      // Navigate to the new conversation first
-      navigate(`/chat/${newConversationId}`, { replace: true });
-      
-      // Then refresh conversations list and load conversation data
-      await fetchConversations();
-      await fetchConversation(newConversationId);
-      // Check if conversation has messages, if not wait a bit longer
-      let attempts = 0;
-      const maxAttempts = 10; // Maximum 5 seconds (10 * 500ms)
-      
+      // Wait a bit for the conversation to be fully created
       const checkConversationReady = () => {
-        attempts++;
-        if (selectedConversation && selectedConversation.messages && selectedConversation.messages.length >= 2) {
-          // We have both user and bot messages
-          setCreatingConversation(false);
-        } else if (attempts < maxAttempts) {
-          // Wait a bit more and check again
-          setTimeout(checkConversationReady, 500);
-        } else {
-          // Timeout - hide loading anyway
-          setCreatingConversation(false);
-        }
+        setTimeout(async () => {
+          try {
+            await fetchConversations(); // Refresh the conversations list
+            await fetchConversation(result.conversation_id.toString()); // Load the new conversation
+            navigate(`/chat/${result.conversation_id}`, { replace: true });
+          } catch (error) {
+            console.error('Error loading new conversation:', error);
+            // Retry once more
+            setTimeout(async () => {
+              try {
+                await fetchConversations();
+                await fetchConversation(result.conversation_id.toString());
+                navigate(`/chat/${result.conversation_id}`, { replace: true });
+              } catch (retryError) {
+                console.error('Retry failed:', retryError);
+              }
+            }, 1000);
+          }
+        }, 500);
       };
       
-      // Start checking after a short delay
-      setTimeout(checkConversationReady, 1000);
-      
+      checkConversationReady();
     } catch (error) {
       console.error('Error creating conversation:', error);
+    } finally {
       setCreatingConversation(false);
     }
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || sending || !currentConversationId) return;
+    if (!newMessage.trim() || !currentConversationId || sending) return;
 
+    const messageToSend = newMessage.trim();
+    setNewMessage('');
     setSending(true);
-    const messageToSend = newMessage;
-    setNewMessage('');    try {
+
+    try {
+      // Add user message to conversation immediately
       await botConversationService.addMessage(currentConversationId, messageToSend, 'user');
+      
+      // Refresh the conversation to show the new user message
       await fetchConversation(currentConversationId);
       
       // Add bot response with typing indicator
@@ -214,6 +250,7 @@ const Chatbot: React.FC = () => {
       }, 500); // Small delay to make it feel more natural
     } catch (error) {
       console.error('Error sending message:', error);
+      // Restore the message if sending failed
       setNewMessage(messageToSend);
       setBotTyping(false);
     } finally {
@@ -511,6 +548,10 @@ const Chatbot: React.FC = () => {
   );
 
   const handleConversationSelect = async (conversation: ConversationSummary) => {
+    setBotTyping(false); // Clear typing indicator when switching conversations
+    if (isMobile) {
+      setMobileDrawerOpen(false);
+    }
     await fetchConversation(conversation.id.toString());
   };
 
@@ -587,7 +628,7 @@ const Chatbot: React.FC = () => {
             >
               <Box
                 component="img"
-                src={capyImage}
+                src={getCapyImage(userPersonality)}
                 alt="Capy"
                 sx={{ 
                   width: 32, 
@@ -603,7 +644,7 @@ const Chatbot: React.FC = () => {
           {isMobile && (
             <Box
               component="img"
-              src={capyImage}
+              src={getCapyImage(userPersonality)}
               alt="Capy"
               sx={{ 
                 width: 32, 
@@ -705,7 +746,7 @@ const Chatbot: React.FC = () => {
                       }}
                     >
                       <img 
-                        src={capyImage} 
+                        src={getCapyImage(userPersonality)} 
                         alt="Bot" 
                         style={{ 
                           width: '70%', 
@@ -908,258 +949,265 @@ const Chatbot: React.FC = () => {
           }}
         >
           <Box sx={{ position: 'relative' }}>
-            <img src={capySVG} alt="Capybara SVG" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
-            {userPersonality === 2 && (
-              <Box
-                component="img"
-                src={communistHat}
-                alt="Communist Hat"
-                sx={{
-                  position: 'absolute',
-                  top: '-12%',
-                  left: '42%',
-                  transform: 'translateX(-50%) rotate(-6deg)',
-                  width: '80%',
-                  height: 'auto',
-                  zIndex: 2,
-                }}
-              />
-            )}
+            <img src={getCapyImage(userPersonality)} alt="Capybara SVG" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
           </Box>
         </Box>
         {selectedConversation ? (
           <>
-            {/* Messages */}
-            <Box
-              sx={{
-                flex: 1,
-                overflowY: 'auto',
-                p: '16px 40px 16px 16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2
-              }}
-            >
-              {selectedConversation.messages?.map((message) => (
-                <Box
-                  key={message.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 2,
-                    width: '100%',
-                    justifyContent: 'flex-end',
-                    flexDirection: 'row',
-                  }}
-                >
-                  {/* For bot: Avatar left, Paper right. For user: Paper left, Avatar right. */}
-                  {message.sender === 'bot' && (
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        background: theme.palette.primary.main,
-                        flexShrink: 0
-                      }}
-                    >
-                      <img src={capyImage} alt="Capy" style={{ width: '70%', height: '70%', objectFit: 'contain', display: 'block', margin: 'auto' }} />
-                    </Avatar>
-                  )}
-                  <Paper
-                    elevation={1}
+            {/* Messages Area */}
+            <Box sx={{ flex: 1, overflow: 'auto', position: 'relative' }}>
+              {loadingConversation ? (
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  height: '100%',
+                  p: 4
+                }}>
+                  <Box
+                    component="img"
+                    src={getCapyImage(userPersonality)}
+                    alt="Capy"
                     sx={{
-                      p: 2,
-                      maxWidth: '70%',
-                      borderRadius: 2,
-                      background: message.sender === 'user'
-                        ? '#FFE2B6'
-                        : '#FFFCF9',
-                      color: message.sender === 'user'
-                        ? theme.palette.text.primary
-                        : theme.palette.text.primary,
-                      boxShadow: message.sender === 'user' ? '0 2px 8px 0 rgba(0,0,0,0.08)' : undefined,
-                      ml: 0,
-                      mr: 0,
-                      mb: message.sender === 'bot' ? { xs: 10, sm: 15, md: 20} : 0,
-                    }}
-                  >
-                    {message.sender === 'bot' ? (
-                      <Box className="markdown-content">
-                        <ReactMarkdown
-                          components={{
-                            p: ({ children }) => (
-                              <Typography variant="body1" component="span" sx={{ display: 'block', mb: 1 }}>
-                                {children}
-                              </Typography>
-                            ),
-                          h1: ({ children }) => (
-                            <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                              {children}
-                            </Typography>
-                          ),
-                          h2: ({ children }) => (
-                            <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                              {children}
-                            </Typography>
-                          ),
-                          h3: ({ children }) => (
-                            <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                              {children}
-                            </Typography>
-                          ),
-                          strong: ({ children }) => (
-                            <Typography component="strong" sx={{ fontWeight: 'bold' }}>
-                              {children}
-                            </Typography>
-                          ),
-                          em: ({ children }) => (
-                            <Typography component="em" sx={{ fontStyle: 'italic' }}>
-                              {children}
-                            </Typography>
-                          ),
-                          code: ({ children }) => (
-                            <Typography 
-                              component="code" 
-                              sx={{ 
-                                backgroundColor: alpha(theme.palette.background.default, 0.8),
-                                padding: '2px 4px',
-                                borderRadius: 1,
-                                fontFamily: 'monospace',
-                                fontSize: '0.9em'
-                              }}
-                            >
-                              {children}
-                            </Typography>
-                          ),
-                          pre: ({ children }) => (
-                            <Box
-                              component="pre"
-                              sx={{
-                                backgroundColor: alpha(theme.palette.background.default, 0.8),
-                                padding: 2,
-                                borderRadius: 1,
-                                overflow: 'auto',
-                                fontFamily: 'monospace',
-                                fontSize: '0.9em',
-                                my: 1
-                              }}
-                            >
-                              {children}
-                            </Box>
-                          ),
-                          ul: ({ children }) => (
-                            <Typography component="ul" sx={{ pl: 2, my: 1 }}>
-                              {children}
-                            </Typography>
-                          ),
-                          ol: ({ children }) => (
-                            <Typography component="ol" sx={{ pl: 2, my: 1 }}>
-                              {children}
-                            </Typography>
-                          ),
-                          li: ({ children }) => (
-                            <Typography component="li" variant="body1" sx={{ mb: 0.5 }}>
-                              {children}
-                            </Typography>
-                          ),
-                          blockquote: ({ children }) => (
-                            <Box
-                              component="blockquote"
-                              sx={{
-                                borderLeft: `4px solid ${theme.palette.primary.main}`,
-                                paddingLeft: 2,
-                                margin: '1em 0',
-                                fontStyle: 'italic',
-                                color: theme.palette.text.secondary
-                              }}
-                            >
-                              {children}
-                            </Box>
-                          )
-                        }}                        >
-                          {message.message}
-                        </ReactMarkdown>
-                        
-                        {/* Display goal card if a goal was created */}
-                        {(() => {
-                          const action = detectAction(message.message);
-                          if (!action) return null;
-                          
-                          if (action.type === 'goal') {
-                            return <GoalCard goal={action} />;
-                          } else if (action.type === 'budget') {
-                            return <BudgetCard budget={action} />;
-                          }
-                          
-                          return null;
-                        })()}
-                      </Box>
-                    ) : (
-                      <Typography variant="body1">{message.message}</Typography>
-                    )}
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        opacity: 0.7,
-                        display: 'block',
-                        mt: 0.5
-                      }}
-                    >
-                      {new Date(message.message_timestamp).toLocaleTimeString()}
-                    </Typography>
-                  </Paper>
-                  {message.sender === 'user' && (
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        background: theme.palette.secondary.main
-                      }}
-                    >
-                      <PersonIcon sx={{ fontSize: 18 }} />
-                    </Avatar>
-                  )}
-                </Box>
-              ))}
-              
-              {/* Bot typing indicator */}
-              {botTyping && (
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 7, ml: { xs: '150px', sm: '200px', md: '250px' } }}>
-                  <Paper
-                    elevation={1}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      background: '#FFFCF9',
-                      color: theme.palette.text.primary,
-                      fontSize: '1.25rem',
-                      fontWeight: 500,
-                      boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
-                      minWidth: 80,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      {/* <span>Thinking</span> */}
-                      <Box sx={{ display: 'inline-flex', ml: 0.5, mr: 0.5 }}>
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0s' }} />
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.2s' }} />
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, mx: 0.2, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.4s' }} />
-                      </Box>
-                    </Box>
-                    <style>{`
-                      @keyframes typing-bounce {
-                        0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-                        40% { opacity: 1; transform: scale(1); }
+                      width: 80,
+                      height: 80,
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                      '@keyframes pulse': {
+                        '0%': { transform: 'scale(1)' },
+                        '50%': { transform: 'scale(1.05)' },
+                        '100%': { transform: 'scale(1)' }
                       }
-                    `}</style>
-                  </Paper>
+                    }}
+                  />
+                  <Typography variant="h6" component="div" color="text.primary" textAlign="center">
+                    Loading conversation...
+                  </Typography>
+                  <CircularProgress size={40} thickness={4} />
+                </Box>
+              ) : selectedConversation?.messages && selectedConversation.messages.length > 0 ? (
+                <Box sx={{ p: 2, pb: 8 }}>
+                  {selectedConversation.messages.map((message, index) => (
+                    <Box
+                      key={`${message.id}-${index}`}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        mb: 2,
+                        ml: message.sender === 'user' ? { xs: '150px', sm: '200px', md: '250px' } : { xs: '160px', sm: '200px', md: '240px' },
+                        mr: 0,
+                        justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start'
+                      }}
+                    >
+                      <Paper
+                        elevation={1}
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          background: message.sender === 'user' ? theme.palette.primary.main : '#FFFCF9',
+                          color: message.sender === 'user' ? 'white' : theme.palette.text.primary,
+                          fontSize: '1.25rem',
+                          fontWeight: 500,
+                          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
+                          width: '80%',
+                          wordBreak: 'break-word'
+                        }}
+                      >
+                        {message.sender === 'bot' ? (
+                          <Box className="markdown-content">
+                            <ReactMarkdown
+                              components={{
+                                p: ({ children }) => (
+                                  <Typography variant="body1" component="span" sx={{ display: 'block', mb: 1 }}>
+                                    {children}
+                                  </Typography>
+                                ),
+                              h1: ({ children }) => (
+                                <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              h2: ({ children }) => (
+                                <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              h3: ({ children }) => (
+                                <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              strong: ({ children }) => (
+                                <Typography component="strong" sx={{ fontWeight: 'bold' }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              em: ({ children }) => (
+                                <Typography component="em" sx={{ fontStyle: 'italic' }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              code: ({ children }) => (
+                                <Typography 
+                                  component="code" 
+                                  sx={{ 
+                                    backgroundColor: alpha(theme.palette.background.default, 0.8),
+                                    padding: '2px 4px',
+                                    borderRadius: 1,
+                                    fontFamily: 'monospace',
+                                    fontSize: '0.9em'
+                                  }}
+                                >
+                                  {children}
+                                </Typography>
+                              ),
+                              pre: ({ children }) => (
+                                <Box
+                                  component="pre"
+                                  sx={{
+                                    backgroundColor: alpha(theme.palette.background.default, 0.8),
+                                    padding: 2,
+                                    borderRadius: 1,
+                                    overflow: 'auto',
+                                    fontFamily: 'monospace',
+                                    fontSize: '0.9em',
+                                    my: 1
+                                  }}
+                                >
+                                  {children}
+                                </Box>
+                              ),
+                              ul: ({ children }) => (
+                                <Typography component="ul" sx={{ pl: 2, my: 1 }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              ol: ({ children }) => (
+                                <Typography component="ol" sx={{ pl: 2, my: 1 }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              li: ({ children }) => (
+                                <Typography component="li" variant="body1" sx={{ mb: 0.5 }}>
+                                  {children}
+                                </Typography>
+                              ),
+                              blockquote: ({ children }) => (
+                                <Box
+                                  component="blockquote"
+                                  sx={{
+                                    borderLeft: `4px solid ${theme.palette.primary.main}`,
+                                    paddingLeft: 2,
+                                    margin: '1em 0',
+                                    fontStyle: 'italic',
+                                    color: theme.palette.text.secondary
+                                  }}
+                                >
+                                  {children}
+                                </Box>
+                              )
+                            }}
+                            >
+                              {message.message}
+                            </ReactMarkdown>
+                          </Box>
+                        ) : (
+                          <Typography variant="body1">{message.message}</Typography>
+                        )}
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            opacity: 0.7,
+                            display: 'block',
+                            mt: 0.5
+                          }}
+                        >
+                          {new Date(message.message_timestamp).toLocaleTimeString()}
+                        </Typography>
+                      </Paper>
+                      {message.sender === 'user' && (
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            ml: 1,
+                            background: theme.palette.secondary.main
+                          }}
+                        >
+                          <PersonIcon sx={{ fontSize: 18 }} />
+                        </Avatar>
+                      )}
+                    </Box>
+                  ))}
+                  
+                  {/* Bot typing indicator */}
+                  {botTyping && (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 7, ml: { xs: '160px', sm: '200px', md: '240px' } }}>
+                      <Paper
+                        elevation={1}
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          background: '#FFFCF9',
+                          color: theme.palette.text.primary,
+                          fontSize: '1.25rem',
+                          fontWeight: 500,
+                          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
+                          minWidth: 60,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
+                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0s' }} />
+                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.2s' }} />
+                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.text.secondary, animation: 'typing-bounce 1.4s infinite ease-in-out', animationDelay: '0.4s' }} />
+                          </Box>
+                        </Box>
+                        <style>{`
+                          @keyframes typing-bounce {
+                            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+                            40% { opacity: 1; transform: scale(1); }
+                          }
+                        `}</style>
+                      </Paper>
+                    </Box>
+                  )}
+                  
+                  <div ref={messagesEndRef} />
+                </Box>
+              ) : (
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  height: '100%',
+                  p: 4
+                }}>
+                  <Box
+                    component="img"
+                    src={getCapyImage(userPersonality)}
+                    alt="Capy"
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                      '@keyframes pulse': {
+                        '0%': { transform: 'scale(1)' },
+                        '50%': { transform: 'scale(1.05)' },
+                        '100%': { transform: 'scale(1)' }
+                      }
+                    }}
+                  />
+                  <Typography variant="h6" component="div" color="text.primary" textAlign="center">
+                    Capy is thinking...
+                  </Typography>
+                  <CircularProgress size={40} thickness={4} />
                 </Box>
               )}
-              
-              <div ref={messagesEndRef} />
             </Box>
 
             {/* Message Input */}
@@ -1238,7 +1286,7 @@ const Chatbot: React.FC = () => {
           >
             <Box
               component="img"
-              src={capyImage}
+              src={getCapyImage(userPersonality)}
               alt="Capy"
               sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', opacity: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))' }}
             />
@@ -1282,7 +1330,7 @@ const Chatbot: React.FC = () => {
         >
           <Box
             component="img"
-            src={capyImage}
+            src={getCapyImage(userPersonality)}
             alt="Capy"
             sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 0.8, transform: 'scale(1)' }, '50%': { opacity: 1, transform: 'scale(1.05)' } } }}
           />
