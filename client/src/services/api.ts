@@ -8,7 +8,10 @@ import type {
   Conversation,
   SavingsGoal,
   CreateSavingsGoalRequest,
-  UpdateSavingsGoalRequest
+  UpdateSavingsGoalRequest,
+  Budget,
+  CreateBudgetRequest,
+  UpdateBudgetRequest
 } from '../types';
 
 // Create axios instance with base configuration
@@ -213,6 +216,38 @@ export const savingsGoalsService = {
 
   deleteSavingsGoal: async (id: string): Promise<{ message: string }> => {
     const response = await api.delete<{ status: string; message: string }>(`/api/savings_goals/${id}`);
+    return { message: response.data.message };
+  },
+};
+
+export const budgetService = {
+  getBudgets: async (): Promise<Budget[]> => {
+    const response = await api.get<{ status: string; data: Budget[]; message: string }>('/api/budgets');
+    return response.data.data;
+  },
+
+  getBudgetById: async (id: string): Promise<Budget> => {
+    const response = await api.get<{ status: string; data: Budget }>(`/api/budgets/${id}`);
+    return response.data.data;
+  },
+
+  createBudget: async (budgetData: CreateBudgetRequest): Promise<Budget> => {
+    const response = await api.post<{ status: string; data: Budget; message: string }>('/api/budgets', budgetData);
+    return response.data.data;
+  },
+
+  updateBudget: async (id: string, budgetData: UpdateBudgetRequest): Promise<Budget> => {
+    const response = await api.put<{ status: string; data: Budget; message: string }>(`/api/budgets/${id}`, budgetData);
+    return response.data.data;
+  },
+
+  patchBudget: async (id: string, budgetData: Partial<UpdateBudgetRequest>): Promise<Budget> => {
+    const response = await api.patch<{ status: string; data: Budget; message: string }>(`/api/budgets/${id}`, budgetData);
+    return response.data.data;
+  },
+
+  deleteBudget: async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ status: string; message: string }>(`/api/budgets/${id}`);
     return { message: response.data.message };
   },
 };

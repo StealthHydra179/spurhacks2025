@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { plaidService, savingsGoalsService } from '../services/api';
+import { plaidService, savingsGoalsService, botConversationService, budgetService, authService } from '../services/api';
 import {
   Box,
   Container,
@@ -28,7 +28,10 @@ import {
   DialogActions,
   FormControl,
   InputLabel,
-  Select
+  Select,
+  Grid,
+  Tabs,
+  Tab
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
@@ -51,8 +54,7 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import capyImage from '../assets/capy.png';
 import { useNavigate } from 'react-router-dom';
-import { botConversationService } from '../services/api';
-import { authService } from '../services/api';
+import type { SavingsGoal, Budget } from '../types';
 
 interface PlaidTransaction {
   transaction_id: string;
@@ -178,6 +180,8 @@ const Dashboard: React.FC = () => {
     { id: 8, name: 'Gifts & Donations', amount: 0, spent: 0, icon: '🎁' },
   ]);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
+  const [isBudgetLoading, setIsBudgetLoading] = useState(false);
 
   // Get current month's date range
   const getCurrentMonthRange = () => {
@@ -399,6 +403,168 @@ const Dashboard: React.FC = () => {
       fetchUserPersonality();
     }
   }, [user?.id]);
+
+  // Fetch budgets when user is available
+  useEffect(() => {
+    if (user?.id) {
+      fetchBudgets();
+    }
+  }, [user?.id]);
+
+  // Update budget spending when transactions are loaded
+  useEffect(() => {
+    if (allMonthlyTransactions.length > 0) {
+      updateBudgetFromTransactions(allMonthlyTransactions);
+    }
+  }, [allMonthlyTransactions]);
+
+  // Fetch budgets from API
+  const fetchBudgets = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setIsBudgetLoading(true);
+      const budgets = await budgetService.getBudgets();
+      
+      // Get the most recent budget (first in the list since they're ordered by created_at DESC)
+      if (budgets.length > 0) {
+        const latestBudget = budgets[0];
+        setCurrentBudget(latestBudget);
+        
+        // Update budget categories with amounts from API
+        const updatedCategories = budgetCategories.map(cat => {
+          let amount = 0;
+          switch (cat.name) {
+            case 'Housing & Utilities':
+              amount = latestBudget.housing || 0;
+              break;
+            case 'Food & Dining':
+              amount = latestBudget.food || 0;
+              break;
+            case 'Transportation':
+              amount = latestBudget.transportation || 0;
+              break;
+            case 'Health & Insurance':
+              amount = latestBudget.health || 0;
+              break;
+            case 'Personal & Lifestyle':
+              amount = latestBudget.personal || 0;
+              break;
+            case 'Entertainment & Leisure':
+              amount = latestBudget.entertainment || 0;
+              break;
+            case 'Financial & Savings':
+              amount = latestBudget.financial || 0;
+              break;
+            case 'Gifts & Donations':
+              amount = latestBudget.gifts || 0;
+              break;
+          }
+          return { ...cat, amount };
+        });
+        
+        setBudgetCategories(updatedCategories);
+      } else {
+        // No budget exists, create a default budget
+        console.log('No budget found, creating default budget...');
+        const defaultBudgetData = {
+          overall: 5000, // Default $5000 monthly budget
+          housing: 1500, // 30% of budget
+          food: 800,     // 16% of budget
+          transportation: 400, // 8% of budget
+          health: 300,   // 6% of budget
+          personal: 400, // 8% of budget
+          entertainment: 300, // 6% of budget
+          financial: 800, // 16% of budget
+          gifts: 200,    // 4% of budget
+        };
+        
+        try {
+          const newBudget = await budgetService.createBudget(defaultBudgetData);
+          setCurrentBudget(newBudget);
+          
+          // Update budget categories with default amounts
+          const updatedCategories = budgetCategories.map(cat => {
+            let amount = 0;
+            switch (cat.name) {
+              case 'Housing & Utilities':
+                amount = newBudget.housing || 0;
+                break;
+              case 'Food & Dining':
+                amount = newBudget.food || 0;
+                break;
+              case 'Transportation':
+                amount = newBudget.transportation || 0;
+                break;
+              case 'Health & Insurance':
+                amount = newBudget.health || 0;
+                break;
+              case 'Personal & Lifestyle':
+                amount = newBudget.personal || 0;
+                break;
+              case 'Entertainment & Leisure':
+                amount = newBudget.entertainment || 0;
+                break;
+              case 'Financial & Savings':
+                amount = newBudget.financial || 0;
+                break;
+              case 'Gifts & Donations':
+                amount = newBudget.gifts || 0;
+                break;
+            }
+            return { ...cat, amount };
+          });
+          
+          setBudgetCategories(updatedCategories);
+          console.log('Default budget created successfully');
+        } catch (createError) {
+          console.error('Error creating default budget:', createError);
+          // If creating fails, keep the current state (all zeros)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching budgets:', error);
+    } finally {
+      setIsBudgetLoading(false);
+    }
+  };
+
+  // Save budget to API
+  const saveBudget = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setIsBudgetLoading(true);
+      
+      const budgetData = {
+        overall: calculateTotalBudget(),
+        housing: budgetCategories.find(cat => cat.name === 'Housing & Utilities')?.amount || 0,
+        food: budgetCategories.find(cat => cat.name === 'Food & Dining')?.amount || 0,
+        transportation: budgetCategories.find(cat => cat.name === 'Transportation')?.amount || 0,
+        health: budgetCategories.find(cat => cat.name === 'Health & Insurance')?.amount || 0,
+        personal: budgetCategories.find(cat => cat.name === 'Personal & Lifestyle')?.amount || 0,
+        entertainment: budgetCategories.find(cat => cat.name === 'Entertainment & Leisure')?.amount || 0,
+        financial: budgetCategories.find(cat => cat.name === 'Financial & Savings')?.amount || 0,
+        gifts: budgetCategories.find(cat => cat.name === 'Gifts & Donations')?.amount || 0,
+      };
+      
+      if (currentBudget) {
+        // Update existing budget
+        const updatedBudget = await budgetService.updateBudget(currentBudget.id.toString(), budgetData);
+        setCurrentBudget(updatedBudget);
+      } else {
+        // Create new budget
+        const newBudget = await budgetService.createBudget(budgetData);
+        setCurrentBudget(newBudget);
+      }
+      
+      setIsEditingBudget(false);
+    } catch (error) {
+      console.error('Error saving budget:', error);
+    } finally {
+      setIsBudgetLoading(false);
+    }
+  };
 
   // Profile menu handlers
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -1997,145 +2163,175 @@ const Dashboard: React.FC = () => {
                     </Box>
 
                     {/* Edit Budget Button */}
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 3 }}>
+                      {isEditingBudget && (
+                        <Button
+                          variant="outlined"
+                          onClick={() => {
+                            setIsEditingBudget(false);
+                            // Reset to original values if we have a current budget
+                            if (currentBudget) {
+                              fetchBudgets();
+                            }
+                          }}
+                          disabled={isBudgetLoading}
+                          sx={{ borderRadius: 2 }}
+                        >
+                          Cancel
+                        </Button>
+                      )}
                       <Button
                         variant="contained"
-                        startIcon={isEditingBudget ? <CheckCircleIcon /> : <EditIcon />}
-                        onClick={() => setIsEditingBudget(!isEditingBudget)}
+                        startIcon={isEditingBudget ? (isBudgetLoading ? <CircularProgress size={20} /> : <CheckCircleIcon />) : <EditIcon />}
+                        onClick={isEditingBudget ? saveBudget : () => setIsEditingBudget(true)}
+                        disabled={isBudgetLoading}
                         sx={{ borderRadius: 2 }}
                       >
-                        {isEditingBudget ? 'Save Budget' : 'Edit Budget'}
+                        {isEditingBudget ? (isBudgetLoading ? 'Saving...' : 'Save Budget') : 'Edit Budget'}
                       </Button>
                     </Box>
                   </CardContent>
                 </Card>
 
                 {/* Budget Categories Grid */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                  {budgetCategories.map((category) => (
-                    <Card
-                      key={category.id}
-                      elevation={4}
-                      sx={{
-                        flex: '1 1 350px',
-                        minWidth: 0,
-                        borderRadius: 2,
-                        background: alpha(theme.palette.background.paper, 0.95),
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: theme.shadows[12]
-                        }
-                      }}
-                    >
-                      <CardContent sx={{ p: 3 }}>
-                        {/* Category Header */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                          <Box
-                            sx={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: 2,
-                              background: alpha(getBudgetStatusColor(category.spent, category.amount), 0.1),
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '24px'
-                            }}
-                          >
-                            {category.icon}
-                          </Box>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" component="div" fontWeight={600}>
-                              {category.name}
-                            </Typography>
-                            <Chip
-                              label={`${getBudgetProgress(category.spent, category.amount).toFixed(1)}%`}
-                              size="small"
+                {isBudgetLoading && !currentBudget ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    {budgetCategories.map((category) => (
+                      <Card
+                        key={category.id}
+                        elevation={4}
+                        sx={{
+                          flex: '1 1 350px',
+                          minWidth: 0,
+                          borderRadius: 2,
+                          background: alpha(theme.palette.background.paper, 0.95),
+                          backdropFilter: 'blur(20px)',
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[12]
+                          }
+                        }}
+                      >
+                        <CardContent sx={{ p: 3 }}>
+                          {/* Category Header */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                            <Box
                               sx={{
-                                backgroundColor: alpha(getBudgetStatusColor(category.spent, category.amount), 0.1),
-                                color: getBudgetStatusColor(category.spent, category.amount),
-                                fontWeight: 600,
-                                fontSize: '0.7rem'
+                                width: 50,
+                                height: 50,
+                                borderRadius: 2,
+                                background: alpha(getBudgetStatusColor(category.spent, category.amount), 0.1),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '24px'
+                              }}
+                            >
+                              {category.icon}
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="h6" component="div" fontWeight={600}>
+                                {category.name}
+                              </Typography>
+                              <Chip
+                                label={`${getBudgetProgress(category.spent, category.amount).toFixed(1)}%`}
+                                size="small"
+                                sx={{
+                                  backgroundColor: alpha(getBudgetStatusColor(category.spent, category.amount), 0.1),
+                                  color: getBudgetStatusColor(category.spent, category.amount),
+                                  fontWeight: 600,
+                                  fontSize: '0.7rem'
+                                }}
+                              />
+                            </Box>
+                          </Box>
+
+                          {/* Budget Input (when editing) */}
+                          {isEditingBudget && (
+                            <Box sx={{ mb: 2 }}>
+                              <TextField
+                                fullWidth
+                                label="Budget Amount"
+                                type="text"
+                                value={category.amount === 0 ? '' : category.amount.toString()}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  // Allow empty string or valid numbers
+                                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                    const numValue = value === '' ? 0 : Number(value);
+                                    if (!isNaN(numValue) && numValue >= 0) {
+                                      const newCategories = budgetCategories.map(cat =>
+                                        cat.id === category.id
+                                          ? { ...cat, amount: numValue }
+                                          : cat
+                                      );
+                                      setBudgetCategories(newCategories);
+                                    }
+                                  }
+                                }}
+                                InputProps={{
+                                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                }}
+                                sx={{ mb: 1 }}
+                              />
+                              <Typography variant="caption" color="text.secondary">
+                                Spent amount is automatically calculated from your transactions
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {/* Budget Progress */}
+                          <Box sx={{ mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                              <Typography variant="body2" fontWeight={600}>
+                                Progress
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {formatCurrency(category.spent)} / {formatCurrency(category.amount)}
+                              </Typography>
+                            </Box>
+                            <LinearProgress
+                              variant="determinate"
+                              value={getBudgetProgress(category.spent, category.amount)}
+                              sx={{
+                                height: 8,
+                                borderRadius: 4,
+                                backgroundColor: alpha(getBudgetStatusColor(category.spent, category.amount), 0.2),
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: getBudgetStatusColor(category.spent, category.amount),
+                                  borderRadius: 4
+                                }
                               }}
                             />
                           </Box>
-                        </Box>
 
-                        {/* Budget Input (when editing) */}
-                        {isEditingBudget && (
-                          <Box sx={{ mb: 2 }}>
-                            <TextField
-                              fullWidth
-                              label="Budget Amount"
-                              type="number"
-                              value={category.amount}
-                              onChange={(e) => {
-                                const newCategories = budgetCategories.map(cat =>
-                                  cat.id === category.id
-                                    ? { ...cat, amount: parseFloat(e.target.value) || 0 }
-                                    : cat
-                                );
-                                setBudgetCategories(newCategories);
+                          {/* Budget Status */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box
+                              sx={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                backgroundColor: getBudgetStatusColor(category.spent, category.amount)
                               }}
-                              InputProps={{
-                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                              }}
-                              sx={{ mb: 1 }}
                             />
                             <Typography variant="caption" color="text.secondary">
-                              Spent amount is automatically calculated from your transactions
+                              {category.amount === 0 ? 'No budget set' :
+                               category.spent >= category.amount ? 'Over budget' :
+                               category.spent >= category.amount * 0.9 ? 'Near limit' : 'On track'}
                             </Typography>
                           </Box>
-                        )}
-
-                        {/* Budget Progress */}
-                        <Box sx={{ mb: 2 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Typography variant="body2" fontWeight={600}>
-                              Progress
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {formatCurrency(category.spent)} / {formatCurrency(category.amount)}
-                            </Typography>
-                          </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={getBudgetProgress(category.spent, category.amount)}
-                            sx={{
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: alpha(getBudgetStatusColor(category.spent, category.amount), 0.2),
-                              '& .MuiLinearProgress-bar': {
-                                backgroundColor: getBudgetStatusColor(category.spent, category.amount),
-                                borderRadius: 4
-                              }
-                            }}
-                          />
-                        </Box>
-
-                        {/* Budget Status */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box
-                            sx={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: '50%',
-                              backgroundColor: getBudgetStatusColor(category.spent, category.amount)
-                            }}
-                          />
-                          <Typography variant="caption" color="text.secondary">
-                            {category.amount === 0 ? 'No budget set' :
-                             category.spent >= category.amount ? 'Over budget' :
-                             category.spent >= category.amount * 0.9 ? 'Near limit' : 'On track'}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Box>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Box>
+                )}
 
                 {/* Transactions List */}
                 <Card

@@ -108,16 +108,32 @@ export interface SavingsGoal {
   updated_at: string | null;
 }
 
+export interface Budget {
+  id: number;
+  user_id: number;
+  overall: number;
+  housing: number | null;
+  food: number | null;
+  transportation: number | null;
+  health: number | null;
+  personal: number | null;
+  entertainment: number | null;
+  financial: number | null;
+  gifts: number | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
 export interface CreateSavingsGoalRequest {
   title: string;
   description?: string;
   amount: number;
-  current_amount?: number;
   deadline?: string;
   category?: string;
   priority?: 'low' | 'medium' | 'high';
   icon?: string;
   color?: string;
+  current_amount?: number;
 }
 
 export interface UpdateSavingsGoalRequest {
@@ -130,6 +146,30 @@ export interface UpdateSavingsGoalRequest {
   priority?: 'low' | 'medium' | 'high';
   icon?: string;
   color?: string;
+}
+
+export interface CreateBudgetRequest {
+  overall: number;
+  housing?: number;
+  food?: number;
+  transportation?: number;
+  health?: number;
+  personal?: number;
+  entertainment?: number;
+  financial?: number;
+  gifts?: number;
+}
+
+export interface UpdateBudgetRequest {
+  overall: number;
+  housing?: number;
+  food?: number;
+  transportation?: number;
+  health?: number;
+  personal?: number;
+  entertainment?: number;
+  financial?: number;
+  gifts?: number;
 }
 
 export interface PlaidTransaction {
