@@ -25,10 +25,20 @@ This is a server-side implementation of the CapySpend application, which integra
 
 ## Inspiration
 
+## What it does
+
 ## How it works
 
 ## Technologies Used
 
 ## Features
 
+## How we built it
+
 ## Challenges Faced
+
+## Accomplishments that we're proud of
+
+## What we learned
+
+## What's next for CabySpend
