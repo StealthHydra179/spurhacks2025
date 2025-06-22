@@ -131,3 +131,38 @@ export interface UpdateSavingsGoalRequest {
   icon?: string;
   color?: string;
 }
+
+export interface PlaidTransaction {
+  transaction_id: string;
+  account_id: string;
+  amount: number;
+  date: string;
+  name: string;
+  category: string[] | null;
+  payment_channel: string;
+  pending: boolean;
+  merchant_name: string | null;
+  logo_url: string | null;
+  personal_finance_category: {
+    primary: string;
+    detailed: string;
+    confidence_level: string;
+  } | null;
+  counterparties: Array<{
+    name: string;
+    type: string;
+    logo_url: string | null;
+    website: string | null;
+  }> | null;
+  location: {
+    address: string | null;
+    city: string | null;
+    region: string | null;
+    country: string | null;
+  } | null;
+  iso_currency_code: string;
+  transaction_type: string;
+  authorized_date: string | null;
+  datetime: string | null;
+  budget_category?: string;
+}

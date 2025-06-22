@@ -143,7 +143,7 @@ const Income: React.FC = () => {
         const categories = [
           ...(transaction.category || []),
           transaction.personal_finance_category?.primary,
-          transaction.personal_finance_category?.detailed
+          transaction.personal_finance_category?.detailed,
         ].filter((cat): cat is string => Boolean(cat));
         
         return categories.some(cat => formatCategoryName(cat) === categoryFilter);

@@ -5,6 +5,7 @@ const { logger } = require("../../logger");
 const plaidUsersDb = require("../../db/plaid_users");
 const botConversationsDb = require("../../db/bot_conversations");
 const authenticateToken = require("../../jwt");
+const { categorizeTransactions } = require("../../llm/generate_insights");
 
 const TAG = "plaid_routes";
 
@@ -263,7 +264,12 @@ router.get("/transactions/:user_id", authenticateToken, async (req, res) => {
     console.log("📤 Response length:", filteredTransactions.length);
     console.log("📤 Response type:", typeof filteredTransactions);
 
-    res.json(filteredTransactions);
+    // Categorize transactions using LLM before returning
+    logger.info(`${TAG} Categorizing ${filteredTransactions.length} transactions using LLM...`);
+    const categorizedTransactions = await categorizeTransactions(filteredTransactions);
+    logger.info(`${TAG} Successfully categorized ${categorizedTransactions.length} transactions`);
+
+    res.json(categorizedTransactions);
   } catch (error) {
     logger.error(`${TAG} Error getting transactions: ${error.message}`);
     logger.error(`${TAG} Full error details:`, error);
@@ -524,6 +530,51 @@ Current user message: ${user_message}`;
   } catch (error) {
     logger.error(`${TAG} Error generating chat response: ${error.message}`);
     res.status(500).json({ error: "Failed to generate response" });
+  }
+});
+
+/**
+ * POST /api/plaid/test-categorization
+ * Test endpoint to verify LLM categorization is working
+ */
+router.post("/test-categorization", authenticateToken, async (req, res) => {
+  try {
+    const testTransactions = [
+      {
+        name: "Starbucks Coffee",
+        amount: 5.50,
+        date: "2024-01-15",
+        personal_finance_category: { primary: "Food and Drink" },
+        category: ["Food and Drink", "Restaurants"]
+      },
+      {
+        name: "Shell Gas Station",
+        amount: 45.00,
+        date: "2024-01-16",
+        personal_finance_category: { primary: "Transportation" },
+        category: ["Transportation", "Gas Stations"]
+      },
+      {
+        name: "Netflix Subscription",
+        amount: 15.99,
+        date: "2024-01-17",
+        personal_finance_category: { primary: "Entertainment" },
+        category: ["Entertainment", "Streaming Services"]
+      }
+    ];
+
+    logger.info(`${TAG} Testing LLM categorization with ${testTransactions.length} sample transactions`);
+    const categorizedTransactions = await categorizeTransactions(testTransactions);
+    
+    res.json({
+      success: true,
+      message: "LLM categorization test completed",
+      original_transactions: testTransactions,
+      categorized_transactions: categorizedTransactions
+    });
+  } catch (error) {
+    logger.error(`${TAG} Error in test categorization: ${error.message}`);
+    res.status(500).json({ error: "Failed to test categorization" });
   }
 });
 
