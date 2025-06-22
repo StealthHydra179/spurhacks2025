@@ -52,6 +52,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, L
 import capyImage from '../assets/capy.png';
 import { useNavigate } from 'react-router-dom';
 import { botConversationService } from '../services/api';
+import { authService } from '../services/api';
 
 interface PlaidTransaction {
   transaction_id: string;
@@ -163,6 +164,7 @@ const Dashboard: React.FC = () => {
   });
   const [balances, setBalances] = useState<any>(null);
   const [isBalancesLoading, setIsBalancesLoading] = useState(false);
+  const [userPersonality, setUserPersonality] = useState<number>(0);
 
   // Get current month's date range
   const getCurrentMonthRange = () => {
@@ -361,6 +363,24 @@ const Dashboard: React.FC = () => {
     }
   }, [user?.id]);
 
+  // Fetch user personality when user is available
+  const fetchUserPersonality = async () => {
+    try {
+      const response = await authService.getPersonality();
+      setUserPersonality(response.personality);
+    } catch (error) {
+      console.error('Error fetching user personality:', error);
+      // Default to normal personality (0) if there's an error
+      setUserPersonality(0);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserPersonality();
+    }
+  }, [user?.id]);
+
   // Profile menu handlers
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setProfileMenuAnchor(event.currentTarget);
@@ -470,6 +490,16 @@ const Dashboard: React.FC = () => {
       case 'purchase': return '🛒';
       case 'emergency': return '🛡️';
       default: return '🎯';
+    }
+  };
+
+  const getPersonalityName = (personality: number) => {
+    switch (personality) {
+      case -1: return 'Conservative Capy';
+      case 0: return 'Neutral Capy';
+      case 1: return 'Risky Capy';
+      case 2: return 'Communist Capy';
+      default: return 'Neutral Capy';
     }
   };
 
@@ -799,12 +829,12 @@ const Dashboard: React.FC = () => {
                     sx={{
                       width: 50,
                       height: 50,
-                      background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                      background: `linear-gradient(135deg, #8B4513 0%, #A0522D 100%)`,
                       boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
                       cursor: 'pointer'
                     }}
                   >
-                    <PersonIcon sx={{ fontSize: 24 }} />
+                    <PersonIcon sx={{ fontSize: 24, color: '#FFFFFF' }} />
                   </Avatar>
                 </IconButton>
               </Tooltip>
@@ -841,10 +871,10 @@ const Dashboard: React.FC = () => {
                       sx={{
                         width: 40,
                         height: 40,
-                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                        background: `linear-gradient(135deg, #8B4513 0%, #A0522D 100%)`,
                       }}
                     >
-                      <PersonIcon sx={{ fontSize: 20 }} />
+                      <PersonIcon sx={{ fontSize: 20, color: '#FFFFFF' }} />
                     </Avatar>
                     <Box>
                       <Typography variant="subtitle2" fontWeight={600}>
@@ -853,6 +883,19 @@ const Dashboard: React.FC = () => {
                       <Typography variant="caption" color="text.secondary">
                         {user?.email}
                       </Typography>
+                      <Chip
+                        label={getPersonalityName(userPersonality)}
+                        size="small"
+                        sx={{
+                          mt: 0.5,
+                          ml: 2,
+                          fontSize: '0.7rem',
+                          height: 20,
+                          backgroundColor: '#2C1810',
+                          color: '#FFFFFF',
+                          fontWeight: 600,
+                        }}
+                      />
                     </Box>
                   </Box>
                 </Box>
