@@ -171,8 +171,8 @@ const Dashboard: React.FC = () => {
   const [editingGoalForm, setEditingGoalForm] = useState({
     title: '',
     description: '',
-    amount: 0,
-    current_amount: 0,
+    amount: '',
+    current_amount: '',
     deadline: null as Dayjs | null,
     category: 'savings' as string,
     priority: 'medium' as 'low' | 'medium' | 'high',
@@ -182,8 +182,8 @@ const Dashboard: React.FC = () => {
   const [newGoal, setNewGoal] = useState({
     title: '',
     description: '',
-    amount: 0,
-    current_amount: 0,
+    amount: '',
+    current_amount: '',
     deadline: null as Dayjs | null,
     category: 'savings' as string,
     priority: 'medium' as 'low' | 'medium' | 'high',
@@ -805,8 +805,8 @@ const Dashboard: React.FC = () => {
       const goalData = {
         title: newGoal.title,
         description: newGoal.description,
-        amount: newGoal.amount,
-        current_amount: newGoal.current_amount,
+        amount: parseFloat(newGoal.amount) || 0,
+        current_amount: parseFloat(newGoal.current_amount) || 0,
         deadline: newGoal.deadline?.toISOString() || undefined,
         category: newGoal.category,
         priority: newGoal.priority,
@@ -820,8 +820,8 @@ const Dashboard: React.FC = () => {
       setNewGoal({
         title: '',
         description: '',
-        amount: 0,
-        current_amount: 0,
+        amount: '',
+        current_amount: '',
         deadline: null as Dayjs | null,
         category: 'savings',
         priority: 'medium',
@@ -866,8 +866,8 @@ const Dashboard: React.FC = () => {
     setNewGoal({
       title: '',
       description: '',
-      amount: 0,
-      current_amount: 0,
+      amount: '',
+      current_amount: '',
       deadline: null as Dayjs | null,
       category: 'savings',
       priority: 'medium',
@@ -881,8 +881,8 @@ const Dashboard: React.FC = () => {
     setEditingGoalForm({
       title: goal.title,
       description: goal.description,
-      amount: goal.amount,
-      current_amount: goal.current_amount,
+      amount: goal.amount.toString(),
+      current_amount: goal.current_amount.toString(),
       deadline: goal.deadline ? dayjs(goal.deadline) : null,
       category: goal.category || 'savings',
       priority: goal.priority,
@@ -905,8 +905,8 @@ const Dashboard: React.FC = () => {
       const goalData = {
         title: editingGoalForm.title,
         description: editingGoalForm.description,
-        amount: editingGoalForm.amount,
-        current_amount: editingGoalForm.current_amount,
+        amount: parseFloat(editingGoalForm.amount) || 0,
+        current_amount: parseFloat(editingGoalForm.current_amount) || 0,
         deadline: editingGoalForm.deadline?.toISOString() || undefined,
         category: editingGoalForm.category || undefined,
         priority: editingGoalForm.priority,
@@ -1018,6 +1018,35 @@ const Dashboard: React.FC = () => {
       </Button>
     </Box>
   );
+
+  // Helper functions for number input handling
+  const isValidNumber = (value: string): boolean => {
+    if (value === '') return true;
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  };
+
+  const formatNumberInput = (value: string): string => {
+    // Remove any non-numeric characters except decimal point
+    const cleaned = value.replace(/[^\d.]/g, '');
+    // Ensure only one decimal point
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      return parts[0] + '.' + parts.slice(1).join('');
+    }
+    // Limit to 2 decimal places
+    if (parts.length === 2 && parts[1].length > 2) {
+      return parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    return cleaned;
+  };
+
+  const handleNumberInputChange = (value: string, setter: (value: string) => void) => {
+    const formatted = formatNumberInput(value);
+    if (formatted === '' || isValidNumber(formatted)) {
+      setter(formatted);
+    }
+  };
 
   return (
     <Box
@@ -2714,9 +2743,9 @@ const Dashboard: React.FC = () => {
               <TextField
                 fullWidth
                 label="Target Amount"
-                type="number"
+                type="text"
                 value={newGoal.amount}
-                onChange={(e) => setNewGoal({ ...newGoal, amount: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => handleNumberInputChange(e.target.value, (value) => setNewGoal({ ...newGoal, amount: value }))}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
@@ -2726,9 +2755,9 @@ const Dashboard: React.FC = () => {
               <TextField
                 fullWidth
                 label="Current Progress"
-                type="number"
+                type="text"
                 value={newGoal.current_amount}
-                onChange={(e) => setNewGoal({ ...newGoal, current_amount: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => handleNumberInputChange(e.target.value, (value) => setNewGoal({ ...newGoal, current_amount: value }))}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
@@ -2839,7 +2868,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleAddGoal}
-            disabled={!newGoal.title || !newGoal.description || newGoal.amount <= 0 || !newGoal.deadline}
+            disabled={!newGoal.title || !newGoal.description || newGoal.amount === '' || !newGoal.deadline}
             sx={{ borderRadius: 2 }}
           >
             Create Goal
@@ -2895,9 +2924,9 @@ const Dashboard: React.FC = () => {
               <TextField
                 fullWidth
                 label="Target Amount"
-                type="number"
+                type="text"
                 value={editingGoalForm.amount}
-                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, amount: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => handleNumberInputChange(e.target.value, (value) => setEditingGoalForm({ ...editingGoalForm, amount: value }))}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
@@ -2907,9 +2936,9 @@ const Dashboard: React.FC = () => {
               <TextField
                 fullWidth
                 label="Current Progress"
-                type="number"
+                type="text"
                 value={editingGoalForm.current_amount}
-                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, current_amount: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => handleNumberInputChange(e.target.value, (value) => setEditingGoalForm({ ...editingGoalForm, current_amount: value }))}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
@@ -3059,7 +3088,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleUpdateGoal}
-            disabled={!editingGoalForm.title || !editingGoalForm.description || editingGoalForm.amount <= 0 || !editingGoalForm.deadline}
+            disabled={!editingGoalForm.title || !editingGoalForm.description || editingGoalForm.amount === '' || !editingGoalForm.deadline}
             sx={{ borderRadius: 2 }}
           >
             Update Goal
