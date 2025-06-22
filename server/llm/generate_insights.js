@@ -387,7 +387,7 @@ const mockTransactions = [
 
 // Test the function if this file is run directly
 if (require.main === module) {
-  console.log("🧪 Testing generateInsights function...\n");
+  console.log("Testing generateInsights function...\n");
 
   const customPrompt = `Analyze these transactions and provide actionable financial insights. 
   Format your response as itemized insights with each insight on a single line. 

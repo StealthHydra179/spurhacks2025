@@ -202,13 +202,10 @@ router.get("/transactions/:user_id", authenticateToken, async (req, res) => {
     }
 
     // Debug logging to see the exact structure
-    console.log("🔍 Raw transactionsData:", transactionsData);
-    console.log("🔍 transactionsData type:", typeof transactionsData);
-    console.log("🔍 transactionsData keys:", Object.keys(transactionsData));
-    console.log(
-      "🔍 Filtered transactions length:",
-      filteredTransactions.length
-    );
+    console.log("Raw transactionsData:", transactionsData);
+    console.log("transactionsData type:", typeof transactionsData);
+    console.log("transactionsData keys:", Object.keys(transactionsData));
+    console.log("Filtered transactions length:", filteredTransactions.length);
 
     // Log the response structure and transaction count
     logger.info(
