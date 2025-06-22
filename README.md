@@ -1,5 +1,5 @@
 # CapySpend 
-<img src="https://github.com/StealthHydra179/spurhacks2025/raw/main/client/src/assets/neutral-capy.svg" alt="Capy the Capybara" width="150" height="150">
+![Capy the Capybara On The Landing Page](https://github.com/StealthHydra179/spurhacks2025/raw/main/devpost_images/landing_page.png)
 
 ## Inspiration
 Managing personal finances can be incredibly overwhelming, especially when trying to create and maintain a budget manually. Many people struggle with:
