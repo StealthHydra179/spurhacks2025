@@ -1,11 +1,10 @@
-# CapySpend
-## Inspiration
+# CapySpend 
+<img src="client/src/assets/neutral-capy.svg" alt="Capy the Capybara" width="150" height="150">
 
+## Inspiration
 Managing personal finances can be incredibly overwhelming, especially when trying to create and maintain a budget manually. Many people struggle with:
 
-- **Complex Spreadsheet Management**: Creating and maintaining detailed Excel or Google Sheets budgets requires significant time and effort. Users often spend hours categorizing transactions, updating formulas, and ensuring data accuracy across multiple sheets.
-
-- **Manual Transaction Categorization**: Going through bank statements line by line to categorize each transaction is tedious and error-prone. What should be a simple coffee purchase becomes a decision between "Food & Dining," "Entertainment," or "Personal Expenses."
+- **Complex Spreadsheet Management**: Creating and maintaining detailed Excel or Google Sheets to manage budgets requires significant time and effort. Users often spend hours categorizing transactions, updating formulas, and ensuring data accuracy across multiple sheets.
 
 - **Inconsistent Tracking**: Life gets busy, and manual budget tracking often falls by the wayside. Users start strong but quickly abandon their spreadsheets when they miss a few days or weeks of data entry.
 
@@ -13,7 +12,7 @@ Managing personal finances can be incredibly overwhelming, especially when tryin
 
 - **Overwhelming Financial Decisions**: Without proper guidance, users struggle to make informed financial decisions. They may not know if their spending is reasonable, how to adjust their budget, or what financial goals are realistic for their situation.
 
-**The Solution**: CapySpend was born from the idea that financial management should be **automated, intelligent, and user-friendly**. By leveraging AI and secure bank integration, we eliminate the manual work while providing personalized, actionable financial advice. Instead of spending hours on spreadsheets, users can focus on what matters most - achieving their financial goals.
+**The Solution**: CapySpend was born from the idea that financial management should be **automated, intelligent, and user-friendly**. By leveraging AI and secure bank integration, we eliminate the manual work while providing personalized, actionable financial advice. Instead of spending hours on spreadsheets, users can focus on what matters most: **achieving their financial goals**.
 
 ## What it does
 CapySpend is a personal finance management website that helps users track their spending, manage budgets, and gain insights into their financial habits. It integrates with Plaid to securely connect to users' bank accounts and provides a user-friendly interface for managing finances, while implementing an AI assistant to offer personalized financial advice and insights based on the user's financial information.
