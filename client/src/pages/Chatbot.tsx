@@ -849,9 +849,10 @@ const Chatbot: React.FC = () => {
                     py: 2,
                     px: (!isMobile && sidebarCollapsed) ? 1 : 2,
                     justifyContent: (!isMobile && sidebarCollapsed) ? 'center' : 'flex-start',
+                    borderLeft: `5px solid transparent`,
                     '&.Mui-selected': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      borderRight: `3px solid ${theme.palette.primary.main}`
+                      borderLeft: `5px solid ${theme.palette.primary.main}`
                     }
                   }}
                 >
