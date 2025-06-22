@@ -944,6 +944,7 @@ const Dashboard: React.FC = () => {
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
             color: activeTab === 'overview' ? '#2C1810' : theme.palette.text.secondary,
+            borderColor: theme.palette.primary.main,
           }
         }}
       >
@@ -964,6 +965,7 @@ const Dashboard: React.FC = () => {
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
             color: activeTab === 'goals' ? '#2C1810' : theme.palette.text.secondary,
+            borderColor: theme.palette.primary.main,
           }
         }}
       >
@@ -985,6 +987,7 @@ const Dashboard: React.FC = () => {
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
             color: activeTab === 'accounts' ? '#2C1810' : theme.palette.text.secondary,
+            borderColor: theme.palette.primary.main,
           }
         }}
       >
@@ -1006,6 +1009,7 @@ const Dashboard: React.FC = () => {
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
             color: activeTab === 'budget' ? '#2C1810' : theme.palette.text.secondary,
+            borderColor: theme.palette.primary.main,
           }
         }}
       >
