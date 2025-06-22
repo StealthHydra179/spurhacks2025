@@ -158,7 +158,7 @@ router.post("/personality", authenticateToken, async (req, res) => {
     if (!validModes.includes(personalityMode)) {
       return res.status(400).json({
         message:
-          "Invalid personality mode. Must be -1 (conservative), 0 (neutral), 1 (risky), 2 (communist), or 3 (baby)",
+          "Invalid personality mode. Must be -1 (conservative), 0 (neutral), 1 (aggressive), 2 (communist), or 3 (baby)",
       });
     }
 

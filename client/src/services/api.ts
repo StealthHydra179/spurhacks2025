@@ -30,12 +30,6 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle 401 Unauthorized errors
-    if (error.response?.status === 401 && window.location.pathname !== '/login') {
-      // Redirect to login page
-      window.location.href = '/login';
-    }
-    
     // Handle 403 Forbidden errors
     if (error.response?.status === 403) {
       console.error('Access forbidden');
