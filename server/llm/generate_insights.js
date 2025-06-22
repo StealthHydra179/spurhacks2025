@@ -406,16 +406,16 @@ if (require.main === module) {
   generateInsights(mockTransactions, customPrompt)
     .then((result) => {
       if (result.success) {
-        console.log("✅ Success! Here are the insights:");
+        console.log("Success! Here are the insights:");
         console.log("=".repeat(50));
         console.log(result.insights);
         console.log("=".repeat(50));
       } else {
-        console.log("❌ Error:", result.error);
+        console.log("Error:", result.error);
       }
     })
     .catch((error) => {
-      console.error("❌ Test failed:", error.message);
+      console.error("Test failed:", error.message);
     });
 }
 

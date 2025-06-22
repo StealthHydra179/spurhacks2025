@@ -1,7 +1,7 @@
-const { sql } = require('./db');
-const { logger } = require('../logger');
+const { sql } = require("./db");
+const { logger } = require("../logger");
 
-const TAG = 'db_savings_goals';
+const TAG = "db_savings_goals";
 
 const savingsGoalsDb = {
   // Create a new savings goal
@@ -13,12 +13,12 @@ const savingsGoalsDb = {
         amount,
         deadline,
         category,
-        priority = 'medium',
+        priority = "medium",
         icon,
         color,
-        current_amount = 0.0
+        current_amount = 0.0,
       } = goalData;
-      
+
       const query = `
         INSERT INTO savings_goals (
           user_id, title, description, amount, current_amount, 
@@ -28,19 +28,29 @@ const savingsGoalsDb = {
         RETURNING *
       `;
       const values = [
-        userId, title, description, amount, current_amount,
-        deadline, category, priority, icon, color
+        userId,
+        title,
+        description,
+        amount,
+        current_amount,
+        deadline,
+        category,
+        priority,
+        icon,
+        color,
       ];
-      
+
       logger.info(`${TAG} Creating savings goal for user ${userId}`);
       const result = await sql.unsafe(query, values);
-      
+
       if (result.length > 0) {
-        logger.info(`${TAG} Successfully created savings goal with ID: ${result[0].id}`);
+        logger.info(
+          `${TAG} Successfully created savings goal with ID: ${result[0].id}`
+        );
         return result[0];
       }
-      
-      throw new Error('Failed to create savings goal');
+
+      throw new Error("Failed to create savings goal");
     } catch (error) {
       logger.error(`${TAG} Error creating savings goal: ${error.message}`);
       throw error;
@@ -55,14 +65,18 @@ const savingsGoalsDb = {
         WHERE user_id = $1
         ORDER BY created_at DESC
       `;
-      
+
       logger.info(`${TAG} Fetching savings goals for user ${userId}`);
       const result = await sql.unsafe(query, [userId]);
-      
-      logger.info(`${TAG} Found ${result.length} savings goals for user ${userId}`);
+
+      logger.info(
+        `${TAG} Found ${result.length} savings goals for user ${userId}`
+      );
       return result;
     } catch (error) {
-      logger.error(`${TAG} Error fetching savings goals for user ${userId}: ${error.message}`);
+      logger.error(
+        `${TAG} Error fetching savings goals for user ${userId}: ${error.message}`
+      );
       throw error;
     }
   },
@@ -74,19 +88,21 @@ const savingsGoalsDb = {
         FROM savings_goals
         WHERE id = $1
       `;
-      
+
       logger.info(`${TAG} Fetching savings goal with ID: ${goalId}`);
       const result = await sql.unsafe(query, [goalId]);
-      
+
       if (result.length > 0) {
         logger.info(`${TAG} Found savings goal with ID: ${goalId}`);
         return result[0];
       }
-      
+
       logger.warn(`${TAG} No savings goal found with ID: ${goalId}`);
       return null;
     } catch (error) {
-      logger.error(`${TAG} Error fetching savings goal with ID ${goalId}: ${error.message}`);
+      logger.error(
+        `${TAG} Error fetching savings goal with ID ${goalId}: ${error.message}`
+      );
       throw error;
     }
   },
@@ -102,14 +118,14 @@ const savingsGoalsDb = {
         category,
         priority,
         icon,
-        color
+        color,
       } = goalData;
-      
+
       // Build dynamic query based on provided fields
       const fields = [];
       const values = [];
       let paramIndex = 1;
-      
+
       if (title !== undefined) {
         fields.push(`title = $${paramIndex++}`);
         values.push(title);
@@ -146,33 +162,37 @@ const savingsGoalsDb = {
         fields.push(`color = $${paramIndex++}`);
         values.push(color);
       }
-      
+
       if (fields.length === 0) {
-        throw new Error('No fields provided for update');
+        throw new Error("No fields provided for update");
       }
-      
+
       // Add updated_at timestamp
       fields.push(`updated_at = CURRENT_TIMESTAMP`);
-      
+
       // Add WHERE clause parameters
       values.push(goalId, userId);
-      
+
       const query = `
         UPDATE savings_goals
-        SET ${fields.join(', ')}
+        SET ${fields.join(", ")}
         WHERE id = $${paramIndex++} AND user_id = $${paramIndex}
         RETURNING *
       `;
-      
+
       logger.info(`${TAG} Updating savings goal ${goalId} for user ${userId}`);
       const result = await sql.unsafe(query, values);
-      
+
       if (result.length > 0) {
-        logger.info(`${TAG} Successfully updated savings goal with ID: ${goalId}`);
+        logger.info(
+          `${TAG} Successfully updated savings goal with ID: ${goalId}`
+        );
         return result[0];
       }
-      
-      logger.warn(`${TAG} No savings goal found to update with ID: ${goalId} for user: ${userId}`);
+
+      logger.warn(
+        `${TAG} No savings goal found to update with ID: ${goalId} for user: ${userId}`
+      );
       return null;
     } catch (error) {
       logger.error(`${TAG} Error updating savings goal: ${error.message}`);
@@ -188,22 +208,26 @@ const savingsGoalsDb = {
         WHERE id = $1 AND user_id = $2
         RETURNING id
       `;
-      
+
       logger.info(`${TAG} Deleting savings goal ${goalId} for user ${userId}`);
       const result = await sql.unsafe(query, [goalId, userId]);
-      
+
       if (result.length > 0) {
-        logger.info(`${TAG} Successfully deleted savings goal with ID: ${goalId}`);
+        logger.info(
+          `${TAG} Successfully deleted savings goal with ID: ${goalId}`
+        );
         return true;
       }
-      
-      logger.warn(`${TAG} No savings goal found to delete with ID: ${goalId} for user: ${userId}`);
+
+      logger.warn(
+        `${TAG} No savings goal found to delete with ID: ${goalId} for user: ${userId}`
+      );
       return false;
     } catch (error) {
       logger.error(`${TAG} Error deleting savings goal: ${error.message}`);
       throw error;
     }
-  }
+  },
 };
 
 module.exports = savingsGoalsDb;
