@@ -19,10 +19,31 @@ Managing personal finances can be incredibly overwhelming, especially when tryin
 ## What Does CapySpend Do?
 CapySpend is a personal finance management website that helps users track their spending, manage budgets, and gain insights into their financial habits. It integrates with Plaid to securely connect to users' bank accounts and provides a user-friendly interface for managing finances, while implementing an AI assistant to offer personalized financial advice and insights based on the user's financial information.
 
+![Capy the Capybara On The Landing Page](https://github.com/StealthHydra179/spurhacks2025/raw/main/devpost_images/dashboard.png)
 
+CapySpend allows users to:
+- connect their bank accounts securely using Plaid
+- track their spending in real-time
+- create and manage budgets
+- set financial goals
+- view reports
+- and talk to an AI assistant that provides personalized financial advice and insights.
 
 ## How Does CapySpend Work?
 CapySpend works by integrating with Plaid and the OpenAI API to provide a comprehensive personal finance management solution. Users can securely connect their bank accounts through Plaid, allowing the application to access transaction data, account balances, and other financial information. The AI assistant uses this data to analyze spending patterns, suggest budget adjustments, and provide personalized financial advice. The application also features a user-friendly interface for managing budgets, tracking expenses, and visualizing financial health.
+
+There are two main data flows in CapySpend: **Financial Data Flow** and **AI Assistant Data Flow**.
+
+**Financial Data Flow**:
+1. **User Authentication**: Users sign up and log in to CapySpend using secure authentication methods (e.g., JWT).
+2. **Bank Account Integration**: Users connect their bank accounts through Plaid, which securely retrieves transaction data and account balances.
+
+**AI Assistant Data Flow**:
+1. **AI Interaction**: Users can interact with the AI assistant through a chat interface, asking questions about their finances or requesting advice.
+2. **Contextual Understanding**: The AI assistant is provided with the user's financial data (transaction history, budgets, goals) to provide personalized responses.
+3. **Tool Calls**: The AI can perform actions on behalf of the user, such as creating budgets, setting savings goals, or categorizing transactions, using structured tool calls that ensure data integrity and security.
+
+These two data flows work together to provide a seamless user experience, allowing users to manage their finances effectively while receiving personalized AI-driven insights and recommendations.
 
 ## Technologies Used
 - **Frontend**: React, Vite, Material-UI
