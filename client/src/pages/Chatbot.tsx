@@ -632,174 +632,188 @@ const Chatbot: React.FC = () => {
   );
 
   // Budget Proposal Card Component
-  const BudgetProposalCard = ({ proposal }: { proposal: any }) => (
-    <Card
-      elevation={2}
-      sx={{
-        mt: 2,
-        borderRadius: 2,
-        background: alpha(theme.palette.warning.main, 0.05),
-        border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
-        maxWidth: "600px",
-      }}
-    >
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: 2,
-              background: alpha(theme.palette.warning.main, 0.1),
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "20px",
-            }}
-          >
-            💡
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" component="div" fontWeight={600}>
-              {proposal.title}
-            </Typography>
-            <Chip
-              label="Budget Proposal"
-              size="small"
-              icon={<CheckCircleIcon />}
+  const BudgetProposalCard = ({ proposal }: { proposal: any }) => {
+    // Compute the total as the sum of all categories
+    const computedTotal = [
+      proposal.housing,
+      proposal.food,
+      proposal.transportation,
+      proposal.health,
+      proposal.personal,
+      proposal.entertainment,
+      proposal.financial,
+      proposal.gifts
+    ].reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+
+    return (
+      <Card
+        elevation={2}
+        sx={{
+          mt: 2,
+          borderRadius: 2,
+          background: alpha(theme.palette.warning.main, 0.05),
+          border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+          maxWidth: "600px",
+        }}
+      >
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <Box
               sx={{
-                backgroundColor: alpha(theme.palette.warning.main, 0.1),
-                color: theme.palette.warning.main,
-                fontWeight: 600,
-                fontSize: "0.7rem",
+                width: 40,
+                height: 40,
+                borderRadius: 2,
+                background: alpha(theme.palette.warning.main, 0.1),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
               }}
-            />
-          </Box>
-        </Box>
-
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Total Monthly Budget
-          </Typography>
-          <Typography variant="h6" fontWeight={700} color="warning.main">
-            ${proposal.total.toLocaleString()}
-          </Typography>
-        </Box>
-
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            gutterBottom
-            sx={{ mb: 1 }}
-          >
-            Budget Breakdown
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 1,
-              "& > div": {
-                p: 1,
-                borderRadius: 1,
-                backgroundColor: alpha(theme.palette.background.paper, 0.5),
-              },
-            }}
-          >
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                🏠 Housing & Utilities
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.housing.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.housing / proposal.total) * 100).toFixed(1)}%
-              </Typography>
+            >
+              ��
             </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                🍽️ Food & Dining
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="h6" component="div" fontWeight={600}>
+                {proposal.title}
               </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.food.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.food / proposal.total) * 100).toFixed(1)}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                🚗 Transportation
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.transportation.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.transportation / proposal.total) * 100).toFixed(1)}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                🏥 Health & Insurance
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.health.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.health / proposal.total) * 100).toFixed(1)}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                👤 Personal & Lifestyle
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.personal.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.personal / proposal.total) * 100).toFixed(1)}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                🎮 Entertainment & Leisure
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.entertainment.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.entertainment / proposal.total) * 100).toFixed(1)}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                💰 Financial & Savings
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.financial.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.financial / proposal.total) * 100).toFixed(1)}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                🎁 Gifts & Donations
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                ${proposal.gifts.toLocaleString()}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {((proposal.gifts / proposal.total) * 100).toFixed(1)}%
-              </Typography>
+              <Chip
+                label="Budget Proposal"
+                size="small"
+                icon={<CheckCircleIcon />}
+                sx={{
+                  backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                  color: theme.palette.warning.main,
+                  fontWeight: 600,
+                  fontSize: "0.7rem",
+                }}
+              />
             </Box>
           </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
+
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Total Monthly Budget
+            </Typography>
+            <Typography variant="h6" fontWeight={700} color="warning.main">
+              ${computedTotal.toLocaleString()}
+            </Typography>
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mb: 1 }}
+            >
+              Budget Breakdown
+            </Typography>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 1,
+                "& > div": {
+                  p: 1,
+                  borderRadius: 1,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                },
+              }}
+            >
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  🏠 Housing & Utilities
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.housing.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.housing / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  🍽️ Food & Dining
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.food.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.food / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  🚗 Transportation
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.transportation.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.transportation / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  🏥 Health & Insurance
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.health.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.health / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  👤 Personal & Lifestyle
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.personal.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.personal / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  🎮 Entertainment & Leisure
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.entertainment.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.entertainment / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  💰 Financial & Savings
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.financial.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.financial / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  🎁 Gifts & Donations
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${proposal.gifts.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {((proposal.gifts / computedTotal) * 100).toFixed(1)}%
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const handleConversationSelect = async (
     conversation: ConversationSummary
