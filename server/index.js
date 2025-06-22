@@ -34,8 +34,6 @@ app.get("/", (req, res) => {
 
 const apiUsers = require("./routes/api/users");
 app.use("/api/users", apiUsers);
-const apiTransactions = require("./routes/api/transactions");
-app.use("/api/transactions", apiTransactions);
 const apiBotConversations = require("./routes/api/bot_conversations");
 app.use("/api/bot_conversations", apiBotConversations);
 const apiPlaid = require("./routes/api/plaid");

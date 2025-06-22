@@ -14,13 +14,6 @@ const openai = new OpenAI({
 });
 
 function format(transactionData) {
-  // keep the following elements
-  // original amount
-  //transaction time
-  //category primary
-  //payment chanel
-  //currency code
-  //location
   logger.info(`${TAG} transactionDATA: ${JSON.stringify(transactionData)}`);
   return transactionData.map((transaction) => {
     return {
