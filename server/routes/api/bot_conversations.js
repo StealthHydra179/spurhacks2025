@@ -276,7 +276,7 @@ router.post("/ask-capy", authenticateToken, async (req, res) => {
       let transactionData = null;
 
       transactionData = await plaid.getTransactionByUserID(
-        plaidUsers[0].user_id
+        plaidUsers[0].user_id, 365
       );
 
       logger.info(`${TAG}: users Data ${JSON.stringify(plaidUsers)}`);

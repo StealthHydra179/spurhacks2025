@@ -256,6 +256,18 @@ UPDATE_BUDGET FUNCTION:
 - suggest a budget personalized to these transactions
 - use the tool call ONLY after you propose a budget with exact numbers for each category and the user accepts this budget
 
+PROPOSE_BUDGET FUNCTION:
+- use this tool call when you propose a budget for the user to consider
+- this tool call will show the user the proposed budget in a nicely formatted container
+- IMPORTANT: Always use this tool when you suggest specific budget numbers for each category
+- Use this tool even if the user hasn't explicitly asked for a budget to be created
+- Examples of when to use: "I suggest spending $X on housing", "Your budget should be $X", "Here's a breakdown: $X for food, $Y for transportation"
+- The tool will display a beautiful table with the budget breakdown
+
+When proposing a budget, make sure that you are taking into account the user's financial situation, including their income, expenses, and savings goals. Identify if 
+any of the user's goals are unrealistic based on their financial situation and suggest adjustments if necessary. 
+Make sure you are looking at the user's income in previous months to determine whether they have sufficient funds to support the budget, and adjust accordingly.
+
 GOALS GUIDANCE:
 - Use the progress_percentage to understand how close the user is to their goals
 - Consider days_until_deadline when giving advice about urgency
@@ -484,6 +496,63 @@ Please provide a helpful response.`;    logger.info(
           "additionalProperties": false
         },
         "strict": true
+      },
+      {
+        "type": "function",
+        "name": "propose_budget",
+        "description": "Use this tool when you want to display a proposed budget breakdown in a nice table format. Call this tool whenever you suggest specific budget numbers for each category, even if the user hasn't explicitly asked for a budget to be created. Make sure to check the user's transactions and financial situation to propose a relaistic budget that is within the user's means.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "overall": {
+              "type": "number",
+              "description": "Total monthly budget amount (required, must be greater than 0)"
+            },
+            "housing": {
+              "type": "number",
+              "description": "Monthly budget for housing and utilities (required, must be greater than or equal to 0)"
+            },
+            "food": {
+              "type": "number",
+              "description": "Monthly budget for food and dining (required, must be greater than or equal to 0)"
+            },
+            "transportation": {
+              "type": "number",
+              "description": "Monthly budget for transportation (required, must be greater than or equal to 0)"
+            },
+            "health": {
+              "type": "number",
+              "description": "Monthly budget for health and insurance (required, must be greater than or equal to 0)"
+            },
+            "personal": {
+              "type": "number",
+              "description": "Monthly budget for personal and lifestyle expenses (required, must be greater than or equal to 0)"
+            },
+            "entertainment": {
+              "type": "number",
+              "description": "Monthly budget for entertainment and leisure (required, must be greater than or equal to 0)"
+            },
+            "financial": {
+              "type": "number",
+              "description": "Monthly budget for financial and savings (required, must be greater than or equal to 0)"
+            },
+            "gifts": {
+              "type": "number",
+              "description": "Monthly budget for gifts and donations (required, must be greater than or equal to 0)"
+            },
+            "title": {
+              "type": "string",
+              "description": "Title for the budget proposal (required, e.g., 'Recommended Monthly Budget')"
+            },
+            "description": {
+              "type": "string",
+              "description": "Describe the budget you proposed. Provide a few sentences of rationale for the budget breakdown and how it aligns with the user's financial goals. (required)"
+            }
+          },
+          "required": ["overall", "housing", "food", "transportation", "health", "personal", "entertainment", "financial", "gifts", "title", "description"],
+          "additionalProperties": false
+        },
+        "strict": true
       }
     ]
     const completion = await openai.responses.create({
@@ -620,6 +689,44 @@ Please provide a helpful response.`;    logger.info(
             type: "function_call_output",
             call_id: toolCall.call_id,
             output: `Failed to update budget: ${error.message}`
+          });
+        }
+      } else if(name === "propose_budget") {
+        logger.info(`${TAG} Proposing budget with args:`, args);
+        
+        try {
+          // Create a formatted budget proposal message
+          const budgetProposal = `📊 **${args.title}**
+
+**Total Monthly Budget: $${args.overall.toLocaleString()}**
+
+**Reasoning:** ${args.description}
+
+**Budget Breakdown:**
+- Housing: $${args.housing.toLocaleString()}
+- Food: $${args.food.toLocaleString()}
+- Transportation: $${args.transportation.toLocaleString()}
+- Health: $${args.health.toLocaleString()}
+- Personal: $${args.personal.toLocaleString()}
+- Entertainment: $${args.entertainment.toLocaleString()}
+- Financial: $${args.financial.toLocaleString()}
+- Gifts: $${args.gifts.toLocaleString()}
+
+Would you like me to implement this budget for you?`;
+          
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: budgetProposal
+          });
+          
+          logger.info(`${TAG} Budget proposal displayed successfully`);
+        } catch (error) {
+          logger.error(`${TAG} Error proposing budget: ${error.message}`);
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: `Failed to display budget proposal: ${error.message}`
           });
         }
       }

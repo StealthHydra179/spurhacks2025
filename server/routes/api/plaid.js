@@ -268,6 +268,7 @@ router.get("/transactions/:user_id", authenticateToken, async (req, res) => {
     logger.info(`${TAG} Categorizing ${filteredTransactions.length} transactions using LLM...`);
     const categorizedTransactions = await categorizeTransactions(filteredTransactions);
     logger.info(`${TAG} Successfully categorized ${categorizedTransactions.length} transactions`);
+    // const categorizedTransactions =  filteredTransactions;
 
     res.json(categorizedTransactions);
   } catch (error) {
@@ -491,7 +492,7 @@ Current user message: ${user_message}`;
       hasPlaidData: plaidUsers && plaidUsers.length > 0,
       transactionData:
         plaidUsers.length > 0
-          ? await plaid.getTransactionByUserID(plaidUsers[0].user_id)
+          ? await plaid.getTransactionByUserID(plaidUsers[0].user_id, 365)
           : null,
     };    // Generate AI response with conversation context
     const aiResponse = await botConversationsDb.generateAIResponse(
