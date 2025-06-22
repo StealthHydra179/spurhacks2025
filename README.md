@@ -22,7 +22,7 @@ CapySpend is a personal finance management website that helps users track their 
 CapySpend works by integrating with Plaid and the OpenAI API to provide a comprehensive personal finance management solution. Users can securely connect their bank accounts through Plaid, allowing the application to access transaction data, account balances, and other financial information. The AI assistant uses this data to analyze spending patterns, suggest budget adjustments, and provide personalized financial advice. The application also features a user-friendly interface for managing budgets, tracking expenses, and visualizing financial health.
 
 ## Technologies Used
-- **Frontend**: React, Next.js, Material-UI
+- **Frontend**: React, Vite, Material-UI
 - **Backend**: Node.js, Express
 - **Database**: PostgreSQL
 - **APIs**: Plaid API for bank account integration, OpenAI API for AI assistant functionality
@@ -42,11 +42,11 @@ CapySpend works by integrating with Plaid and the OpenAI API to provide a compre
 - **Different Modes**: Users can switch between different modes, such as "Conservative" for more conservative advice or "Aggressive" for more risk-taking strategies, allowing the AI assistant to tailor its recommendations based on the user's financial goals and risk tolerance.
 
 ## How we built it
-The CapySpend application is split into 2 components: the client (frontend) and the server (backend). The client is built using React and Next.js, providing a responsive and user-friendly interface. The server is built with Node.js and Express, handling API requests, user authentication, and integration with Plaid and OpenAI APIs.
+The CapySpend application is split into 2 components: the client (frontend) and the server (backend). The client is built using React and Vite, providing a responsive and user-friendly interface. The server is built with Node.js and Express, handling API requests, user authentication, and integration with Plaid and OpenAI APIs.
 
 **Client**:
 - **React**: The client is built using React, providing a dynamic and interactive user interface.
-- **Next.js**: Next.js is used for server-side rendering and routing, enhancing performance and SEO.
+- **Vite**: Vite is used as the build tool and development server, offering fast hot module replacement (HMR) and optimized production builds.
 - **Axios**: Axios is used for making HTTP requests to the server, allowing the client to interact with the backend APIs.
 - **Material-UI**: The client uses Material-UI for a modern and responsive design, providing a consistent user experience across devices.
 - **TypeScript**: TypeScript is used for type safety and better development experience, ensuring code quality and reducing runtime errors.
