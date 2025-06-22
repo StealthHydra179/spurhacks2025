@@ -413,37 +413,6 @@ const Income: React.FC = () => {
         >
           <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Quick Date Range Presets */}
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
-                  Quick ranges:
-                </Typography>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => setQuickDateRange(3)}
-                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
-                >
-                  Last 3 months
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => setQuickDateRange(6)}
-                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
-                >
-                  Last 6 months
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => setQuickDateRange(12)}
-                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
-                >
-                  Last year
-                </Button>
-              </Box>
-
               {/* Filters Row */}
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <FormControl sx={{ flex: '1 1 200px' }}>

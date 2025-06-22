@@ -504,14 +504,6 @@ const Transactions: React.FC = () => {
                 >
                   Last 90 days
                 </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => setQuickDateRange(365)}
-                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
-                >
-                  Last year
-                </Button>
               </Box>
 
               {/* Filters Row */}
