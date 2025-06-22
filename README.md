@@ -62,8 +62,15 @@ The CapySpend application is split into 2 components: the client (frontend) and 
 - **JWT Authentication**: The server implements JWT authentication to secure user sessions and protect sensitive financial data.
 
 ### Database Layout
-The database is structured to store user information, transaction history, budgets, and AI assistant interactions. Key tables include:
-
+![Database Layout](https://github.com/StealthHydra179/spurhacks2025/raw/main/devpost_images/database_layout.png)
+The database consists of 7 tables:
+- **users**: Stores user information.
+- **plaid_users**: Links users to their Plaid access tokens.
+- **accounts**: Stores detailed information about connected bank accounts.
+- **budgets**: Stores user budget allocations.
+- **savings_goals**: Stores user saving goals.
+- **bot_conversations**: Stores high-level conversation metadata between users and the AI assistant.
+- **conversation_message**: Stores individual messages within conversations.
 
 ## Challenges Faced
 
