@@ -500,7 +500,7 @@ const Income: React.FC = () => {
           }}
         >
           <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {/* Filters Row */}
               <Box
                 sx={{
