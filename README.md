@@ -21,11 +21,10 @@ localhost:3000/api/users/getByID/:ID
 
 
 # CapySpend
-This is a server-side implementation of the CapySpend application, which integrates with Plaid for financial data management. The application allows users to link their bank accounts, retrieve account information, and manage transactions.
-
 ## Inspiration
 
 ## What it does
+CabySpend is a personal finance management website that helps users track their spending, manage budgets, and gain insights into their financial habits. It integrates with Plaid to securely connect to users' bank accounts and provides a user-friendly interface for managing finances, while implementing an AI assistant to offer personalized financial advice and insights based on the user's financial information.
 
 ## How it works
 
