@@ -1086,7 +1086,7 @@ const Dashboard: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'center' }}>                <TextField
                   variant="outlined"
-                  placeholder={isAskingCapy ? "Capy is thinking..." : "Ask capy a question about your finances"}
+                  placeholder={isAskingCapy ? "Capy is thinking..." : "Ask Capy a question about your finances"}
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
