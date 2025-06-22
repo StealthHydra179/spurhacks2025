@@ -174,15 +174,15 @@ router.post("/personality", authenticateToken, async (req, res) => {
     const userId = req.user.userID;
     const personalityMode = req.body.personality;
 
-    // Validate personality mode is a valid integer (-1, 0, or 1)
+    // Validate personality mode is a valid integer (-1, 0, 1, 2, or 3)
     if (personalityMode === undefined || personalityMode === null) {
       return res.status(400).json({ message: "Personality mode is required" });
     }
 
-    const validModes = [-1, 0, 1, 2];
+    const validModes = [-1, 0, 1, 2, 3];
     if (!validModes.includes(personalityMode)) {
       return res.status(400).json({ 
-        message: "Invalid personality mode. Must be -1 (less aggressive), 0 (normal), 1 (more aggressive), or 2 (communist)" 
+        message: "Invalid personality mode. Must be -1 (conservative), 0 (neutral), 1 (risky), 2 (communist), or 3 (baby)" 
       });
     }
 
@@ -216,10 +216,11 @@ router.get("/personality", authenticateToken, async (req, res) => {
     logger.info(`${TAG} Personality mode ${personality} retrieved for user ID: ${userId}`);
     res.json({ 
       personality: personality,
-      personality_description: personality === -1 ? "less aggressive" : 
-                             personality === 0 ? "normal" : 
-                             personality === 1 ? "more aggressive" : 
-                             personality === 2 ? "communist" : "unknown",
+      personality_description: personality === -1 ? "conservative" : 
+                             personality === 0 ? "neutral" : 
+                             personality === 1 ? "risky" : 
+                             personality === 2 ? "communist" : 
+                             personality === 3 ? "baby" : "unknown",
       status: "success"
     });
   } catch (error) {

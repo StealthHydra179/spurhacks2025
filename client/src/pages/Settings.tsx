@@ -32,11 +32,12 @@ import {
   Balance as BalanceIcon,
   AccountBalance as AccountBalanceIcon,
   CheckCircle as CheckCircleIcon,
-  Whatshot as WhatshotIcon
+  Whatshot as WhatshotIcon,
+  School as SchoolIcon
 } from '@mui/icons-material';
 import capyImage from '../assets/capy.png';
 
-type CapyPersonality = 'conservative' | 'neutral' | 'risky' | 'communist';
+type CapyPersonality = 'conservative' | 'neutral' | 'risky' | 'communist' | 'baby';
 
 interface CapyOption {
   value: CapyPersonality;
@@ -70,6 +71,8 @@ const Settings: React.FC = () => {
       setSelectedCapy('risky');
     } else if (personality === 2) {
       setSelectedCapy('communist');
+    } else if (personality === 3) {
+      setSelectedCapy('baby');
     }
   }, [personality]);
 
@@ -164,6 +167,14 @@ const Settings: React.FC = () => {
       icon: <WhatshotIcon />,
       color: theme.palette.error.main,
       personalityValue: 2
+    },
+    {
+      value: 'baby',
+      label: 'Baby Capy',
+      description: 'Perfect for beginners! Teaches financial basics step-by-step with simple explanations, helpful tips, and gentle guidance for young people new to money management.',
+      icon: <SchoolIcon />,
+      color: theme.palette.info.main,
+      personalityValue: 3
     }
   ];
 

@@ -51,10 +51,15 @@ import {
   CheckCircle as CheckCircleIcon,
   RadioButtonUnchecked as RadioButtonUncheckedIcon
 } from '@mui/icons-material';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
-import capyImage from '../assets/capy.png';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import capySVG from '../assets/capyy.svg';
+import communistCapy from '../assets/communist-capy.svg';
+import babyCapy from '../assets/baby-capy.svg';
+import conservativeCapy from '../assets/conservative-capy.svg';
+import riskyCapy from '../assets/risky-capy.svg';
+import neutralCapy from '../assets/neutral-capy.svg';
 import { useNavigate } from 'react-router-dom';
-import type { SavingsGoal, Budget } from '../types';
+import type { Budget } from '../types';
 
 interface PlaidTransaction {
   transaction_id: string;
@@ -116,8 +121,26 @@ interface FinancialGoal {
   updated_at: string | null;
 }
 
+// Function to get the appropriate capy image based on personality
+const getCapyImage = (personality: number) => {
+  switch (personality) {
+    case -1: // Conservative
+      return conservativeCapy;
+    case 0:  // Neutral
+      return neutralCapy;
+    case 1:  // Risky
+      return riskyCapy;
+    case 2:  // Communist
+      return communistCapy;
+    case 3:  // Baby
+      return babyCapy;
+    default:
+      return capySVG;
+  }
+};
+
 const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, personality } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -160,6 +183,7 @@ const Dashboard: React.FC = () => {
     title: '',
     description: '',
     amount: 0,
+    current_amount: 0,
     deadline: null as Dayjs | null,
     category: 'savings' as string,
     priority: 'medium' as 'low' | 'medium' | 'high',
@@ -168,7 +192,6 @@ const Dashboard: React.FC = () => {
   });
   const [balances, setBalances] = useState<any>(null);
   const [isBalancesLoading, setIsBalancesLoading] = useState(false);
-  const [userPersonality, setUserPersonality] = useState<number>(0);
   const [budgetCategories, setBudgetCategories] = useState([
     { id: 1, name: 'Housing & Utilities', amount: 0, spent: 0, icon: '🏠' },
     { id: 2, name: 'Food & Dining', amount: 0, spent: 0, icon: '🍽️' },
@@ -383,24 +406,6 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     if (user?.id) {
       fetchSavingsGoals();
-    }
-  }, [user?.id]);
-
-  // Fetch user personality when user is available
-  const fetchUserPersonality = async () => {
-    try {
-      const response = await authService.getPersonality();
-      setUserPersonality(response.personality);
-    } catch (error) {
-      console.error('Error fetching user personality:', error);
-      // Default to normal personality (0) if there's an error
-      setUserPersonality(0);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserPersonality();
     }
   }, [user?.id]);
 
@@ -684,6 +689,7 @@ const Dashboard: React.FC = () => {
       case 0: return 'Neutral Capy';
       case 1: return 'Risky Capy';
       case 2: return 'Communist Capy';
+      case 3: return 'Baby Capy';
       default: return 'Neutral Capy';
     }
   };
@@ -800,7 +806,7 @@ const Dashboard: React.FC = () => {
         title: newGoal.title,
         description: newGoal.description,
         amount: newGoal.amount,
-        current_amount: 0,
+        current_amount: newGoal.current_amount,
         deadline: newGoal.deadline?.toISOString() || undefined,
         category: newGoal.category,
         priority: newGoal.priority,
@@ -815,6 +821,7 @@ const Dashboard: React.FC = () => {
         title: '',
         description: '',
         amount: 0,
+        current_amount: 0,
         deadline: null as Dayjs | null,
         category: 'savings',
         priority: 'medium',
@@ -860,6 +867,7 @@ const Dashboard: React.FC = () => {
       title: '',
       description: '',
       amount: 0,
+      current_amount: 0,
       deadline: null as Dayjs | null,
       category: 'savings',
       priority: 'medium',
@@ -1023,7 +1031,7 @@ const Dashboard: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box
                 component="img"
-                src={capyImage}
+                src={getCapyImage(personality)}
                 alt="CapySpend Logo"
                 sx={{
                   width: 60,
@@ -1176,7 +1184,7 @@ const Dashboard: React.FC = () => {
                         {user?.email}
                       </Typography>
                       <Chip
-                        label={getPersonalityName(userPersonality)}
+                        label={getPersonalityName(personality)}
                         size="small"
                         sx={{
                           mt: 0.5,
@@ -2442,7 +2450,7 @@ const Dashboard: React.FC = () => {
         >
           <Box
             component="img"
-            src={capyImage}
+            src={getCapyImage(personality)}
             alt="Capy"
             sx={{
               width: 80,
@@ -2711,6 +2719,19 @@ const Dashboard: React.FC = () => {
                 sx={{ mb: 2 }}
               />
               
+              <TextField
+                fullWidth
+                label="Current Progress"
+                type="number"
+                value={newGoal.current_amount}
+                onChange={(e) => setNewGoal({ ...newGoal, current_amount: parseFloat(e.target.value) || 0 })}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                helperText="How much you've already saved towards this goal"
+                sx={{ mb: 2 }}
+              />
+              
               <DatePicker
                 label="Deadline"
                 value={newGoal.deadline}
@@ -2876,6 +2897,19 @@ const Dashboard: React.FC = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="Current Progress"
+                type="number"
+                value={editingGoalForm.current_amount}
+                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, current_amount: parseFloat(e.target.value) || 0 })}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                helperText="How much you've already saved towards this goal"
                 sx={{ mb: 2 }}
               />
               
