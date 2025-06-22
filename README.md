@@ -2,6 +2,12 @@
 ![Capy the Capybara On The Landing Page](https://github.com/StealthHydra179/spurhacks2025/raw/main/devpost_images/landing_page.png)
 CapySpend is a smart, AI-powered personal finance platform designed to make money management easier through conversation with your finance buddy, Capy the Capybara.
 
+## Elevator Pitch
+
+**CapySpend: AI-powered personal finance that takes action.** Connect your bank, let our agentic AI automatically create budgets and savings goals. No spreadsheets, just smart automation.
+
+**CapySpend: Your AI-powered financial companion that turns financial chaos into financial clarity.**
+
 ## Inspiration
 Managing personal finances can be incredibly overwhelming, especially when trying to create and maintain a budget manually. Many people struggle with:
 
@@ -125,13 +131,7 @@ There are a variety of things we learned while creating CapySpend. The following
 
 **Agentic AI and Tool Calls**: We gained insights into implementing agentic AI systems that can take action on user data. We learned how to design and implement structured tool calls that allow AI to execute specific actions. We discovered the importance of providing rich context to AI models, including user financial data, transaction history, and current goals, enabling the AI to make informed decisions and take appropriate actions. We also learned about designing conversational interfaces where AI actions feel natural and contextual.
 
-**Financial Data Integration**: Gained expertise in securely handling sensitive financial information:
-
-- **Plaid API Integration**: Learned the complexities of integrating with financial APIs, including handling different account types, transaction formats, and error scenarios.
-
-- **Data Synchronization**: Understood the challenges of keeping financial data up-to-date and handling cases where external data might be temporarily unavailable.
-
-- **Privacy and Security**: Developed best practices for storing and processing sensitive financial information while maintaining user privacy and regulatory compliance.
+**Financial Data Integration**: Gained expertise in securely handling financial information by learning the complexities of integrating with financial APIs through Plaid API integration, including handling different account types, transaction formats, and error scenarios while maintaining robust security practices.
 
 **Modern Web Development**: Enhanced our skills in building complex web applications by learning effective techniques for managing complex application state, especially when dealing with real-time financial data and AI interactions. We also mastered creating responsive interfaces that work seamlessly across different devices and screen sizes while maintaining functionality and usability throughout the user experience.
 
@@ -141,43 +141,34 @@ There are a variety of things we learned while creating CapySpend. The following
 - **Investment Recommendations**: Expand the AI to provide personalized investment advice based on user risk tolerance, financial goals, and market conditions
 - **Debt Management Tools**: Add AI-powered debt payoff strategies, including snowball vs. avalanche method recommendations and automatic payment scheduling
 - **Expense Forecasting**: Implement predictive analytics to forecast future expenses and help users prepare for upcoming financial obligations
-- **Tax Optimization**: Integrate tax planning features to help users maximize deductions and optimize their tax strategy
 
 **Advanced Financial Features**:
 - **Multi-Currency Support**: Add support for international users with multi-currency accounts and real-time exchange rate tracking
 - **Bill Payment Integration**: Automate bill payments and provide reminders for upcoming due dates
 - **Credit Score Monitoring**: Integrate with credit bureaus to track credit scores and provide improvement recommendations
-- **Insurance Analysis**: Help users analyze their insurance coverage and identify potential gaps or over-insurance
 
 **Social and Collaborative Features**:
 - **Family Budget Sharing**: Allow families to share budgets and financial goals while maintaining individual privacy
-- **Financial Advisor Integration**: Connect users with certified financial advisors for more complex financial planning needs
-- **Community Features**: Create a community where users can share financial tips and success stories (anonymously)
-- **Mentorship Programs**: Pair users with financial mentors based on their goals and experience level
 
 **Mobile and Accessibility**:
 - **Native Mobile Apps**: Develop dedicated iOS and Android applications for better mobile experience
 - **Voice Assistant Integration**: Add voice commands for hands-free financial management
-- **Accessibility Features**: Implement comprehensive accessibility features for users with disabilities
 - **Offline Mode**: Allow basic functionality when internet connectivity is limited
 
 **Advanced Analytics and Insights**:
 - **Behavioral Analysis**: Use machine learning to identify spending triggers and help users develop better financial habits
 - **Goal Achievement Predictions**: Provide realistic timelines for achieving financial goals based on current spending patterns
-- **Comparative Analysis**: Allow users to compare their financial health with similar demographics (anonymously)
-- **Financial Health Score**: Create a comprehensive financial health score that considers savings, debt, investments, and spending habits
 
-**Integration and Partnerships**:
-- **Retirement Account Integration**: Connect with 401(k), IRA, and other retirement accounts for comprehensive financial planning
-- **Real Estate Investment Tools**: Add features for tracking real estate investments and rental property management
-- **Cryptocurrency Support**: Integrate with cryptocurrency exchanges for users who invest in digital assets
-- **Small Business Features**: Expand to support small business financial management with invoicing and expense tracking
-
-**Security and Compliance**:
-- **Advanced Security Features**: Implement biometric authentication, hardware security keys, and advanced fraud detection
-- **Regulatory Compliance**: Ensure compliance with financial regulations across different jurisdictions
-- **Data Portability**: Allow users to easily export their financial data in standard formats
-- **Privacy Controls**: Give users granular control over what data is shared and with whom
-
+## How to Run CapySpend Locally
+1. Clone the repository
+2. Create an .env file in the main directory and add the following environment variables:
+   PGHOST, PGUSER, PGPASSWORD, PGPORT, PGDATABASE, JWT_SECRET, PLAID_CLIENT_ID, PLAID_SECRET, OPENAI_API_KEY
+3. Create a PostgreSQL database and run the SQL scripts in the `db` directory to set up the schema
+4. Install the required dependencies for both the client and server:
+   - For the client, run `npm install` in the `client` directory
+   - For the server, run `npm install` in the `root` directory
+5. Start the server by running `npm run server` in the `main` directory
+6. Start the client by running `npm run dev` in the `client` directory
+7. Open your browser and navigate to `http://localhost:5173` to access the CapySpend application
 
 > Authors: [Aiden Ma](https://github.com/StealthHydra179), [Darren Chu](https://github.com/darren10101), [Daniel Zhang](https://github.com/zdann15), and [Feiyang Xu](https://github.com/Feiyang0303)
