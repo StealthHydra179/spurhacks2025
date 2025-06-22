@@ -75,22 +75,36 @@ async function generateInsights(transactions, prompt, apiKey = null) {
  */
 async function categorizeTransaction(transaction, apiKey = null) {
   try {
-    throw new Error("LLM categorization is currently disabled. Please use the fallback categorization method instead.");
-    // Use provided API key or fall back to environment variable
-    const openaiApiKey = apiKey || process.env.OPENAI_API_KEY;
+    throw new Error(
+      "LLM categorization is currently disabled. Please use the fallback categorization method instead."
+    );
+  } catch (error) {
+    console.error("Error categorizing transaction with LLM:", error.message);
+    // Fallback to default categorization
+    return categorizeTransactionFallback(transaction);
+  }
+}
 
-    if (!openaiApiKey) {
-      throw new Error(
-        "OpenAI API key is required. Please provide it as a parameter or set OPENAI_API_KEY environment variable."
-      );
-    }
+async function llmCategorizeTransaction(transaction, apiKey = null) {
+  // Use provided API key or fall back to environment variable
+  const openaiApiKey = apiKey || process.env.OPENAI_API_KEY;
 
-    const prompt = `Categorize this transaction into one of these 8 budget categories:
+  if (!openaiApiKey) {
+    throw new Error(
+      "OpenAI API key is required. Please provide it as a parameter or set OPENAI_API_KEY environment variable."
+    );
+  }
+
+  const prompt = `Categorize this transaction into one of these 8 budget categories:
 
 Transaction: ${transaction.name}
 Amount: $${transaction.amount}
 Date: ${transaction.date}
-Original Category: ${transaction.personal_finance_category?.primary || transaction.category?.[0] || 'Unknown'}
+Original Category: ${
+    transaction.personal_finance_category?.primary ||
+    transaction.category?.[0] ||
+    "Unknown"
+  }
 
 Budget Categories:
 1. Housing & Utilities - rent, mortgage, electricity, water, internet, property tax, etc.
@@ -104,43 +118,40 @@ Budget Categories:
 
 Respond with ONLY the category name (e.g., "Housing & Utilities", "Food & Dining", etc.).`;
 
-    const response = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_tokens: 50,
-        temperature: 0.1, // Low temperature for consistent categorization
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${openaiApiKey}`,
-          "Content-Type": "application/json",
+  const response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "user",
+          content: prompt,
         },
-      }
-    );
-
-    const aiResponse = response.data.choices[0].message.content.trim();
-    
-    // Extract the category from the AI response
-    const categoryMatch = aiResponse.match(/(Housing & Utilities|Food & Dining|Transportation|Health & Insurance|Personal & Lifestyle|Entertainment & Leisure|Financial & Savings|Gifts & Donations)/i);
-    
-    if (categoryMatch) {
-      return categoryMatch[1];
+      ],
+      max_tokens: 50,
+      temperature: 0.1, // Low temperature for consistent categorization
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${openaiApiKey}`,
+        "Content-Type": "application/json",
+      },
     }
-    
-    // Fallback to default categorization if AI response is unclear
-    return categorizeTransactionFallback(transaction);
-  } catch (error) {
-    console.error("Error categorizing transaction with LLM:", error.message);
-    // Fallback to default categorization
-    return categorizeTransactionFallback(transaction);
+  );
+
+  const aiResponse = response.data.choices[0].message.content.trim();
+
+  // Extract the category from the AI response
+  const categoryMatch = aiResponse.match(
+    /(Housing & Utilities|Food & Dining|Transportation|Health & Insurance|Personal & Lifestyle|Entertainment & Leisure|Financial & Savings|Gifts & Donations)/i
+  );
+
+  if (categoryMatch) {
+    return categoryMatch[1];
   }
+
+  // Fallback to default categorization if AI response is unclear
+  return categorizeTransactionFallback(transaction);
 }
 
 /**
@@ -149,73 +160,157 @@ Respond with ONLY the category name (e.g., "Housing & Utilities", "Food & Dining
  * @returns {string} Categorized budget category
  */
 function categorizeTransactionFallback(transaction) {
-  const category = transaction.personal_finance_category?.primary?.toLowerCase() || 
-                  transaction.category?.[0]?.toLowerCase() || '';
+  const category =
+    transaction.personal_finance_category?.primary?.toLowerCase() ||
+    transaction.category?.[0]?.toLowerCase() ||
+    "";
   const transactionName = transaction.name.toLowerCase();
-  
+
   // Map transaction categories to budget categories
-  if (category.includes('food') || category.includes('dining') || category.includes('restaurant') || 
-      category.includes('grocery') || category.includes('meal') ||
-      transactionName.includes('restaurant') || transactionName.includes('cafe') || 
-      transactionName.includes('starbucks') || transactionName.includes('mcdonalds') ||
-      transactionName.includes('uber eats') || transactionName.includes('doordash') ||
-      transactionName.includes('grubhub') || transactionName.includes('pizza') ||
-      transactionName.includes('subway') || transactionName.includes('chipotle')) {
-    return 'Food & Dining';
-  } else if (category.includes('transport') || category.includes('car') || category.includes('gas') || 
-             category.includes('uber') || category.includes('lyft') || category.includes('parking') ||
-             category.includes('public') || category.includes('bus') || category.includes('train') ||
-             transactionName.includes('shell') || transactionName.includes('exxon') ||
-             transactionName.includes('chevron') || transactionName.includes('bp') ||
-             transactionName.includes('parking') || transactionName.includes('metro') ||
-             transactionName.includes('amtrak') || transactionName.includes('taxi')) {
-    return 'Transportation';
-  } else if (category.includes('health') || category.includes('medical') || category.includes('doctor') ||
-             category.includes('pharmacy') || category.includes('dental') || category.includes('vision') ||
-             category.includes('hospital') || category.includes('insurance') ||
-             transactionName.includes('cvs') || transactionName.includes('walgreens') ||
-             transactionName.includes('rite aid') || transactionName.includes('kroger pharmacy') ||
-             transactionName.includes('doctor') || transactionName.includes('dentist') ||
-             transactionName.includes('hospital') || transactionName.includes('clinic')) {
-    return 'Health & Insurance';
-  } else if (category.includes('utility') || category.includes('electric') || category.includes('water') ||
-             category.includes('gas') || category.includes('internet') || category.includes('phone') ||
-             category.includes('cable') || category.includes('waste') || category.includes('rent') ||
-             category.includes('mortgage') || category.includes('property') ||
-             transactionName.includes('comcast') || transactionName.includes('verizon') ||
-             transactionName.includes('at&t') || transactionName.includes('t-mobile') ||
-             transactionName.includes('sprint') || transactionName.includes('spectrum') ||
-             transactionName.includes('duke energy') || transactionName.includes('pg&e')) {
-    return 'Housing & Utilities';
-  } else if (category.includes('clothing') || category.includes('apparel') || category.includes('grooming') ||
-             category.includes('gym') || category.includes('fitness') || category.includes('hobby') ||
-             category.includes('subscription') || category.includes('personal') ||
-             transactionName.includes('target') || transactionName.includes('walmart') ||
-             transactionName.includes('amazon') || transactionName.includes('ebay') ||
-             transactionName.includes('nike') || transactionName.includes('adidas') ||
-             transactionName.includes('apple store') || transactionName.includes('best buy') ||
-             transactionName.includes('home depot') || transactionName.includes('lowes')) {
-    return 'Personal & Lifestyle';
-  } else if (category.includes('entertainment') || category.includes('movie') || category.includes('theater') ||
-             category.includes('sport') || category.includes('game') || category.includes('travel') ||
-             category.includes('vacation') || category.includes('leisure') ||
-             transactionName.includes('netflix') || transactionName.includes('spotify') ||
-             transactionName.includes('hulu') || transactionName.includes('disney') ||
-             transactionName.includes('amc') || transactionName.includes('regal') ||
-             transactionName.includes('game stop') || transactionName.includes('steam') ||
-             transactionName.includes('playstation') || transactionName.includes('xbox')) {
-    return 'Entertainment & Leisure';
-  } else if (category.includes('financial') || category.includes('savings') || category.includes('investment') ||
-             category.includes('debt') || category.includes('loan') || category.includes('tax') ||
-             category.includes('bank') || category.includes('credit')) {
-    return 'Financial & Savings';
-  } else if (category.includes('gift') || category.includes('donation') || category.includes('charity') ||
-             category.includes('contribution') || category.includes('fundraiser')) {
-    return 'Gifts & Donations';
+  if (
+    category.includes("food") ||
+    category.includes("dining") ||
+    category.includes("restaurant") ||
+    category.includes("grocery") ||
+    category.includes("meal") ||
+    transactionName.includes("restaurant") ||
+    transactionName.includes("cafe") ||
+    transactionName.includes("starbucks") ||
+    transactionName.includes("mcdonalds") ||
+    transactionName.includes("uber eats") ||
+    transactionName.includes("doordash") ||
+    transactionName.includes("grubhub") ||
+    transactionName.includes("pizza") ||
+    transactionName.includes("subway") ||
+    transactionName.includes("chipotle")
+  ) {
+    return "Food & Dining";
+  } else if (
+    category.includes("transport") ||
+    category.includes("car") ||
+    category.includes("gas") ||
+    category.includes("uber") ||
+    category.includes("lyft") ||
+    category.includes("parking") ||
+    category.includes("public") ||
+    category.includes("bus") ||
+    category.includes("train") ||
+    transactionName.includes("shell") ||
+    transactionName.includes("exxon") ||
+    transactionName.includes("chevron") ||
+    transactionName.includes("bp") ||
+    transactionName.includes("parking") ||
+    transactionName.includes("metro") ||
+    transactionName.includes("amtrak") ||
+    transactionName.includes("taxi")
+  ) {
+    return "Transportation";
+  } else if (
+    category.includes("health") ||
+    category.includes("medical") ||
+    category.includes("doctor") ||
+    category.includes("pharmacy") ||
+    category.includes("dental") ||
+    category.includes("vision") ||
+    category.includes("hospital") ||
+    category.includes("insurance") ||
+    transactionName.includes("cvs") ||
+    transactionName.includes("walgreens") ||
+    transactionName.includes("rite aid") ||
+    transactionName.includes("kroger pharmacy") ||
+    transactionName.includes("doctor") ||
+    transactionName.includes("dentist") ||
+    transactionName.includes("hospital") ||
+    transactionName.includes("clinic")
+  ) {
+    return "Health & Insurance";
+  } else if (
+    category.includes("utility") ||
+    category.includes("electric") ||
+    category.includes("water") ||
+    category.includes("gas") ||
+    category.includes("internet") ||
+    category.includes("phone") ||
+    category.includes("cable") ||
+    category.includes("waste") ||
+    category.includes("rent") ||
+    category.includes("mortgage") ||
+    category.includes("property") ||
+    transactionName.includes("comcast") ||
+    transactionName.includes("verizon") ||
+    transactionName.includes("at&t") ||
+    transactionName.includes("t-mobile") ||
+    transactionName.includes("sprint") ||
+    transactionName.includes("spectrum") ||
+    transactionName.includes("duke energy") ||
+    transactionName.includes("pg&e")
+  ) {
+    return "Housing & Utilities";
+  } else if (
+    category.includes("clothing") ||
+    category.includes("apparel") ||
+    category.includes("grooming") ||
+    category.includes("gym") ||
+    category.includes("fitness") ||
+    category.includes("hobby") ||
+    category.includes("subscription") ||
+    category.includes("personal") ||
+    transactionName.includes("target") ||
+    transactionName.includes("walmart") ||
+    transactionName.includes("amazon") ||
+    transactionName.includes("ebay") ||
+    transactionName.includes("nike") ||
+    transactionName.includes("adidas") ||
+    transactionName.includes("apple store") ||
+    transactionName.includes("best buy") ||
+    transactionName.includes("home depot") ||
+    transactionName.includes("lowes")
+  ) {
+    return "Personal & Lifestyle";
+  } else if (
+    category.includes("entertainment") ||
+    category.includes("movie") ||
+    category.includes("theater") ||
+    category.includes("sport") ||
+    category.includes("game") ||
+    category.includes("travel") ||
+    category.includes("vacation") ||
+    category.includes("leisure") ||
+    transactionName.includes("netflix") ||
+    transactionName.includes("spotify") ||
+    transactionName.includes("hulu") ||
+    transactionName.includes("disney") ||
+    transactionName.includes("amc") ||
+    transactionName.includes("regal") ||
+    transactionName.includes("game stop") ||
+    transactionName.includes("steam") ||
+    transactionName.includes("playstation") ||
+    transactionName.includes("xbox")
+  ) {
+    return "Entertainment & Leisure";
+  } else if (
+    category.includes("financial") ||
+    category.includes("savings") ||
+    category.includes("investment") ||
+    category.includes("debt") ||
+    category.includes("loan") ||
+    category.includes("tax") ||
+    category.includes("bank") ||
+    category.includes("credit")
+  ) {
+    return "Financial & Savings";
+  } else if (
+    category.includes("gift") ||
+    category.includes("donation") ||
+    category.includes("charity") ||
+    category.includes("contribution") ||
+    category.includes("fundraiser")
+  ) {
+    return "Gifts & Donations";
   }
-  
+
   // Default to Personal & Lifestyle for uncategorized transactions
-  return 'Personal & Lifestyle';
+  return "Personal & Lifestyle";
 }
 
 /**
@@ -227,26 +322,26 @@ function categorizeTransactionFallback(transaction) {
 async function categorizeTransactions(transactions, apiKey = null) {
   try {
     const categorizedTransactions = [];
-    
+
     for (const transaction of transactions) {
       const budgetCategory = await categorizeTransaction(transaction, apiKey);
-      
+
       // Add the categorized budget category to the transaction
       const categorizedTransaction = {
         ...transaction,
-        budget_category: budgetCategory
+        budget_category: budgetCategory,
       };
-      
+
       categorizedTransactions.push(categorizedTransaction);
     }
-    
+
     return categorizedTransactions;
   } catch (error) {
     console.error("Error categorizing transactions:", error.message);
     // Return transactions with fallback categorization
-    return transactions.map(transaction => ({
+    return transactions.map((transaction) => ({
       ...transaction,
-      budget_category: categorizeTransactionFallback(transaction)
+      budget_category: categorizeTransactionFallback(transaction),
     }));
   }
 }

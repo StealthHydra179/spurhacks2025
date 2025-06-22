@@ -207,24 +207,22 @@ router.delete(
         status: "success",
       });
     } catch (error) {
-      logger.error(
-        `${TAG}: Error deleting conversation: ${error.message}`
-      );
-      
-      if (error.message === 'Conversation not found') {
+      logger.error(`${TAG}: Error deleting conversation: ${error.message}`);
+
+      if (error.message === "Conversation not found") {
         return res.status(404).json({
           message: "Conversation not found",
           status: "error",
         });
       }
-      
-      if (error.message === 'Access denied to this conversation') {
+
+      if (error.message === "Access denied to this conversation") {
         return res.status(403).json({
           message: "Access denied to this conversation",
           status: "error",
         });
       }
-      
+
       res.status(500).json({
         message: "Internal server error",
         status: "error",
@@ -276,7 +274,8 @@ router.post("/ask-capy", authenticateToken, async (req, res) => {
       let transactionData = null;
 
       transactionData = await plaid.getTransactionByUserID(
-        plaidUsers[0].user_id, 365
+        plaidUsers[0].user_id,
+        365
       );
 
       logger.info(`${TAG}: users Data ${JSON.stringify(plaidUsers)}`);
@@ -288,7 +287,8 @@ router.post("/ask-capy", authenticateToken, async (req, res) => {
       const userContext = {
         hasPlaidData: plaidUsers && plaidUsers.length > 0,
         transactionData: transactionData,
-      };      const aiResponse = await botConversationsDb.generateAIResponse(
+      };
+      const aiResponse = await botConversationsDb.generateAIResponse(
         question,
         userContext,
         userID

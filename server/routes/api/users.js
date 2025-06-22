@@ -6,31 +6,6 @@ const { logger } = require("../../logger");
 const userDb = require("../../db/users");
 const TAG = "api_users";
 
-router.get("/", function (req, res) {
-  res.json({
-    message: "Welcome to the User API",
-    status: "success",
-  });
-});
-
-// router.get('/getByID/:id', async function (req, res) {
-//     try {
-//         const userId = req.params.id;
-//         logger.info(`${TAG} Fetching user with ID: ${userId}`);
-//         user = await userDb.getByID(userId)
-
-//         if (user.length === 0) {
-//             logger.warn(`${TAG} User with ID ${userId} not found`);
-//             return res.status(404).json({ message: 'User not found' });
-//         }
-
-//         res.json(user[0]);
-//     } catch (error) {
-//         logger.error(`${TAG} Error fetching user: ${error.message}`);
-//         res.status(500).json({ message: 'Internal Server Error' });
-//     }
-// });
-
 // Register
 router.post("/register", async (req, res) => {
   if (
@@ -128,8 +103,8 @@ router.post("/refresh", authenticateToken, (req, res) => {
   try {
     // Create a new token with the same user data
     const token = jwt.sign(
-      { username: req.user.username, userID: req.user.userID }, 
-      process.env.JWT_SECRET, 
+      { username: req.user.username, userID: req.user.userID },
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -181,18 +156,21 @@ router.post("/personality", authenticateToken, async (req, res) => {
 
     const validModes = [-1, 0, 1, 2, 3];
     if (!validModes.includes(personalityMode)) {
-      return res.status(400).json({ 
-        message: "Invalid personality mode. Must be -1 (conservative), 0 (neutral), 1 (risky), 2 (communist), or 3 (baby)" 
+      return res.status(400).json({
+        message:
+          "Invalid personality mode. Must be -1 (conservative), 0 (neutral), 1 (risky), 2 (communist), or 3 (baby)",
       });
     }
 
     await userDb.setUserPersonality(userId, personalityMode);
-    logger.info(`${TAG} Personality mode ${personalityMode} set for user ID: ${userId}`);
-    
-    res.json({ 
+    logger.info(
+      `${TAG} Personality mode ${personalityMode} set for user ID: ${userId}`
+    );
+
+    res.json({
       message: "Personality updated successfully",
       personality: personalityMode,
-      status: "success"
+      status: "success",
     });
   } catch (error) {
     logger.error(`${TAG} Error setting user personality: ${error.message}`);
@@ -205,23 +183,32 @@ router.get("/personality", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userID;
     const personality = await userDb.getUserPersonality(userId);
-    
+
     if (personality === null) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: "Personality not found for user",
-        personality: null
+        personality: null,
       });
     }
 
-    logger.info(`${TAG} Personality mode ${personality} retrieved for user ID: ${userId}`);
-    res.json({ 
+    logger.info(
+      `${TAG} Personality mode ${personality} retrieved for user ID: ${userId}`
+    );
+    res.json({
       personality: personality,
-      personality_description: personality === -1 ? "conservative" : 
-                             personality === 0 ? "neutral" : 
-                             personality === 1 ? "risky" : 
-                             personality === 2 ? "communist" : 
-                             personality === 3 ? "baby" : "unknown",
-      status: "success"
+      personality_description:
+        personality === -1
+          ? "conservative"
+          : personality === 0
+          ? "neutral"
+          : personality === 1
+          ? "risky"
+          : personality === 2
+          ? "communist"
+          : personality === 3
+          ? "baby"
+          : "unknown",
+      status: "success",
     });
   } catch (error) {
     logger.error(`${TAG} Error getting user personality: ${error.message}`);

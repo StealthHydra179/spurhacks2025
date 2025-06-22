@@ -265,9 +265,15 @@ router.get("/transactions/:user_id", authenticateToken, async (req, res) => {
     console.log("📤 Response type:", typeof filteredTransactions);
 
     // Categorize transactions using LLM before returning
-    logger.info(`${TAG} Categorizing ${filteredTransactions.length} transactions using LLM...`);
-    const categorizedTransactions = await categorizeTransactions(filteredTransactions);
-    logger.info(`${TAG} Successfully categorized ${categorizedTransactions.length} transactions`);
+    logger.info(
+      `${TAG} Categorizing ${filteredTransactions.length} transactions using LLM...`
+    );
+    const categorizedTransactions = await categorizeTransactions(
+      filteredTransactions
+    );
+    logger.info(
+      `${TAG} Successfully categorized ${categorizedTransactions.length} transactions`
+    );
     // const categorizedTransactions =  filteredTransactions;
 
     res.json(categorizedTransactions);
@@ -282,7 +288,7 @@ router.get("/transactions/:user_id", authenticateToken, async (req, res) => {
  * GET /api/plaid/balances/:user_id
  * Get account balances for a user
  */
-router.get('/balances/:user_id', authenticateToken, async (req, res) => {
+router.get("/balances/:user_id", authenticateToken, async (req, res) => {
   try {
     const { user_id } = req.params;
 
@@ -290,7 +296,7 @@ router.get('/balances/:user_id', authenticateToken, async (req, res) => {
     res.json(balancesData);
   } catch (error) {
     logger.error(`${TAG} Error getting balances: ${error.message}`);
-    res.status(500).json({ error: 'Failed to get balances' });
+    res.status(500).json({ error: "Failed to get balances" });
   }
 });
 
@@ -494,21 +500,28 @@ Current user message: ${user_message}`;
         plaidUsers.length > 0
           ? await plaid.getTransactionByUserID(plaidUsers[0].user_id, 365)
           : null,
-    };    // Generate AI response with conversation context
+    }; // Generate AI response with conversation context
     const aiResponse = await botConversationsDb.generateAIResponse(
       contextualMessage,
       userContext,
       user_id
     );
 
-    logger.info(`${TAG}: AI response received: ${aiResponse ? aiResponse.substring(0, 100) + '...' : 'EMPTY RESPONSE'}`);
+    logger.info(
+      `${TAG}: AI response received: ${
+        aiResponse ? aiResponse.substring(0, 100) + "..." : "EMPTY RESPONSE"
+      }`
+    );
 
     // Validate the response
-    if (!aiResponse || aiResponse.trim() === '') {
-      logger.error(`${TAG}: Empty AI response received for conversation ${conversation_id}`);
-      return res.status(500).json({ 
+    if (!aiResponse || aiResponse.trim() === "") {
+      logger.error(
+        `${TAG}: Empty AI response received for conversation ${conversation_id}`
+      );
+      return res.status(500).json({
         error: "Failed to generate response",
-        message: "I'm sorry, I'm having trouble generating a response right now. Please try again."
+        message:
+          "I'm sorry, I'm having trouble generating a response right now. Please try again.",
       });
     }
 
@@ -543,35 +556,39 @@ router.post("/test-categorization", authenticateToken, async (req, res) => {
     const testTransactions = [
       {
         name: "Starbucks Coffee",
-        amount: 5.50,
+        amount: 5.5,
         date: "2024-01-15",
         personal_finance_category: { primary: "Food and Drink" },
-        category: ["Food and Drink", "Restaurants"]
+        category: ["Food and Drink", "Restaurants"],
       },
       {
         name: "Shell Gas Station",
-        amount: 45.00,
+        amount: 45.0,
         date: "2024-01-16",
         personal_finance_category: { primary: "Transportation" },
-        category: ["Transportation", "Gas Stations"]
+        category: ["Transportation", "Gas Stations"],
       },
       {
         name: "Netflix Subscription",
         amount: 15.99,
         date: "2024-01-17",
         personal_finance_category: { primary: "Entertainment" },
-        category: ["Entertainment", "Streaming Services"]
-      }
+        category: ["Entertainment", "Streaming Services"],
+      },
     ];
 
-    logger.info(`${TAG} Testing LLM categorization with ${testTransactions.length} sample transactions`);
-    const categorizedTransactions = await categorizeTransactions(testTransactions);
-    
+    logger.info(
+      `${TAG} Testing LLM categorization with ${testTransactions.length} sample transactions`
+    );
+    const categorizedTransactions = await categorizeTransactions(
+      testTransactions
+    );
+
     res.json({
       success: true,
       message: "LLM categorization test completed",
       original_transactions: testTransactions,
-      categorized_transactions: categorizedTransactions
+      categorized_transactions: categorizedTransactions,
     });
   } catch (error) {
     logger.error(`${TAG} Error in test categorization: ${error.message}`);
