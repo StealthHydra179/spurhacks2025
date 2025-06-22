@@ -18,3 +18,17 @@ npm run server
 API Routes
 Get:
 localhost:3000/api/users/getByID/:ID
+
+
+# CapySpend
+This is a server-side implementation of the CapySpend application, which integrates with Plaid for financial data management. The application allows users to link their bank accounts, retrieve account information, and manage transactions.
+
+## Inspiration
+
+## How it works
+
+## Technologies Used
+
+## Features
+
+## Challenges Faced
