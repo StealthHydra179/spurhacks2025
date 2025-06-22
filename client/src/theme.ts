@@ -18,8 +18,8 @@ export const theme = createTheme({
       paper: '#FFFFFF',
     },
     text: {
-      primary: '#3E2723', // Dark brown for good contrast
-      secondary: '#5D4037', // Medium brown
+      primary: '#2C1810', // Darker brown for better contrast
+      secondary: '#4A3429', // Darker medium brown
     },
     success: {
       main: '#66BB6A',
@@ -46,27 +46,27 @@ export const theme = createTheme({
     fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     h1: {
       fontWeight: 700,
-      color: '#3E2723',
+      color: '#2C1810',
     },
     h2: {
       fontWeight: 700,
-      color: '#3E2723',
+      color: '#2C1810',
     },
     h3: {
       fontWeight: 600,
-      color: '#3E2723',
+      color: '#2C1810',
     },
     h4: {
       fontWeight: 600,
-      color: '#3E2723',
+      color: '#2C1810',
     },
     h5: {
       fontWeight: 600,
-      color: '#3E2723',
+      color: '#2C1810',
     },
     h6: {
       fontWeight: 600,
-      color: '#3E2723',
+      color: '#2C1810',
     },
   },
   shape: {

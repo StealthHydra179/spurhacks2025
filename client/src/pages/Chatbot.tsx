@@ -36,7 +36,8 @@ import {
   Menu as MenuIcon,
   Chat as ChatIcon,
   ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import capySVG from '../assets/capyy.svg';
 import capyImage from '../assets/capy.png';
@@ -489,35 +490,64 @@ const Chatbot: React.FC = () => {
         )}
       </Box>
 
-      {/* Back to Dashboard */}
+      {/* Back to Dashboard and Settings */}
       <Box sx={{ p: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
         {(isMobile || (!isMobile && !sidebarCollapsed)) ? (
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/dashboard')}
-            sx={{
-              borderRadius: 2,
-              textTransform: 'none'
-            }}
-          >
-            Back to Dashboard
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate('/dashboard')}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none'
+              }}
+            >
+              Dashboard
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<SettingsIcon />}
+              onClick={() => navigate('/settings')}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none'
+              }}
+            >
+              Settings
+            </Button>
+          </Box>
         ) : (
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/dashboard')}
-            sx={{
-              borderRadius: 2,
-              textTransform: 'none',
-              minWidth: 'auto',
-              width: 48,
-              height: 48
-            }}
-          >
-            <ArrowBackIcon />
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/dashboard')}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                minWidth: 'auto',
+                width: 48,
+                height: 48
+              }}
+            >
+              <ArrowBackIcon />
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/settings')}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                minWidth: 'auto',
+                width: 48,
+                height: 48
+              }}
+            >
+              <SettingsIcon />
+            </Button>
+          </Box>
         )}
       </Box>
     </Box>

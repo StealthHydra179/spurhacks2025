@@ -619,11 +619,12 @@ const Dashboard: React.FC = () => {
           textTransform: 'none',
           fontSize: '1rem',
           fontWeight: 600,
-          color: activeTab === 'overview' ? theme.palette.primary.main : theme.palette.text.secondary,
+          color: activeTab === 'overview' ? '#2C1810' : theme.palette.text.secondary,
           borderBottom: activeTab === 'overview' ? `3px solid ${theme.palette.primary.main}` : 'none',
           backgroundColor: activeTab === 'overview' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            color: activeTab === 'overview' ? '#2C1810' : theme.palette.text.secondary,
           }
         }}
       >
@@ -638,11 +639,12 @@ const Dashboard: React.FC = () => {
           textTransform: 'none',
           fontSize: '1rem',
           fontWeight: 600,
-          color: activeTab === 'goals' ? theme.palette.primary.main : theme.palette.text.secondary,
+          color: activeTab === 'goals' ? '#2C1810' : theme.palette.text.secondary,
           borderBottom: activeTab === 'goals' ? `3px solid ${theme.palette.primary.main}` : 'none',
           backgroundColor: activeTab === 'goals' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            color: activeTab === 'goals' ? '#2C1810' : theme.palette.text.secondary,
           }
         }}
       >
@@ -658,11 +660,12 @@ const Dashboard: React.FC = () => {
           textTransform: 'none',
           fontSize: '1rem',
           fontWeight: 600,
-          color: activeTab === 'accounts' ? theme.palette.primary.main : theme.palette.text.secondary,
+          color: activeTab === 'accounts' ? '#2C1810' : theme.palette.text.secondary,
           borderBottom: activeTab === 'accounts' ? `3px solid ${theme.palette.primary.main}` : 'none',
           backgroundColor: activeTab === 'accounts' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            color: activeTab === 'accounts' ? '#2C1810' : theme.palette.text.secondary,
           }
         }}
       >
@@ -1332,7 +1335,7 @@ const Dashboard: React.FC = () => {
                       >
                         <CardContent sx={{ p: 2, textAlign: 'center' }}>
                           <Typography variant="h6" fontWeight={700} color="info.main">
-                            {formatCurrency(goals.reduce((sum, goal) => sum + goal.amount, 0))}
+                            {formatCurrency(goals.reduce((sum, goal) => sum + Number(goal.amount), 0))}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Total Target
@@ -1349,7 +1352,7 @@ const Dashboard: React.FC = () => {
                       >
                         <CardContent sx={{ p: 2, textAlign: 'center' }}>
                           <Typography variant="h6" fontWeight={700} color="success.main">
-                            {formatCurrency(goals.reduce((sum, goal) => sum + goal.current_amount, 0))}
+                            {formatCurrency(goals.reduce((sum, goal) => sum + Number(goal.current_amount), 0))}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Total Saved
