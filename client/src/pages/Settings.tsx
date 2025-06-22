@@ -139,7 +139,7 @@ const Settings: React.FC = () => {
     {
       value: 'conservative',
       label: 'Conservative Capy',
-      description: 'Prioritizes safety and stability. Recommends low-risk investments and conservative spending habits.',
+      description: 'Gentle and encouraging tone. Uses supportive language and celebrates small wins. Perfect for those who prefer a nurturing approach to financial advice.',
       icon: <SecurityIcon />,
       color: theme.palette.success.main,
       personalityValue: -1
@@ -147,15 +147,15 @@ const Settings: React.FC = () => {
     {
       value: 'neutral',
       label: 'Neutral Capy',
-      description: 'Balanced approach to financial advice. Considers both risk and reward for moderate growth.',
+      description: 'Balanced and practical communication style. Provides clear, straightforward advice with a friendly but informative tone.',
       icon: <BalanceIcon />,
       color: theme.palette.primary.main,
       personalityValue: 0
     },
     {
       value: 'risky',
-      label: 'Risky Capy',
-      description: 'Aggressive financial strategies. Suggests higher-risk investments for maximum potential returns.',
+      label: 'Aggressive Capy',
+      description: 'Direct and assertive communication. Uses strong language and provides clear action items with urgency when needed.',
       icon: <TrendingUpIcon />,
       color: theme.palette.warning.main,
       personalityValue: 1

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import {
   Box,
   Container,
@@ -19,16 +18,13 @@ import {
   Speed as SpeedIcon,
   Analytics as AnalyticsIcon,
   Login as LoginIcon,
-  PersonAdd as RegisterIcon,
-  Dashboard as DashboardIcon
+  PersonAdd as RegisterIcon
 } from '@mui/icons-material';
 import capyImage from '../assets/hscapy.svg';
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
   const theme = useTheme();
-
+  const navigate = useNavigate();
   const features = [
     {
       icon: <SecurityIcon sx={{ fontSize: 40 }} />,
@@ -149,92 +145,60 @@ const Home: React.FC = () => {
             justifyContent="center"
             sx={{ mb: 8 }}
           >
-            {isAuthenticated ? (
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<DashboardIcon />}
-                onClick={() => navigate('/dashboard')}
-                sx={{
-                  py: 3,
-                  px: 6,
-                  fontSize: '1.2rem',
-                  fontWeight: 700,
-                  borderRadius: 4,
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.25)} 0%, ${alpha(theme.palette.common.white, 0.15)} 100%)`,
-                  backdropFilter: 'blur(20px)',
-                  border: `2px solid ${alpha(theme.palette.common.white, 0.4)}`,
-                  color: theme.palette.common.white,
-                  textTransform: 'none',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.35)} 0%, ${alpha(theme.palette.common.white, 0.25)} 100%)`,
-                    transform: 'translateY(-4px) scale(1.02)',
-                    boxShadow: `0 12px 35px ${alpha(theme.palette.common.black, 0.4)}`,
-                    borderColor: alpha(theme.palette.common.white, 0.6)
-                  }
-                }}
-              >
-                Go to Dashboard
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={<LoginIcon />}
-                  onClick={() => navigate('/login')}
-                  sx={{
-                    py: 3,
-                    px: 6,
-                    fontSize: '1.2rem',
-                    fontWeight: 700,
-                    borderRadius: 4,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.25)} 0%, ${alpha(theme.palette.common.white, 0.15)} 100%)`,
-                    backdropFilter: 'blur(20px)',
-                    border: `2px solid ${alpha(theme.palette.common.white, 0.4)}`,
-                    color: theme.palette.common.white,
-                    textTransform: 'none',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.35)} 0%, ${alpha(theme.palette.common.white, 0.25)} 100%)`,
-                      transform: 'translateY(-4px) scale(1.02)',
-                      boxShadow: `0 12px 35px ${alpha(theme.palette.common.black, 0.4)}`,
-                      borderColor: alpha(theme.palette.common.white, 0.6)
-                    }
-                  }}
-                >
-                  Sign In
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  startIcon={<RegisterIcon />}
-                  onClick={() => navigate('/register')}
-                  sx={{
-                    py: 3,
-                    px: 6,
-                    fontSize: '1.2rem',
-                    fontWeight: 700,
-                    borderRadius: 4,
-                    borderColor: alpha(theme.palette.common.white, 0.6),
-                    borderWidth: 2,
-                    color: theme.palette.common.white,
-                    backdropFilter: 'blur(20px)',
-                    textTransform: 'none',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      borderColor: theme.palette.common.white,
-                      background: alpha(theme.palette.common.white, 0.15),
-                      transform: 'translateY(-4px) scale(1.02)',
-                      boxShadow: `0 12px 35px ${alpha(theme.palette.common.black, 0.4)}`
-                    }
-                  }}
-                >
-                  Sign Up
-                </Button>
-              </>
-            )}
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<LoginIcon />}
+              onClick={() => navigate('/login')}
+              sx={{
+                py: 3,
+                px: 6,
+                fontSize: '1.2rem',
+                fontWeight: 700,
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.25)} 0%, ${alpha(theme.palette.common.white, 0.15)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `2px solid ${alpha(theme.palette.common.white, 0.4)}`,
+                color: theme.palette.common.white,
+                textTransform: 'none',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.35)} 0%, ${alpha(theme.palette.common.white, 0.25)} 100%)`,
+                  transform: 'translateY(-4px) scale(1.02)',
+                  boxShadow: `0 12px 35px ${alpha(theme.palette.common.black, 0.4)}`,
+                  borderColor: alpha(theme.palette.common.white, 0.6)
+                }
+              }}
+            >
+              Sign In
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              startIcon={<RegisterIcon />}
+              onClick={() => navigate('/register')}
+              sx={{
+                py: 3,
+                px: 6,
+                fontSize: '1.2rem',
+                fontWeight: 700,
+                borderRadius: 4,
+                borderColor: alpha(theme.palette.common.white, 0.6),
+                borderWidth: 2,
+                color: theme.palette.common.white,
+                backdropFilter: 'blur(20px)',
+                textTransform: 'none',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: theme.palette.common.white,
+                  background: alpha(theme.palette.common.white, 0.15),
+                  transform: 'translateY(-4px) scale(1.02)',
+                  boxShadow: `0 12px 35px ${alpha(theme.palette.common.black, 0.4)}`
+                }
+              }}
+            >
+              Sign Up
+            </Button>
           </Stack>
         </Box>
 
