@@ -2165,45 +2165,6 @@ const Dashboard: React.FC = () => {
               </Box>
             </Box>
           </Box>
-          
-          {/* Automation Suggestions */}
-          <Box sx={{ mt: 3 }}>
-            <Card
-              elevation={2}
-              sx={{
-                borderRadius: 2,
-                background: alpha(theme.palette.info.main, 0.05),
-                border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-              }}
-            >
-              <CardContent>
-                <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
-                  🤖 Automation Suggestions
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Capy can help automate your goal progress tracking:
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    Track savings from specific income sources
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    Monitor spending in related categories
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    Send reminders when off track
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    Suggest budget adjustments
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
         </DialogContent>
         
         <DialogActions sx={{ p: 3, pt: 1 }}>
