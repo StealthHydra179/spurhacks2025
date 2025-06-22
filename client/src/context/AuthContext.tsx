@@ -9,6 +9,9 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   user: User | null;
+  personality: number;
+  setPersonality: (personality: number) => Promise<void>;
+  refreshPersonality: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +32,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [personality, setPersonalityState] = useState<number>(0);
 
   // Check for existing authentication on component mount
   React.useEffect(() => {
@@ -38,6 +42,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const userData = await authService.getProfile();
         setUser(userData);
         setIsAuthenticated(true);
+        
+        // Load personality after authentication
+        await refreshPersonality();
       } catch (error) {
         // User is not authenticated or session expired
         setIsAuthenticated(false);
@@ -79,6 +86,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData = await authService.getProfile();
       setUser(userData);
       setIsAuthenticated(true);
+      
+      // Load personality after login
+      await refreshPersonality();
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -93,14 +103,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsAuthenticated(false);
       setUser(null);
+      setPersonalityState(0); // Reset personality on logout
     }
   };
+
+  const setPersonality = async (newPersonality: number) => {
+    try {
+      await authService.setPersonality(newPersonality);
+      setPersonalityState(newPersonality);
+    } catch (error) {
+      console.error('Failed to set personality:', error);
+      throw error;
+    }
+  };
+
+  const refreshPersonality = async () => {
+    try {
+      const response = await authService.getPersonality();
+      setPersonalityState(response.personality);
+    } catch (error) {
+      console.error('Failed to load personality:', error);
+      // Keep default personality (0) if loading fails
+    }
+  };
+
   const value: AuthContextType = {
     isAuthenticated,
     isLoading,
     login,
     logout,
     user,
+    personality,
+    setPersonality,
+    refreshPersonality,
   };
 
   return (

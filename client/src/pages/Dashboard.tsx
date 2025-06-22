@@ -1064,27 +1064,19 @@ const Dashboard: React.FC = () => {
                     minWidth: { xs: 200, sm: 250, md: 300, lg: 400 },
                     maxWidth: { xs: 250, sm: 350, md: 450, lg: 600 },
                     width: { xs: '100%', sm: '80%', md: '70%', lg: '60%' },
+                    outline: 'none',
+                    borderRadius: 2,
+                    border: 'none',
+                    backgroundColor: theme.palette.background.paper,
                     '& .MuiOutlinedInput-root': {
+                      outline: 'none',
                       borderRadius: 2,
-                      backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                      backdropFilter: 'blur(10px)',
-                      '& fieldset': {
-                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                      },
-                      '&:hover fieldset': {
-                        borderColor: theme.palette.primary.main,
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: theme.palette.primary.main,
-                      },
-                    },
-                    '& .MuiInputBase-input': {
-                      color: theme.palette.text.primary,
-                      '&::placeholder': {
-                        color: theme.palette.text.secondary,
-                        opacity: 1,
-                      },
-                    },
+                      border: `1px solid ${theme.palette.background.paper}`,
+                      borderInline: 'none',
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'black',
+                      }
+                    }
                   }}
                 />
                 <Button
@@ -1095,13 +1087,11 @@ const Dashboard: React.FC = () => {
                     height: 40,
                     borderRadius: '50%',
                     px: 0,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                    border: `2px solid ${theme.palette.primary.main}`,
+                    backgroundColor: theme.palette.background.paper,
+                    border: `2px solid ${theme.palette.background.paper}`,
                     color: theme.palette.primary.main,
                     '&:hover': {
-                      backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.primary.contrastText,
-                      border: `2px solid ${theme.palette.primary.dark}`,
+                      border: `2px solid ${theme.palette.common.black}`,
                       transform: 'scale(1.05)',
                       boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
                     },
@@ -1109,7 +1099,7 @@ const Dashboard: React.FC = () => {
                     boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,
                   }}
                 >
-                  <SearchIcon sx={{ fontSize: 20 }} />
+                  <SearchIcon sx={{ fontSize: 20, color: 'black' }} />
                 </Button>
               </Box>
             </Box>

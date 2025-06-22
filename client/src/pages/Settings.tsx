@@ -49,41 +49,29 @@ interface CapyOption {
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, personality, setPersonality } = useAuth();
   const theme = useTheme();
   const [selectedCapy, setSelectedCapy] = useState<CapyPersonality>('neutral');
   const [isBankLinked, setIsBankLinked] = useState(false);
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingPersonality, setIsSavingPersonality] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Load current personality on component mount
   React.useEffect(() => {
-    const loadPersonality = async () => {
-      try {
-        const response = await authService.getPersonality();
-        const personalityValue = response.personality;
-        
-        // Map the personality value to the UI state
-        if (personalityValue === -1) {
-          setSelectedCapy('conservative');
-        } else if (personalityValue === 0) {
-          setSelectedCapy('neutral');
-        } else if (personalityValue === 1) {
-          setSelectedCapy('risky');
-        } else if (personalityValue === 2) {
-          setSelectedCapy('communist');
-        }
-      } catch (err: any) {
-        console.error('Failed to load personality:', err);
-        // Don't show error for loading, just use default
-      }
-    };
-
-    loadPersonality();
-  }, []);
+    // Map the personality value from context to the UI state
+    if (personality === -1) {
+      setSelectedCapy('conservative');
+    } else if (personality === 0) {
+      setSelectedCapy('neutral');
+    } else if (personality === 1) {
+      setSelectedCapy('risky');
+    } else if (personality === 2) {
+      setSelectedCapy('communist');
+    }
+  }, [personality]);
 
   // Check initial item status
   React.useEffect(() => {
@@ -179,30 +167,36 @@ const Settings: React.FC = () => {
     }
   ];
 
-  const handleSave = async () => {
+  // Auto-save personality when selection changes
+  const handlePersonalityChange = async (newPersonality: CapyPersonality) => {
+    if (newPersonality === selectedCapy) return; // No change needed
+    
+    setSelectedCapy(newPersonality);
+    setIsSavingPersonality(true);
+    setError(null);
+    
     try {
-      setIsSaving(true);
-      setError(null);
-      
       // Find the selected option to get the personality value
-      const selectedOption = capyOptions.find(option => option.value === selectedCapy);
+      const selectedOption = capyOptions.find(option => option.value === newPersonality);
       if (!selectedOption) {
         throw new Error('Invalid personality selection');
       }
       
-      await authService.setPersonality(selectedOption.personalityValue);
-      setSuccessMessage('Settings saved successfully!');
+      setPersonality(selectedOption.personalityValue);
+      setSuccessMessage(`${selectedOption.label} selected successfully!`);
       
-      // Navigate to dashboard after a short delay
+      // Clear success message after 3 seconds
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+        setSuccessMessage(null);
+      }, 3000);
       
     } catch (err: any) {
-      console.error('Failed to save settings:', err);
-      setError(err.response?.data?.message || 'Failed to save settings');
+      console.error('Failed to save personality:', err);
+      setError(err.response?.data?.message || 'Failed to save personality preference');
+      // Revert to previous selection on error
+      setSelectedCapy(selectedCapy);
     } finally {
-      setIsSaving(false);
+      setIsSavingPersonality(false);
     }
   };
 
@@ -291,13 +285,13 @@ const Settings: React.FC = () => {
               <FormControl component="fieldset" sx={{ width: '100%' }}>
                 <RadioGroup
                   value={selectedCapy}
-                  onChange={(e) => setSelectedCapy(e.target.value as CapyPersonality)}
+                  onChange={(e) => handlePersonalityChange(e.target.value as CapyPersonality)}
                 >
                   {capyOptions.map((option) => (
                     <Card
                       key={option.value}
                       elevation={2}
-                      onClick={() => setSelectedCapy(option.value)}
+                      onClick={() => handlePersonalityChange(option.value)}
                       sx={{
                         mb: 2,
                         borderRadius: 2,
@@ -305,11 +299,12 @@ const Settings: React.FC = () => {
                           ? `2px solid ${option.color}` 
                           : `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                         transition: 'all 0.2s ease',
-                        cursor: 'pointer',
+                        cursor: isSavingPersonality ? 'not-allowed' : 'pointer',
                         userSelect: 'none',
+                        opacity: isSavingPersonality && selectedCapy !== option.value ? 0.6 : 1,
                         '&:hover': {
-                          borderColor: option.color,
-                          boxShadow: `0 4px 12px ${alpha(option.color, 0.2)}`
+                          borderColor: isSavingPersonality ? undefined : option.color,
+                          boxShadow: isSavingPersonality ? undefined : `0 4px 12px ${alpha(option.color, 0.2)}`
                         }
                       }}
                     >
@@ -317,6 +312,7 @@ const Settings: React.FC = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                           <Radio
                             checked={selectedCapy === option.value}
+                            disabled={isSavingPersonality}
                             sx={{ color: option.color }}
                           />
                           <Avatar
@@ -327,7 +323,11 @@ const Settings: React.FC = () => {
                               color: option.color
                             }}
                           >
-                            {option.icon}
+                            {isSavingPersonality && selectedCapy === option.value ? (
+                              <CircularProgress size={24} color="inherit" />
+                            ) : (
+                              option.icon
+                            )}
                           </Avatar>
                           <Box sx={{ flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -336,7 +336,7 @@ const Settings: React.FC = () => {
                               </Typography>
                               {selectedCapy === option.value && (
                                 <Chip
-                                  label="Selected"
+                                  label={isSavingPersonality ? "Saving..." : "Selected"}
                                   size="small"
                                   color="primary"
                                   sx={{ height: 20, fontSize: '0.7rem' }}
@@ -455,40 +455,6 @@ const Settings: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
-            </Box>
-
-            {/* Save Button */}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/dashboard')}
-                sx={{
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1.5,
-                  textTransform: 'none'
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                onClick={handleSave}
-                disabled={isSaving}
-                sx={{
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1.5,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                  textTransform: 'none',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`
-                  }
-                }}
-              >
-                {isSaving ? 'Saving...' : 'Save Settings'}
-              </Button>
             </Box>
           </CardContent>
         </Card>

@@ -50,7 +50,6 @@ import babyCapy from '../assets/baby-capy.svg';
 import conservativeCapy from '../assets/conservative-capy.svg';
 import riskyCapy from '../assets/risky-capy.svg';
 import neutralCapy from '../assets/neutral-capy.svg';
-import capyImage from '../assets/capy.png';
 import { botConversationService, plaidService, authService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
@@ -84,7 +83,7 @@ const Chatbot: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { user, personality } = useAuth();
   
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -98,7 +97,6 @@ const Chatbot: React.FC = () => {
   const [deletingConversation, setDeletingConversation] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
-  const [userPersonality, setUserPersonality] = useState<number>(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [textVisible, setTextVisible] = useState(true);
   const [loadingConversation, setLoadingConversation] = useState(true);
@@ -112,7 +110,6 @@ const Chatbot: React.FC = () => {
 
   useEffect(() => {
     fetchConversations();
-    fetchUserPersonality();
   }, []);
   useEffect(() => {
     if (creatingConversation) return; // Don't auto-navigate when creating a conversation
@@ -139,7 +136,6 @@ const Chatbot: React.FC = () => {
   // Load conversations and user personality on component mount
   useEffect(() => {
     fetchConversations();
-    fetchUserPersonality();
   }, []);
 
   const fetchConversations = async () => {
@@ -154,17 +150,6 @@ const Chatbot: React.FC = () => {
       console.error('Error fetching conversations:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchUserPersonality = async () => {
-    try {
-      const response = await authService.getPersonality();
-      setUserPersonality(response.personality);
-    } catch (error) {
-      console.error('Error fetching user personality:', error);
-      // Default to normal personality (0) if there's an error
-      setUserPersonality(0);
     }
   };
 
@@ -196,7 +181,7 @@ const Chatbot: React.FC = () => {
     
     try {
       // Create a new conversation
-      const result = await botConversationService.askCapy(user?.id || 0, "Hello");
+      const result = await botConversationService.askCapy(user?.id || 0, "Hey Capy, I'd like to start a new conversation about my finances.");
       
       // Wait a bit for the conversation to be fully created
       const checkConversationReady = () => {
@@ -628,7 +613,7 @@ const Chatbot: React.FC = () => {
             >
               <Box
                 component="img"
-                src={getCapyImage(userPersonality)}
+                src={getCapyImage(personality)}
                 alt="Capy"
                 sx={{ 
                   width: 32, 
@@ -644,7 +629,7 @@ const Chatbot: React.FC = () => {
           {isMobile && (
             <Box
               component="img"
-              src={getCapyImage(userPersonality)}
+              src={getCapyImage(personality)}
               alt="Capy"
               sx={{ 
                 width: 32, 
@@ -746,7 +731,7 @@ const Chatbot: React.FC = () => {
                       }}
                     >
                       <img 
-                        src={getCapyImage(userPersonality)} 
+                        src={getCapyImage(personality)} 
                         alt="Bot" 
                         style={{ 
                           width: '70%', 
@@ -818,7 +803,8 @@ const Chatbot: React.FC = () => {
               onClick={() => navigate('/dashboard')}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none'
+                textTransform: 'none',
+                color: 'secondary.dark'
               }}
             >
               Dashboard
@@ -830,7 +816,8 @@ const Chatbot: React.FC = () => {
               onClick={() => navigate('/settings')}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none'
+                textTransform: 'none',
+                color: 'secondary.dark'
               }}
             >
               Settings
@@ -949,43 +936,13 @@ const Chatbot: React.FC = () => {
           }}
         >
           <Box sx={{ position: 'relative' }}>
-            <img src={getCapyImage(userPersonality)} alt="Capybara SVG" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+            <img src={getCapyImage(personality)} alt="Capybara SVG" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
           </Box>
         </Box>
         {selectedConversation ? (
           <>
             {/* Messages Area */}
             <Box sx={{ flex: 1, overflow: 'auto', position: 'relative' }}>
-              {loadingConversation ? (
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  height: '100%',
-                  p: 4
-                }}>
-                  <Box
-                    component="img"
-                    src={getCapyImage(userPersonality)}
-                    alt="Capy"
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      animation: 'pulse 1.5s ease-in-out infinite',
-                      '@keyframes pulse': {
-                        '0%': { transform: 'scale(1)' },
-                        '50%': { transform: 'scale(1.05)' },
-                        '100%': { transform: 'scale(1)' }
-                      }
-                    }}
-                  />
-                  <Typography variant="h6" component="div" color="text.primary" textAlign="center">
-                    Loading conversation...
-                  </Typography>
-                  <CircularProgress size={40} thickness={4} />
-                </Box>
-              ) : selectedConversation?.messages && selectedConversation.messages.length > 0 ? (
                 <Box sx={{ p: 2, pb: 8 }}>
                   {selectedConversation.messages.map((message, index) => (
                     <Box
@@ -1110,6 +1067,17 @@ const Chatbot: React.FC = () => {
                             >
                               {message.message}
                             </ReactMarkdown>
+                            
+                            {/* Check for financial actions and render cards */}
+                            {(() => {
+                              const action = detectAction(message.message);
+                              if (action?.type === 'goal') {
+                                return <GoalCard goal={action} />;
+                              } else if (action?.type === 'budget') {
+                                return <BudgetCard budget={action} />;
+                              }
+                              return null;
+                            })()}
                           </Box>
                         ) : (
                           <Typography variant="body1">{message.message}</Typography>
@@ -1175,39 +1143,8 @@ const Chatbot: React.FC = () => {
                       </Paper>
                     </Box>
                   )}
-                  
                   <div ref={messagesEndRef} />
                 </Box>
-              ) : (
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  height: '100%',
-                  p: 4
-                }}>
-                  <Box
-                    component="img"
-                    src={getCapyImage(userPersonality)}
-                    alt="Capy"
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      animation: 'pulse 1.5s ease-in-out infinite',
-                      '@keyframes pulse': {
-                        '0%': { transform: 'scale(1)' },
-                        '50%': { transform: 'scale(1.05)' },
-                        '100%': { transform: 'scale(1)' }
-                      }
-                    }}
-                  />
-                  <Typography variant="h6" component="div" color="text.primary" textAlign="center">
-                    Capy is thinking...
-                  </Typography>
-                  <CircularProgress size={40} thickness={4} />
-                </Box>
-              )}
             </Box>
 
             {/* Message Input */}
@@ -1286,7 +1223,7 @@ const Chatbot: React.FC = () => {
           >
             <Box
               component="img"
-              src={getCapyImage(userPersonality)}
+              src={getCapyImage(personality)}
               alt="Capy"
               sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', opacity: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))' }}
             />
@@ -1330,7 +1267,7 @@ const Chatbot: React.FC = () => {
         >
           <Box
             component="img"
-            src={getCapyImage(userPersonality)}
+            src={getCapyImage(personality)}
             alt="Capy"
             sx={{ width: 80, objectFit: 'contain', display: 'block', mx: 'auto', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 0.8, transform: 'scale(1)' }, '50%': { opacity: 1, transform: 'scale(1.05)' } } }}
           />
