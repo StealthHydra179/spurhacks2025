@@ -346,7 +346,7 @@ Please provide a helpful response.`;    logger.info(
       }
     ]
     const completion = await openai.responses.create({
-      model: "gpt-4.1",
+      model: "gpt-4.1-mini",
       input: input,
       tools: tools
     });
