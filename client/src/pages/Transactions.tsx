@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { plaidService } from '../services/api';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { plaidService } from "../services/api";
 import {
   Box,
   Container,
@@ -29,8 +29,8 @@ import {
   Avatar,
   CircularProgress,
   Alert,
-  Tooltip
-} from '@mui/material';
+  Tooltip,
+} from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Search as SearchIcon,
@@ -39,9 +39,9 @@ import {
   Receipt as ReceiptIcon,
   FilterList as FilterIcon,
   CalendarToday as CalendarIcon,
-  Refresh as RefreshIcon
-} from '@mui/icons-material';
-import capyImage from '../assets/capy.png';
+  Refresh as RefreshIcon,
+} from "@mui/icons-material";
+import capyImage from "../assets/capy.png";
 
 interface PlaidTransaction {
   transaction_id: string;
@@ -82,16 +82,18 @@ const Transactions: React.FC = () => {
   const { user } = useAuth();
   const theme = useTheme();
   const [transactions, setTransactions] = useState<PlaidTransaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<PlaidTransaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    PlaidTransaction[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [paymentChannelFilter, setPaymentChannelFilter] = useState('all');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [appliedStartDate, setAppliedStartDate] = useState('');
-  const [appliedEndDate, setAppliedEndDate] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [paymentChannelFilter, setPaymentChannelFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [appliedStartDate, setAppliedStartDate] = useState("");
+  const [appliedEndDate, setAppliedEndDate] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Set default date range (last 30 days)
@@ -99,11 +101,11 @@ const Transactions: React.FC = () => {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
-    
+
     const formatDateForInput = (date: Date) => {
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split("T")[0];
     };
-    
+
     setStartDate(formatDateForInput(thirtyDaysAgo));
     setEndDate(formatDateForInput(today));
     setAppliedStartDate(formatDateForInput(thirtyDaysAgo));
@@ -113,82 +115,95 @@ const Transactions: React.FC = () => {
   // Fetch transactions from Plaid
   const fetchTransactions = async (start?: string, end?: string) => {
     if (!user?.id) return;
-    
+
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const startToUse = start || appliedStartDate;
       const endToUse = end || appliedEndDate;
-      
-      console.log('🔍 Fetching transactions with params:', {
+
+      console.log("🔍 Fetching transactions with params:", {
         userId: user.id.toString(),
-        startDate: startToUse || 'not set',
-        endDate: endToUse || 'not set',
+        startDate: startToUse || "not set",
+        endDate: endToUse || "not set",
         startDateType: typeof startToUse,
         endDateType: typeof endToUse,
-        startDateValid: startToUse ? !isNaN(new Date(startToUse).getTime()) : false,
-        endDateValid: endToUse ? !isNaN(new Date(endToUse).getTime()) : false
+        startDateValid: startToUse
+          ? !isNaN(new Date(startToUse).getTime())
+          : false,
+        endDateValid: endToUse ? !isNaN(new Date(endToUse).getTime()) : false,
       });
-      
+
       // Log the exact URL that will be called
       const params = new URLSearchParams();
-      if (startToUse) params.append('start_date', startToUse);
-      if (endToUse) params.append('end_date', endToUse);
+      if (startToUse) params.append("start_date", startToUse);
+      if (endToUse) params.append("end_date", endToUse);
       const url = `/api/plaid/transactions/${user.id.toString()}?${params.toString()}`;
-      console.log('🔗 API URL:', url);
-      
-      const response = await plaidService.getTransactions(user.id.toString(), startToUse, endToUse);
-      
-      console.log('✅ Transactions API response received:', {
+      console.log("🔗 API URL:", url);
+
+      const response = await plaidService.getTransactions(
+        user.id.toString(),
+        startToUse,
+        endToUse
+      );
+
+      console.log("✅ Transactions API response received:", {
         hasTransactions: !!response.transactions,
-        transactionCount: response.transactions ? response.transactions.length : 0,
-        sampleTransactions: response.transactions ? response.transactions.slice(0, 3).map(t => ({
-          id: t.transaction_id,
-          name: t.name,
-          amount: t.amount,
-          date: t.date,
-          category: t.category
-        })) : []
+        transactionCount: response.transactions
+          ? response.transactions.length
+          : 0,
+        sampleTransactions: response.transactions
+          ? response.transactions.slice(0, 3).map((t) => ({
+              id: t.transaction_id,
+              name: t.name,
+              amount: t.amount,
+              date: t.date,
+              category: t.category,
+            }))
+          : [],
       });
-      
+
       // Check for transactions outside the date range
       if (response.transactions && (startToUse || endToUse)) {
-        const outOfRangeTransactions = response.transactions.filter(t => {
+        const outOfRangeTransactions = response.transactions.filter((t) => {
           const txDate = new Date(t.date);
           const startDate = startToUse ? new Date(startToUse) : null;
           const endDate = endToUse ? new Date(endToUse) : null;
-          
+
           // Reset time to start of day for comparison
           txDate.setHours(0, 0, 0, 0);
           if (startDate) startDate.setHours(0, 0, 0, 0);
           if (endDate) endDate.setHours(0, 0, 0, 0);
-          
+
           const afterStart = !startDate || txDate >= startDate;
           const beforeEnd = !endDate || txDate <= endDate;
-          
+
           return !(afterStart && beforeEnd);
         });
-        
+
         if (outOfRangeTransactions.length > 0) {
-          console.warn('⚠️ Found transactions outside date range:', outOfRangeTransactions.map(t => ({
-            date: t.date,
-            name: t.name,
-            amount: t.amount
-          })));
+          console.warn(
+            "⚠️ Found transactions outside date range:",
+            outOfRangeTransactions.map((t) => ({
+              date: t.date,
+              name: t.name,
+              amount: t.amount,
+            }))
+          );
         }
       }
-      
+
       setTransactions(response.transactions || []);
       setFilteredTransactions(response.transactions || []);
     } catch (err: any) {
-      console.error('❌ Failed to fetch transactions:', err);
-      console.error('❌ Error details:', {
+      console.error("❌ Failed to fetch transactions:", err);
+      console.error("❌ Error details:", {
         message: err.message,
         response: err.response?.data,
-        status: err.response?.status
+        status: err.response?.status,
       });
-      setError(err.response?.data?.message || 'Failed to fetch transactions');
+      setError(err.response?.data?.message || "Failed to fetch transactions");
     } finally {
       setIsLoading(false);
     }
@@ -204,15 +219,15 @@ const Transactions: React.FC = () => {
   // Handle date range application
   const applyDateRange = () => {
     if (!startDate || !endDate) {
-      setError('Please select both start and end dates');
+      setError("Please select both start and end dates");
       return;
     }
-    
+
     if (new Date(startDate) > new Date(endDate)) {
-      setError('Start date cannot be after end date');
+      setError("Start date cannot be after end date");
       return;
     }
-    
+
     setAppliedStartDate(startDate);
     setAppliedEndDate(endDate);
     setError(null);
@@ -229,11 +244,11 @@ const Transactions: React.FC = () => {
     const today = new Date();
     const startDate = new Date();
     startDate.setDate(today.getDate() - days);
-    
+
     const formatDateForInput = (date: Date) => {
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split("T")[0];
     };
-    
+
     setStartDate(formatDateForInput(startDate));
     setEndDate(formatDateForInput(today));
     setAppliedStartDate(formatDateForInput(startDate));
@@ -244,9 +259,9 @@ const Transactions: React.FC = () => {
   const formatCategoryName = (category: string): string => {
     return category
       .toLowerCase()
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   // Filter transactions based on search term and filters
@@ -255,33 +270,44 @@ const Transactions: React.FC = () => {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(transaction =>
-        transaction.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.merchant_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.category?.some(cat => cat?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        transaction.personal_finance_category?.primary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.personal_finance_category?.detailed.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (transaction) =>
+          transaction.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          transaction.merchant_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          transaction.category?.some((cat) =>
+            cat?.toLowerCase().includes(searchTerm.toLowerCase())
+          ) ||
+          transaction.personal_finance_category?.primary
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          transaction.personal_finance_category?.detailed
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
     // Category filter
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(transaction => {
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((transaction) => {
         // Check if any of the transaction's categories match the selected formatted category
         const transactionCategories = [
           ...(transaction.category || []),
           transaction.personal_finance_category?.primary,
-          transaction.personal_finance_category?.detailed
+          transaction.personal_finance_category?.detailed,
         ].filter((cat): cat is string => Boolean(cat));
-        
-        return transactionCategories.some(cat => formatCategoryName(cat) === categoryFilter);
+
+        return transactionCategories.some(
+          (cat) => formatCategoryName(cat) === categoryFilter
+        );
       });
     }
 
     // Payment channel filter
-    if (paymentChannelFilter !== 'all') {
-      filtered = filtered.filter(transaction =>
-        transaction.payment_channel === paymentChannelFilter
+    if (paymentChannelFilter !== "all") {
+      filtered = filtered.filter(
+        (transaction) => transaction.payment_channel === paymentChannelFilter
       );
     }
 
@@ -290,46 +316,52 @@ const Transactions: React.FC = () => {
 
   const getUniqueCategories = () => {
     const categories = new Set<string>();
-    
-    transactions.forEach(transaction => {
+
+    transactions.forEach((transaction) => {
       // Add personal finance categories
       if (transaction.personal_finance_category) {
-        categories.add(formatCategoryName(transaction.personal_finance_category.primary));
-        categories.add(formatCategoryName(transaction.personal_finance_category.detailed));
+        categories.add(
+          formatCategoryName(transaction.personal_finance_category.primary)
+        );
+        categories.add(
+          formatCategoryName(transaction.personal_finance_category.detailed)
+        );
       }
       // Add regular categories
-      transaction.category?.forEach(cat => categories.add(formatCategoryName(cat)));
+      transaction.category?.forEach((cat) =>
+        categories.add(formatCategoryName(cat))
+      );
     });
     return Array.from(categories).sort();
   };
 
   const getUniquePaymentChannels = () => {
     const channels = new Set<string>();
-    transactions.forEach(transaction => {
+    transactions.forEach((transaction) => {
       channels.add(transaction.payment_channel);
     });
     return Array.from(channels).sort();
   };
 
   const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(Math.abs(amount));
   };
 
   const formatDate = (dateString: string) => {
     // Fix timezone issue: Parse the date string and convert to local timezone
-    const date = new Date(dateString + 'T00:00:00'); // Add time to ensure proper parsing
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    const date = new Date(dateString + "T00:00:00"); // Add time to ensure proper parsing
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const getTransactionIcon = (category: string[] | null) => {
-    if (category?.some(cat => cat.toLowerCase().includes('food'))) {
+    if (category?.some((cat) => cat.toLowerCase().includes("food"))) {
       return <ReceiptIcon />;
     }
     return <TrendingDownIcon />;
@@ -340,9 +372,9 @@ const Transactions: React.FC = () => {
   };
 
   const clearFilters = () => {
-    setSearchTerm('');
-    setCategoryFilter('all');
-    setPaymentChannelFilter('all');
+    setSearchTerm("");
+    setCategoryFilter("all");
+    setPaymentChannelFilter("all");
     // Don't clear date filters by default, just clear the search and category filters
   };
 
@@ -350,11 +382,11 @@ const Transactions: React.FC = () => {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
-    
+
     const formatDateForInput = (date: Date) => {
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split("T")[0];
     };
-    
+
     setStartDate(formatDateForInput(thirtyDaysAgo));
     setEndDate(formatDateForInput(today));
     setAppliedStartDate(formatDateForInput(thirtyDaysAgo));
@@ -364,33 +396,33 @@ const Transactions: React.FC = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: "100vh",
         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
         py: 4,
-        position: 'relative'
+        position: "relative",
       }}
     >
       <Container maxWidth="lg">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
             <Button
               variant="outlined"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate("/dashboard")}
               sx={{
                 borderRadius: 2,
                 borderColor: alpha(theme.palette.common.white, 0.3),
                 color: theme.palette.common.white,
-                '&:hover': {
+                "&:hover": {
                   borderColor: theme.palette.common.white,
-                  backgroundColor: alpha(theme.palette.common.white, 0.1)
-                }
+                  backgroundColor: alpha(theme.palette.common.white, 0.1),
+                },
               }}
             >
               Back to Dashboard
             </Button>
-            
+
             <Tooltip title="Refresh transactions">
               <Button
                 variant="outlined"
@@ -401,18 +433,18 @@ const Transactions: React.FC = () => {
                   borderRadius: 2,
                   borderColor: alpha(theme.palette.common.white, 0.3),
                   color: theme.palette.common.white,
-                  '&:hover': {
+                  "&:hover": {
                     borderColor: theme.palette.common.white,
-                    backgroundColor: alpha(theme.palette.common.white, 0.1)
-                  }
+                    backgroundColor: alpha(theme.palette.common.white, 0.1),
+                  },
                 }}
               >
-                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                {isRefreshing ? "Refreshing..." : "Refresh"}
               </Button>
             </Tooltip>
           </Box>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box
               component="img"
               src={capyImage}
@@ -420,20 +452,40 @@ const Transactions: React.FC = () => {
               sx={{
                 width: 60,
                 height: 60,
-                objectFit: 'contain',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`
+                objectFit: "contain",
+                boxShadow: `0 4px 12px ${alpha(
+                  theme.palette.primary.main,
+                  0.4
+                )}`,
               }}
             />
             <Box sx={{ flex: 1 }}>
-              <Typography variant="h4" component="h1" fontWeight={700} color="white">
+              <Typography
+                variant="h4"
+                component="h1"
+                fontWeight={700}
+                color="white"
+              >
                 Transactions
               </Typography>
-              <Typography variant="body1" color={alpha(theme.palette.common.white, 0.8)}>
+              <Typography
+                variant="body1"
+                color={alpha(theme.palette.common.white, 0.8)}
+              >
                 View and manage your financial transactions
               </Typography>
               {appliedStartDate && appliedEndDate && (
-                <Typography variant="body2" color={alpha(theme.palette.common.white, 0.7)} sx={{ mt: 0.5 }}>
-                  📅 Showing transactions from {new Date(appliedStartDate + 'T00:00:00').toLocaleDateString()} to {new Date(appliedEndDate + 'T00:00:00').toLocaleDateString()}
+                <Typography
+                  variant="body2"
+                  color={alpha(theme.palette.common.white, 0.7)}
+                  sx={{ mt: 0.5 }}
+                >
+                  📅 Showing transactions from{" "}
+                  {new Date(
+                    appliedStartDate + "T00:00:00"
+                  ).toLocaleDateString()}{" "}
+                  to{" "}
+                  {new Date(appliedEndDate + "T00:00:00").toLocaleDateString()}
                 </Typography>
               )}
             </Box>
@@ -447,14 +499,14 @@ const Transactions: React.FC = () => {
             mb: 4,
             borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
+            backdropFilter: "blur(20px)",
+            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
           }}
         >
           <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {/* Search Row */}
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
                 <TextField
                   placeholder="Search transactions..."
                   value={searchTerm}
@@ -467,24 +519,28 @@ const Transactions: React.FC = () => {
                     ),
                   }}
                   sx={{
-                    flex: '1 1 300px',
-                    '& .MuiOutlinedInput-root': {
+                    flex: "1 1 300px",
+                    "& .MuiOutlinedInput-root": {
                       borderRadius: 2,
-                    }
+                    },
                   }}
                 />
               </Box>
 
               {/* Quick Date Range Presets */}
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ display: "flex", alignItems: "center", mr: 1 }}
+                >
                   Quick ranges:
                 </Typography>
                 <Button
                   size="small"
                   variant="outlined"
                   onClick={() => setQuickDateRange(7)}
-                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
+                  sx={{ borderRadius: 2, fontSize: "0.75rem" }}
                 >
                   Last 7 days
                 </Button>
@@ -492,7 +548,7 @@ const Transactions: React.FC = () => {
                   size="small"
                   variant="outlined"
                   onClick={() => setQuickDateRange(30)}
-                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
+                  sx={{ borderRadius: 2, fontSize: "0.75rem" }}
                 >
                   Last 30 days
                 </Button>
@@ -500,15 +556,22 @@ const Transactions: React.FC = () => {
                   size="small"
                   variant="outlined"
                   onClick={() => setQuickDateRange(90)}
-                  sx={{ borderRadius: 2, fontSize: '0.75rem' }}
+                  sx={{ borderRadius: 2, fontSize: "0.75rem" }}
                 >
                   Last 90 days
                 </Button>
               </Box>
 
               {/* Filters Row */}
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                <FormControl sx={{ flex: '1 1 200px' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flexWrap: "wrap",
+                  alignItems: "flex-end",
+                }}
+              >
+                <FormControl sx={{ flex: "1 1 200px" }}>
                   <InputLabel>Category</InputLabel>
                   <Select
                     value={categoryFilter}
@@ -525,7 +588,7 @@ const Transactions: React.FC = () => {
                   </Select>
                 </FormControl>
 
-                <FormControl sx={{ flex: '1 1 200px' }}>
+                <FormControl sx={{ flex: "1 1 200px" }}>
                   <InputLabel>Payment Channel</InputLabel>
                   <Select
                     value={paymentChannelFilter}
@@ -555,7 +618,10 @@ const Transactions: React.FC = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ flex: '1 1 150px', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  sx={{
+                    flex: "1 1 150px",
+                    "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                  }}
                 />
 
                 <TextField
@@ -571,7 +637,10 @@ const Transactions: React.FC = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ flex: '1 1 150px', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  sx={{
+                    flex: "1 1 150px",
+                    "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                  }}
                 />
 
                 <Button
@@ -583,9 +652,9 @@ const Transactions: React.FC = () => {
                     height: 56,
                     px: 3,
                     backgroundColor: theme.palette.primary.main,
-                    '&:hover': {
+                    "&:hover": {
                       backgroundColor: theme.palette.primary.dark,
-                    }
+                    },
                   }}
                 >
                   Apply Date Range
@@ -600,10 +669,10 @@ const Transactions: React.FC = () => {
                     px: 3,
                     borderColor: alpha(theme.palette.primary.main, 0.3),
                     color: theme.palette.primary.main,
-                    '&:hover': {
+                    "&:hover": {
                       borderColor: theme.palette.primary.main,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1)
-                    }
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    },
                   }}
                 >
                   Clear Filters
@@ -618,10 +687,10 @@ const Transactions: React.FC = () => {
                     px: 3,
                     borderColor: alpha(theme.palette.secondary.main, 0.3),
                     color: theme.palette.secondary.main,
-                    '&:hover': {
+                    "&:hover": {
                       borderColor: theme.palette.secondary.main,
-                      backgroundColor: alpha(theme.palette.secondary.main, 0.1)
-                    }
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                    },
                   }}
                 >
                   Reset Dates
@@ -637,8 +706,8 @@ const Transactions: React.FC = () => {
           sx={{
             borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
+            backdropFilter: "blur(20px)",
+            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
           }}
         >
           <CardContent sx={{ p: 0 }}>
@@ -649,15 +718,24 @@ const Transactions: React.FC = () => {
             )}
 
             {isLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
                 <CircularProgress />
               </Box>
             ) : (
-              <TableContainer component={Paper} sx={{ background: 'transparent', boxShadow: 'none' }}>
+              <TableContainer
+                component={Paper}
+                sx={{ background: "transparent", boxShadow: "none" }}
+              >
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.1) }}>
-                      <TableCell sx={{ fontWeight: 600 }}>Transaction</TableCell>
+                    <TableRow
+                      sx={{
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      }}
+                    >
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        Transaction
+                      </TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
@@ -669,9 +747,11 @@ const Transactions: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                           <Typography variant="body1" color="text.secondary">
-                            {searchTerm || categoryFilter !== 'all' || paymentChannelFilter !== 'all'
-                              ? 'No transactions match your filters'
-                              : 'No transactions found'}
+                            {searchTerm ||
+                            categoryFilter !== "all" ||
+                            paymentChannelFilter !== "all"
+                              ? "No transactions match your filters"
+                              : "No transactions found"}
                           </Typography>
                         </TableCell>
                       </TableRow>
@@ -679,14 +759,23 @@ const Transactions: React.FC = () => {
                       filteredTransactions.map((transaction) => (
                         <TableRow key={transaction.transaction_id} hover>
                           <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
                               {transaction.logo_url ? (
                                 <Avatar
                                   src={transaction.logo_url}
                                   sx={{
                                     width: 40,
                                     height: 40,
-                                    backgroundColor: alpha(getTransactionColor(transaction.amount), 0.1)
+                                    backgroundColor: alpha(
+                                      getTransactionColor(transaction.amount),
+                                      0.1
+                                    ),
                                   }}
                                 />
                               ) : (
@@ -694,8 +783,13 @@ const Transactions: React.FC = () => {
                                   sx={{
                                     width: 40,
                                     height: 40,
-                                    backgroundColor: alpha(getTransactionColor(transaction.amount), 0.1),
-                                    color: getTransactionColor(transaction.amount)
+                                    backgroundColor: alpha(
+                                      getTransactionColor(transaction.amount),
+                                      0.1
+                                    ),
+                                    color: getTransactionColor(
+                                      transaction.amount
+                                    ),
                                   }}
                                 >
                                   {getTransactionIcon(transaction.category)}
@@ -703,54 +797,89 @@ const Transactions: React.FC = () => {
                               )}
                               <Box>
                                 <Typography variant="body2" fontWeight={500}>
-                                  {transaction.merchant_name || transaction.name}
+                                  {transaction.merchant_name ||
+                                    transaction.name}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {transaction.payment_channel} • {transaction.transaction_type}
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {transaction.payment_channel} •{" "}
+                                  {transaction.transaction_type}
                                 </Typography>
                                 {transaction.location?.city && (
-                                  <Typography variant="caption" color="text.secondary" display="block">
-                                    📍 {transaction.location.city}{transaction.location.region ? `, ${transaction.location.region}` : ''}
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    display="block"
+                                  >
+                                    📍 {transaction.location.city}
+                                    {transaction.location.region
+                                      ? `, ${transaction.location.region}`
+                                      : ""}
                                   </Typography>
                                 )}
                               </Box>
                             </Box>
                           </TableCell>
                           <TableCell>
-                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: 0.5,
+                                flexWrap: "wrap",
+                              }}
+                            >
                               {transaction.personal_finance_category ? (
                                 <Chip
-                                  label={formatCategoryName(transaction.personal_finance_category.primary)}
+                                  label={formatCategoryName(
+                                    transaction.personal_finance_category
+                                      .primary
+                                  )}
                                   size="small"
-                                  sx={{ fontSize: '0.7rem', height: 20 }}
+                                  sx={{ fontSize: "0.7rem", height: 20 }}
                                 />
-                              ) : transaction.category?.slice(0, 2).map((cat, index) => (
-                                <Chip
-                                  key={index}
-                                  label={formatCategoryName(cat)}
-                                  size="small"
-                                  sx={{ fontSize: '0.7rem', height: 20 }}
-                                />
-                              ))}
-                              {transaction.category?.length && transaction.category.length > 2 && (
-                                <Chip
-                                  label={`+${transaction.category.length - 2}`}
-                                  size="small"
-                                  variant="outlined"
-                                  sx={{ fontSize: '0.7rem', height: 20 }}
-                                />
+                              ) : (
+                                transaction.category
+                                  ?.slice(0, 2)
+                                  .map((cat, index) => (
+                                    <Chip
+                                      key={index}
+                                      label={formatCategoryName(cat)}
+                                      size="small"
+                                      sx={{ fontSize: "0.7rem", height: 20 }}
+                                    />
+                                  ))
                               )}
+                              {transaction.category?.length &&
+                                transaction.category.length > 2 && (
+                                  <Chip
+                                    label={`+${
+                                      transaction.category.length - 2
+                                    }`}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ fontSize: "0.7rem", height: 20 }}
+                                  />
+                                )}
                             </Box>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
                               {formatDate(transaction.date)}
                             </Typography>
-                            {transaction.authorized_date && transaction.authorized_date !== transaction.date && (
-                              <Typography variant="caption" color="text.secondary" display="block">
-                                Auth: {formatDate(transaction.authorized_date)}
-                              </Typography>
-                            )}
+                            {transaction.authorized_date &&
+                              transaction.authorized_date !==
+                                transaction.date && (
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  display="block"
+                                >
+                                  Auth:{" "}
+                                  {formatDate(transaction.authorized_date)}
+                                </Typography>
+                              )}
                           </TableCell>
                           <TableCell>
                             <Typography
@@ -760,16 +889,23 @@ const Transactions: React.FC = () => {
                             >
                               {formatAmount(transaction.amount)}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {transaction.iso_currency_code}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={transaction.pending ? 'Pending' : 'Completed'}
+                              label={
+                                transaction.pending ? "Pending" : "Completed"
+                              }
                               size="small"
-                              color={transaction.pending ? 'warning' : 'success'}
-                              sx={{ fontSize: '0.7rem', height: 20 }}
+                              color={
+                                transaction.pending ? "warning" : "success"
+                              }
+                              sx={{ fontSize: "0.7rem", height: 20 }}
                             />
                           </TableCell>
                         </TableRow>
@@ -786,4 +922,4 @@ const Transactions: React.FC = () => {
   );
 };
 
-export default Transactions; 
+export default Transactions;

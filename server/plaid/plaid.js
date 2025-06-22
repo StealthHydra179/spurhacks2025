@@ -267,23 +267,25 @@ async function getTransactions(userId, startDate, endDate) {
       // If transactionsGet fails, try transactionsSync (for real-time sync)
       try {
         transactionsResponse = await client.transactionsSync(request);
-        console.log("transactionsSync successful");
+        console.log("✅ transactionsSync successful");
       } catch (syncError) {
-        console.log("transactionsSync also failed");
+        console.log("❌ transactionsSync also failed");
         throw syncError;
       }
     }
 
     logger.info(
       `${TAG} Plaid transactions response received for user ${userId}`
-    ); // Debug logging for Plaid response
-    // console.log('Plaid API Response:', transactionsResponse);
-    // console.log('Plaid API Response data:', transactionsResponse.data);
-    // console.log('Plaid API Response data keys:', Object.keys(transactionsResponse.data));
-    // console.log('Plaid API transactions:', transactionsResponse.data.transactions);
-    // console.log('Plaid API transactions type:', typeof transactionsResponse.data.transactions);
-    // console.log('Plaid API transactions length:', transactionsResponse.data.transactions ? transactionsResponse.data.transactions.length : 'undefined');
-    // console.log('Is Plaid API transactions an array?', Array.isArray(transactionsResponse.data.transactions));
+    );
+
+    // Debug logging for Plaid response
+    // console.log('🔍 Plaid API Response:', transactionsResponse);
+    // console.log('🔍 Plaid API Response data:', transactionsResponse.data);
+    // console.log('🔍 Plaid API Response data keys:', Object.keys(transactionsResponse.data));
+    // console.log('🔍 Plaid API transactions:', transactionsResponse.data.transactions);
+    // console.log('🔍 Plaid API transactions type:', typeof transactionsResponse.data.transactions);
+    // console.log('🔍 Plaid API transactions length:', transactionsResponse.data.transactions ? transactionsResponse.data.transactions.length : 'undefined');
+    // console.log('🔍 Is Plaid API transactions an array?', Array.isArray(transactionsResponse.data.transactions));
 
     logger.info(
       `${TAG} Response structure:`,
@@ -667,7 +669,7 @@ async function testPlaidConfiguration() {
     logger.info(`${TAG} Testing API connectivity with link token creation...`);
     const response = await client.linkTokenCreate(testRequest);
 
-    logger.info(`${TAG} Plaid configuration test successful!`);
+    logger.info(`${TAG} ✅ Plaid configuration test successful!`);
     logger.info(
       `${TAG} Link token created: ${response.data.link_token.substring(
         0,

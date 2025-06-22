@@ -1,12 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import {
-  plaidService,
-  savingsGoalsService,
-  botConversationService,
-  budgetService,
-  authService,
-} from "../services/api";
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { plaidService, savingsGoalsService, botConversationService, budgetService, authService } from '../services/api';
 import {
   Box,
   Container,
@@ -37,10 +31,10 @@ import {
   Select,
   Grid,
   Tabs,
-  Tab,
-} from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs, { Dayjs } from "dayjs";
+  Tab
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs, { Dayjs } from 'dayjs';
 import {
   Person as PersonIcon,
   Logout as LogoutIcon,
@@ -55,23 +49,17 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
-  RadioButtonUnchecked as RadioButtonUncheckedIcon,
-} from "@mui/icons-material";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-} from "recharts";
-import capySVG from "../assets/capyy.svg";
-import communistCapy from "../assets/communist-capy.svg";
-import babyCapy from "../assets/baby-capy.svg";
-import conservativeCapy from "../assets/conservative-capy.svg";
-import riskyCapy from "../assets/risky-capy.svg";
-import neutralCapy from "../assets/neutral-capy.svg";
-import { useNavigate } from "react-router-dom";
-import type { Budget } from "../types";
+  RadioButtonUnchecked as RadioButtonUncheckedIcon
+} from '@mui/icons-material';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import capySVG from '../assets/capyy.svg';
+import communistCapy from '../assets/communist-capy.svg';
+import babyCapy from '../assets/baby-capy.svg';
+import conservativeCapy from '../assets/conservative-capy.svg';
+import riskyCapy from '../assets/risky-capy.svg';
+import neutralCapy from '../assets/neutral-capy.svg';
+import { useNavigate } from 'react-router-dom';
+import type { Budget } from '../types';
 
 interface PlaidTransaction {
   transaction_id: string;
@@ -126,7 +114,7 @@ interface FinancialGoal {
   current_amount: number;
   deadline: string | null;
   category: string | null;
-  priority: "low" | "medium" | "high";
+  priority: 'low' | 'medium' | 'high';
   icon: string | null;
   color: string | null;
   created_at: string;
@@ -138,13 +126,13 @@ const getCapyImage = (personality: number) => {
   switch (personality) {
     case -1: // Conservative
       return conservativeCapy;
-    case 0: // Neutral
+    case 0:  // Neutral
       return neutralCapy;
-    case 1: // Risky
+    case 1:  // Risky
       return riskyCapy;
-    case 2: // Communist
+    case 2:  // Communist
       return communistCapy;
-    case 3: // Baby
+    case 3:  // Baby
       return babyCapy;
     default:
       return capySVG;
@@ -155,74 +143,64 @@ const Dashboard: React.FC = () => {
   const { user, logout, personality } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-
+  const [searchQuery, setSearchQuery] = useState('');
+  
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary>({
     income: 0,
     expenses: 0,
     netChange: 0,
     transactionCount: 0,
-    month: "",
-    year: 0,
-  });
-  const [recentTransactions, setRecentTransactions] = useState<
-    PlaidTransaction[]
-  >([]);
-  const [allMonthlyTransactions, setAllMonthlyTransactions] = useState<
-    PlaidTransaction[]
-  >([]);
+    month: '',
+    year: 0
+  });  const [recentTransactions, setRecentTransactions] = useState<PlaidTransaction[]>([]);
+  const [allMonthlyTransactions, setAllMonthlyTransactions] = useState<PlaidTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAskingCapy, setIsAskingCapy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [profileMenuAnchor, setProfileMenuAnchor] =
-    useState<null | HTMLElement>(null);
-  const [categoryData, setCategoryData] = useState<
-    Array<{ name: string; value: number; color: string }>
-  >([]);
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
+  const [categoryData, setCategoryData] = useState<Array<{ name: string; value: number; color: string }>>([]);
   const [isPlaidLinked, setIsPlaidLinked] = useState<boolean | null>(null);
   const [goals, setGoals] = useState<FinancialGoal[]>([]);
   const [isGoalsLoading, setIsGoalsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "goals" | "accounts" | "budget"
-  >("overview");
+  const [activeTab, setActiveTab] = useState<'overview' | 'goals' | 'accounts' | 'budget'>('overview');
   const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
   const [isEditGoalDialogOpen, setIsEditGoalDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<FinancialGoal | null>(null);
   const [editingGoalForm, setEditingGoalForm] = useState({
-    title: "",
-    description: "",
+    title: '',
+    description: '',
     amount: 0,
     current_amount: 0,
     deadline: null as Dayjs | null,
-    category: "savings" as string,
-    priority: "medium" as "low" | "medium" | "high",
-    icon: "💰",
-    color: "#4CAF50",
+    category: 'savings' as string,
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    icon: '💰',
+    color: '#4CAF50'
   });
   const [newGoal, setNewGoal] = useState({
-    title: "",
-    description: "",
+    title: '',
+    description: '',
     amount: 0,
     current_amount: 0,
     deadline: null as Dayjs | null,
-    category: "savings" as string,
-    priority: "medium" as "low" | "medium" | "high",
-    icon: "💰",
-    color: "#4CAF50",
+    category: 'savings' as string,
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    icon: '💰',
+    color: '#4CAF50'
   });
   const [balances, setBalances] = useState<any>(null);
   const [isBalancesLoading, setIsBalancesLoading] = useState(false);
   const [budgetCategories, setBudgetCategories] = useState([
-    { id: 1, name: "Housing & Utilities", amount: 0, spent: 0, icon: "🏠" },
-    { id: 2, name: "Food & Dining", amount: 0, spent: 0, icon: "🍽️" },
-    { id: 3, name: "Transportation", amount: 0, spent: 0, icon: "🚗" },
-    { id: 4, name: "Health & Insurance", amount: 0, spent: 0, icon: "🏥" },
-    { id: 5, name: "Personal & Lifestyle", amount: 0, spent: 0, icon: "👕" },
-    { id: 6, name: "Entertainment & Leisure", amount: 0, spent: 0, icon: "🎬" },
-    { id: 7, name: "Financial & Savings", amount: 0, spent: 0, icon: "💰" },
-    { id: 8, name: "Gifts & Donations", amount: 0, spent: 0, icon: "🎁" },
+    { id: 1, name: 'Housing & Utilities', amount: 0, spent: 0, icon: '🏠' },
+    { id: 2, name: 'Food & Dining', amount: 0, spent: 0, icon: '🍽️' },
+    { id: 3, name: 'Transportation', amount: 0, spent: 0, icon: '🚗' },
+    { id: 4, name: 'Health & Insurance', amount: 0, spent: 0, icon: '🏥' },
+    { id: 5, name: 'Personal & Lifestyle', amount: 0, spent: 0, icon: '👕' },
+    { id: 6, name: 'Entertainment & Leisure', amount: 0, spent: 0, icon: '🎬' },
+    { id: 7, name: 'Financial & Savings', amount: 0, spent: 0, icon: '💰' },
+    { id: 8, name: 'Gifts & Donations', amount: 0, spent: 0, icon: '🎁' },
   ]);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
@@ -233,28 +211,26 @@ const Dashboard: React.FC = () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
-
+    
     const startDate = new Date(year, month, 1);
     const endDate = new Date(year, month + 1, 0); // Last day of current month
-
+    
     return {
-      startDate: startDate.toISOString().split("T")[0],
-      endDate: endDate.toISOString().split("T")[0],
-      monthName: startDate.toLocaleDateString("en-US", { month: "long" }),
-      year: year,
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      monthName: startDate.toLocaleDateString('en-US', { month: 'long' }),
+      year: year
     };
   };
 
   // Calculate monthly summary from transactions
-  const calculateMonthlySummary = (
-    transactions: PlaidTransaction[]
-  ): MonthlySummary => {
+  const calculateMonthlySummary = (transactions: PlaidTransaction[]): MonthlySummary => {
     const { monthName, year } = getCurrentMonthRange();
-
+    
     let income = 0;
     let expenses = 0;
-
-    transactions.forEach((transaction) => {
+    
+    transactions.forEach(transaction => {
       if (transaction.amount < 0) {
         // Negative amounts are deposits (money coming into account)
         income += Math.abs(transaction.amount);
@@ -263,14 +239,14 @@ const Dashboard: React.FC = () => {
         expenses += transaction.amount;
       }
     });
-
+    
     return {
       income,
       expenses,
       netChange: income - expenses,
       transactionCount: transactions.length,
       month: monthName,
-      year,
+      year
     };
   };
 
@@ -278,109 +254,91 @@ const Dashboard: React.FC = () => {
   const processCategoryData = (transactions: PlaidTransaction[]) => {
     const categoryMap = new Map<string, number>();
     const colors = [
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#96CEB4",
-      "#FFEAA7",
-      "#DDA0DD",
-      "#98D8C8",
-      "#F7DC6F",
-      "#BB8FCE",
-      "#85C1E9",
-      "#F8C471",
-      "#82E0AA",
-      "#F1948A",
-      "#85C1E9",
-      "#D7BDE2",
+      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+      '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
     ];
 
     // Function to format category names for better display
     const formatCategoryName = (category: string): string => {
       return category
         .toLowerCase()
-        .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
     };
-
+    
     // Only process expense transactions (positive amounts)
-    transactions.forEach((transaction) => {
+    transactions.forEach(transaction => {
       if (transaction.amount > 0) {
-        const category =
-          transaction.personal_finance_category?.primary ||
-          transaction.category?.[0] ||
-          "Uncategorized";
+        const category = transaction.personal_finance_category?.primary || 
+                        transaction.category?.[0] || 
+                        'Uncategorized';
         const formattedCategory = formatCategoryName(category);
-        categoryMap.set(
-          formattedCategory,
-          (categoryMap.get(formattedCategory) || 0) + transaction.amount
-        );
+        categoryMap.set(formattedCategory, (categoryMap.get(formattedCategory) || 0) + transaction.amount);
       }
     });
-
+    
     const categoryData = Array.from(categoryMap.entries())
       .map(([name, value], index) => ({
         name,
         value,
-        color: colors[index % colors.length],
+        color: colors[index % colors.length]
       }))
       .sort((a, b) => b.value - a.value); // Sort by value descending
-
+    
     setCategoryData(categoryData);
   };
 
   // Fetch transactions for current month
   const fetchMonthlyData = async () => {
     if (!user?.id) return;
-
+    
     try {
       setIsLoading(true);
       setError(null);
-
+      
       const { startDate, endDate } = getCurrentMonthRange();
-      console.log("Fetching monthly transactions:", {
+      
+      console.log('🔍 Fetching monthly transactions:', {
         userId: user.id,
         startDate,
-        endDate,
-      });
-
-      const response = await plaidService.getTransactions(
-        user.id.toString(),
-        startDate,
         endDate
-      );
+      });
+      
+      const response = await plaidService.getTransactions(user.id.toString(), startDate, endDate);
       const transactions = response.transactions || [];
-
-      console.log("Monthly transactions received:", {
+      
+      console.log('✅ Monthly transactions received:', {
         count: transactions.length,
-        sample: transactions.slice(0, 3).map((t) => ({
+        sample: transactions.slice(0, 3).map(t => ({
           name: t.name,
           amount: t.amount,
-          date: t.date,
-        })),
+          date: t.date
+        }))
       });
-
+      
       const summary = calculateMonthlySummary(transactions);
       setMonthlySummary(summary);
-
+      
       // Store all transactions for the month
       setAllMonthlyTransactions(transactions);
-
+      
       // Get recent transactions (last 5)
       const recent = transactions
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 5);
       setRecentTransactions(recent);
-
+      
       // Process category data for pie chart
       processCategoryData(transactions);
-
+      
       // Update budget categories with actual spending
       updateBudgetFromTransactions(transactions);
+      
     } catch (err: any) {
-      console.error("Failed to fetch monthly data:", err);
-      setError(err.response?.data?.message || "Failed to fetch monthly data");
+      console.error('❌ Failed to fetch monthly data:', err);
+      setError(err.response?.data?.message || 'Failed to fetch monthly data');
     } finally {
       setIsLoading(false);
     }
@@ -430,8 +388,8 @@ const Dashboard: React.FC = () => {
       const goalsData = await savingsGoalsService.getSavingsGoals();
       setGoals(goalsData);
     } catch (err: any) {
-      console.error("Failed to fetch savings goals:", err);
-      setError(err.response?.data?.message || "Failed to fetch savings goals");
+      console.error('Failed to fetch savings goals:', err);
+      setError(err.response?.data?.message || 'Failed to fetch savings goals');
     } finally {
       setIsGoalsLoading(false);
     }
@@ -468,109 +426,109 @@ const Dashboard: React.FC = () => {
   // Fetch budgets from API
   const fetchBudgets = async () => {
     if (!user?.id) return;
-
+    
     try {
       setIsBudgetLoading(true);
       const budgets = await budgetService.getBudgets();
-
+      
       // Get the most recent budget (first in the list since they're ordered by created_at DESC)
       if (budgets.length > 0) {
         const latestBudget = budgets[0];
         setCurrentBudget(latestBudget);
-
+        
         // Update budget categories with amounts from API
-        const updatedCategories = budgetCategories.map((cat) => {
+        const updatedCategories = budgetCategories.map(cat => {
           let amount = 0;
           switch (cat.name) {
-            case "Housing & Utilities":
+            case 'Housing & Utilities':
               amount = latestBudget.housing || 0;
               break;
-            case "Food & Dining":
+            case 'Food & Dining':
               amount = latestBudget.food || 0;
               break;
-            case "Transportation":
+            case 'Transportation':
               amount = latestBudget.transportation || 0;
               break;
-            case "Health & Insurance":
+            case 'Health & Insurance':
               amount = latestBudget.health || 0;
               break;
-            case "Personal & Lifestyle":
+            case 'Personal & Lifestyle':
               amount = latestBudget.personal || 0;
               break;
-            case "Entertainment & Leisure":
+            case 'Entertainment & Leisure':
               amount = latestBudget.entertainment || 0;
               break;
-            case "Financial & Savings":
+            case 'Financial & Savings':
               amount = latestBudget.financial || 0;
               break;
-            case "Gifts & Donations":
+            case 'Gifts & Donations':
               amount = latestBudget.gifts || 0;
               break;
           }
           return { ...cat, amount };
         });
-
+        
         setBudgetCategories(updatedCategories);
       } else {
         // No budget exists, create a default budget
-        console.log("No budget found, creating default budget...");
+        console.log('No budget found, creating default budget...');
         const defaultBudgetData = {
           overall: 5000, // Default $5000 monthly budget
           housing: 1500, // 30% of budget
-          food: 800, // 16% of budget
+          food: 800,     // 16% of budget
           transportation: 400, // 8% of budget
-          health: 300, // 6% of budget
+          health: 300,   // 6% of budget
           personal: 400, // 8% of budget
           entertainment: 300, // 6% of budget
           financial: 800, // 16% of budget
-          gifts: 200, // 4% of budget
+          gifts: 200,    // 4% of budget
         };
-
+        
         try {
           const newBudget = await budgetService.createBudget(defaultBudgetData);
           setCurrentBudget(newBudget);
-
+          
           // Update budget categories with default amounts
-          const updatedCategories = budgetCategories.map((cat) => {
+          const updatedCategories = budgetCategories.map(cat => {
             let amount = 0;
             switch (cat.name) {
-              case "Housing & Utilities":
+              case 'Housing & Utilities':
                 amount = newBudget.housing || 0;
                 break;
-              case "Food & Dining":
+              case 'Food & Dining':
                 amount = newBudget.food || 0;
                 break;
-              case "Transportation":
+              case 'Transportation':
                 amount = newBudget.transportation || 0;
                 break;
-              case "Health & Insurance":
+              case 'Health & Insurance':
                 amount = newBudget.health || 0;
                 break;
-              case "Personal & Lifestyle":
+              case 'Personal & Lifestyle':
                 amount = newBudget.personal || 0;
                 break;
-              case "Entertainment & Leisure":
+              case 'Entertainment & Leisure':
                 amount = newBudget.entertainment || 0;
                 break;
-              case "Financial & Savings":
+              case 'Financial & Savings':
                 amount = newBudget.financial || 0;
                 break;
-              case "Gifts & Donations":
+              case 'Gifts & Donations':
                 amount = newBudget.gifts || 0;
                 break;
             }
             return { ...cat, amount };
           });
-
+          
           setBudgetCategories(updatedCategories);
-          console.log("Default budget created successfully");
+          console.log('Default budget created successfully');
         } catch (createError) {
-          console.error("Error creating default budget:", createError);
+          console.error('Error creating default budget:', createError);
           // If creating fails, keep the current state (all zeros)
         }
       }
     } catch (error) {
-      console.error("Error fetching budgets:", error);
+      console.error('Error fetching budgets:', error);
     } finally {
       setIsBudgetLoading(false);
     }
@@ -579,54 +537,35 @@ const Dashboard: React.FC = () => {
   // Save budget to API
   const saveBudget = async () => {
     if (!user?.id) return;
-
+    
     try {
       setIsBudgetLoading(true);
-
+      
       const budgetData = {
         overall: calculateTotalBudget(),
-        housing:
-          budgetCategories.find((cat) => cat.name === "Housing & Utilities")
-            ?.amount || 0,
-        food:
-          budgetCategories.find((cat) => cat.name === "Food & Dining")
-            ?.amount || 0,
-        transportation:
-          budgetCategories.find((cat) => cat.name === "Transportation")
-            ?.amount || 0,
-        health:
-          budgetCategories.find((cat) => cat.name === "Health & Insurance")
-            ?.amount || 0,
-        personal:
-          budgetCategories.find((cat) => cat.name === "Personal & Lifestyle")
-            ?.amount || 0,
-        entertainment:
-          budgetCategories.find((cat) => cat.name === "Entertainment & Leisure")
-            ?.amount || 0,
-        financial:
-          budgetCategories.find((cat) => cat.name === "Financial & Savings")
-            ?.amount || 0,
-        gifts:
-          budgetCategories.find((cat) => cat.name === "Gifts & Donations")
-            ?.amount || 0,
+        housing: budgetCategories.find(cat => cat.name === 'Housing & Utilities')?.amount || 0,
+        food: budgetCategories.find(cat => cat.name === 'Food & Dining')?.amount || 0,
+        transportation: budgetCategories.find(cat => cat.name === 'Transportation')?.amount || 0,
+        health: budgetCategories.find(cat => cat.name === 'Health & Insurance')?.amount || 0,
+        personal: budgetCategories.find(cat => cat.name === 'Personal & Lifestyle')?.amount || 0,
+        entertainment: budgetCategories.find(cat => cat.name === 'Entertainment & Leisure')?.amount || 0,
+        financial: budgetCategories.find(cat => cat.name === 'Financial & Savings')?.amount || 0,
+        gifts: budgetCategories.find(cat => cat.name === 'Gifts & Donations')?.amount || 0,
       };
-
+      
       if (currentBudget) {
         // Update existing budget
-        const updatedBudget = await budgetService.updateBudget(
-          currentBudget.id.toString(),
-          budgetData
-        );
+        const updatedBudget = await budgetService.updateBudget(currentBudget.id.toString(), budgetData);
         setCurrentBudget(updatedBudget);
       } else {
         // Create new budget
         const newBudget = await budgetService.createBudget(budgetData);
         setCurrentBudget(newBudget);
       }
-
+      
       setIsEditingBudget(false);
     } catch (error) {
-      console.error("Error saving budget:", error);
+      console.error('Error saving budget:', error);
     } finally {
       setIsBudgetLoading(false);
     }
@@ -643,7 +582,7 @@ const Dashboard: React.FC = () => {
 
   const handleSettingsClick = () => {
     handleProfileMenuClose();
-    navigate("/settings");
+    navigate('/settings');
   };
 
   const handleLogoutClick = async () => {
@@ -651,29 +590,24 @@ const Dashboard: React.FC = () => {
     await logout();
   };
 
-  const handleSearchSubmit = async (
-    e: React.FormEvent | React.KeyboardEvent
-  ) => {
+  const handleSearchSubmit = async (e: React.FormEvent | React.KeyboardEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
       // If no input, navigate to chat page
-      navigate("/chat");
+      navigate('/chat');
       return;
     }
 
     setIsAskingCapy(true);
     try {
       // Call the ask-capy API to create a new conversation
-      const data = await botConversationService.askCapy(
-        user?.id || 1,
-        searchQuery
-      );
+      const data = await botConversationService.askCapy(user?.id || 1, searchQuery);
       // Navigate to the new conversation
       navigate(`/chat/${data.conversation_id}`);
     } catch (error) {
-      console.error("Error creating conversation:", error);
+      console.error('Error creating conversation:', error);
       // Fallback: just navigate to chat page
-      navigate("/chat");
+      navigate('/chat');
     } finally {
       setIsAskingCapy(false);
     }
@@ -682,7 +616,7 @@ const Dashboard: React.FC = () => {
   const handleSearchButtonClick = () => {
     if (!searchQuery.trim()) {
       // If no input, navigate to chat page
-      navigate("/chat");
+      navigate('/chat');
     } else {
       // If there's input, submit the search
       handleSearchSubmit({ preventDefault: () => {} } as React.FormEvent);
@@ -690,24 +624,24 @@ const Dashboard: React.FC = () => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSearchSubmit(e);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
     // Fix timezone issue: Parse the date string and convert to local timezone
-    const date = new Date(dateString + "T00:00:00"); // Add time to ensure proper parsing
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
+    const date = new Date(dateString + 'T00:00:00'); // Add time to ensure proper parsing
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
     });
   };
 
@@ -726,53 +660,37 @@ const Dashboard: React.FC = () => {
 
   const isDateValid = (date: Dayjs | null): boolean => {
     if (!date) return false;
-    return date.isAfter(dayjs(), "day") || date.isSame(dayjs(), "day");
+    return date.isAfter(dayjs(), 'day') || date.isSame(dayjs(), 'day');
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high":
-        return theme.palette.error.main;
-      case "medium":
-        return theme.palette.warning.main;
-      case "low":
-        return theme.palette.success.main;
-      default:
-        return theme.palette.grey[500];
+      case 'high': return theme.palette.error.main;
+      case 'medium': return theme.palette.warning.main;
+      case 'low': return theme.palette.success.main;
+      default: return theme.palette.grey[500];
     }
   };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "savings":
-        return "💰";
-      case "debt":
-        return "💳";
-      case "investment":
-        return "📈";
-      case "purchase":
-        return "🛒";
-      case "emergency":
-        return "🛡️";
-      default:
-        return "🎯";
+      case 'savings': return '💰';
+      case 'debt': return '💳';
+      case 'investment': return '📈';
+      case 'purchase': return '🛒';
+      case 'emergency': return '🛡️';
+      default: return '🎯';
     }
   };
 
   const getPersonalityName = (personality: number) => {
     switch (personality) {
-      case -1:
-        return "Conservative Capy";
-      case 0:
-        return "Neutral Capy";
-      case 1:
-        return "Risky Capy";
-      case 2:
-        return "Communist Capy";
-      case 3:
-        return "Baby Capy";
-      default:
-        return "Neutral Capy";
+      case -1: return 'Conservative Capy';
+      case 0: return 'Neutral Capy';
+      case 1: return 'Risky Capy';
+      case 2: return 'Communist Capy';
+      case 3: return 'Baby Capy';
+      default: return 'Neutral Capy';
     }
   };
 
@@ -802,135 +720,73 @@ const Dashboard: React.FC = () => {
     if (transaction.budget_category) {
       return transaction.budget_category;
     }
-
+    
     // Fallback to original categorization logic if budget_category is not available
-    const category =
-      transaction.personal_finance_category?.primary?.toLowerCase() ||
-      transaction.category?.[0]?.toLowerCase() ||
-      "";
-
+    const category = transaction.personal_finance_category?.primary?.toLowerCase() || 
+                    transaction.category?.[0]?.toLowerCase() || '';
+    
     // Map transaction categories to budget categories
-    if (
-      category.includes("food") ||
-      category.includes("dining") ||
-      category.includes("restaurant") ||
-      category.includes("grocery") ||
-      category.includes("meal")
-    ) {
-      return "Food & Dining";
-    } else if (
-      category.includes("transport") ||
-      category.includes("car") ||
-      category.includes("gas") ||
-      category.includes("uber") ||
-      category.includes("lyft") ||
-      category.includes("parking") ||
-      category.includes("public") ||
-      category.includes("bus") ||
-      category.includes("train")
-    ) {
-      return "Transportation";
-    } else if (
-      category.includes("health") ||
-      category.includes("medical") ||
-      category.includes("doctor") ||
-      category.includes("pharmacy") ||
-      category.includes("dental") ||
-      category.includes("vision") ||
-      category.includes("hospital") ||
-      category.includes("insurance")
-    ) {
-      return "Health & Insurance";
-    } else if (
-      category.includes("utility") ||
-      category.includes("electric") ||
-      category.includes("water") ||
-      category.includes("gas") ||
-      category.includes("internet") ||
-      category.includes("phone") ||
-      category.includes("cable") ||
-      category.includes("waste") ||
-      category.includes("rent") ||
-      category.includes("mortgage") ||
-      category.includes("property")
-    ) {
-      return "Housing & Utilities";
-    } else if (
-      category.includes("clothing") ||
-      category.includes("apparel") ||
-      category.includes("grooming") ||
-      category.includes("gym") ||
-      category.includes("fitness") ||
-      category.includes("hobby") ||
-      category.includes("subscription") ||
-      category.includes("personal")
-    ) {
-      return "Personal & Lifestyle";
-    } else if (
-      category.includes("entertainment") ||
-      category.includes("movie") ||
-      category.includes("theater") ||
-      category.includes("sport") ||
-      category.includes("game") ||
-      category.includes("travel") ||
-      category.includes("vacation") ||
-      category.includes("leisure")
-    ) {
-      return "Entertainment & Leisure";
-    } else if (
-      category.includes("financial") ||
-      category.includes("savings") ||
-      category.includes("investment") ||
-      category.includes("debt") ||
-      category.includes("loan") ||
-      category.includes("tax") ||
-      category.includes("bank") ||
-      category.includes("credit")
-    ) {
-      return "Financial & Savings";
-    } else if (
-      category.includes("gift") ||
-      category.includes("donation") ||
-      category.includes("charity") ||
-      category.includes("contribution") ||
-      category.includes("fundraiser")
-    ) {
-      return "Gifts & Donations";
+    if (category.includes('food') || category.includes('dining') || category.includes('restaurant') || 
+        category.includes('grocery') || category.includes('meal')) {
+      return 'Food & Dining';
+    } else if (category.includes('transport') || category.includes('car') || category.includes('gas') || 
+               category.includes('uber') || category.includes('lyft') || category.includes('parking') ||
+               category.includes('public') || category.includes('bus') || category.includes('train')) {
+      return 'Transportation';
+    } else if (category.includes('health') || category.includes('medical') || category.includes('doctor') ||
+               category.includes('pharmacy') || category.includes('dental') || category.includes('vision') ||
+               category.includes('hospital') || category.includes('insurance')) {
+      return 'Health & Insurance';
+    } else if (category.includes('utility') || category.includes('electric') || category.includes('water') ||
+               category.includes('gas') || category.includes('internet') || category.includes('phone') ||
+               category.includes('cable') || category.includes('waste') || category.includes('rent') ||
+               category.includes('mortgage') || category.includes('property')) {
+      return 'Housing & Utilities';
+    } else if (category.includes('clothing') || category.includes('apparel') || category.includes('grooming') ||
+               category.includes('gym') || category.includes('fitness') || category.includes('hobby') ||
+               category.includes('subscription') || category.includes('personal')) {
+      return 'Personal & Lifestyle';
+    } else if (category.includes('entertainment') || category.includes('movie') || category.includes('theater') ||
+               category.includes('sport') || category.includes('game') || category.includes('travel') ||
+               category.includes('vacation') || category.includes('leisure')) {
+      return 'Entertainment & Leisure';
+    } else if (category.includes('financial') || category.includes('savings') || category.includes('investment') ||
+               category.includes('debt') || category.includes('loan') || category.includes('tax') ||
+               category.includes('bank') || category.includes('credit')) {
+      return 'Financial & Savings';
+    } else if (category.includes('gift') || category.includes('donation') || category.includes('charity') ||
+               category.includes('contribution') || category.includes('fundraiser')) {
+      return 'Gifts & Donations';
     }
-
+    
     // Default to Personal & Lifestyle for uncategorized transactions
-    return "Personal & Lifestyle";
+    return 'Personal & Lifestyle';
   };
 
   const updateBudgetFromTransactions = (transactions: PlaidTransaction[]) => {
     const categorySpending = new Map<string, number>();
-
+    
     // Initialize all categories with 0 spending
-    budgetCategories.forEach((cat) => {
+    budgetCategories.forEach(cat => {
       categorySpending.set(cat.name, 0);
     });
 
     // Calculate spending for each category from transactions
-    transactions.forEach((transaction) => {
-      if (transaction.amount > 0) {
-        // Only count expenses (positive amounts)
+    transactions.forEach(transaction => {
+      if (transaction.amount > 0) { // Only count expenses (positive amounts)
         // Use budget_category from API response if available, otherwise use categorizeTransaction
-        const budgetCategory =
-          transaction.budget_category || categorizeTransaction(transaction);
+        const budgetCategory = transaction.budget_category || categorizeTransaction(transaction);
         const currentSpending = categorySpending.get(budgetCategory) || 0;
-        categorySpending.set(
-          budgetCategory,
-          currentSpending + transaction.amount
-        );
+        categorySpending.set(budgetCategory, currentSpending + transaction.amount);
       }
     });
-
+    
     // Update budget categories with actual spending
-    const updatedCategories = budgetCategories.map((cat) => ({
+    const updatedCategories = budgetCategories.map(cat => ({
       ...cat,
-      spent: categorySpending.get(cat.name) || 0,
+      spent: categorySpending.get(cat.name) || 0
     }));
-
+    
     setBudgetCategories(updatedCategories);
   };
 
@@ -955,49 +811,49 @@ const Dashboard: React.FC = () => {
         category: newGoal.category,
         priority: newGoal.priority,
         icon: newGoal.icon,
-        color: newGoal.color,
+        color: newGoal.color
       };
-
+      
       await savingsGoalsService.createSavingsGoal(goalData);
-
+      
       // Reset form
       setNewGoal({
-        title: "",
-        description: "",
+        title: '',
+        description: '',
         amount: 0,
         current_amount: 0,
         deadline: null as Dayjs | null,
-        category: "savings",
-        priority: "medium",
-        icon: "💰",
-        color: "#4CAF50",
+        category: 'savings',
+        priority: 'medium',
+        icon: '💰',
+        color: '#4CAF50'
       });
-
+      
       handleCloseAddGoalDialog();
-
+      
       // Refresh goals list
       await fetchSavingsGoals();
     } catch (err: any) {
-      console.error("Failed to create savings goal:", err);
-      setError(err.response?.data?.message || "Failed to create savings goal");
+      console.error('Failed to create savings goal:', err);
+      setError(err.response?.data?.message || 'Failed to create savings goal');
     }
   };
 
   const handleDeleteGoal = async (goalId: number) => {
     try {
       await savingsGoalsService.deleteSavingsGoal(goalId.toString());
-
+      
       // Close dialog if the deleted goal was selected
       if (selectedGoal?.id === goalId) {
         setSelectedGoal(null);
         setIsGoalDialogOpen(false);
       }
-
+      
       // Refresh goals list
       await fetchSavingsGoals();
     } catch (err: any) {
-      console.error("Failed to delete savings goal:", err);
-      setError(err.response?.data?.message || "Failed to delete savings goal");
+      console.error('Failed to delete savings goal:', err);
+      setError(err.response?.data?.message || 'Failed to delete savings goal');
     }
   };
 
@@ -1008,15 +864,15 @@ const Dashboard: React.FC = () => {
   const handleCloseAddGoalDialog = () => {
     setIsAddGoalDialogOpen(false);
     setNewGoal({
-      title: "",
-      description: "",
+      title: '',
+      description: '',
       amount: 0,
       current_amount: 0,
       deadline: null as Dayjs | null,
-      category: "savings",
-      priority: "medium",
-      icon: "💰",
-      color: "#4CAF50",
+      category: 'savings',
+      priority: 'medium',
+      icon: '💰',
+      color: '#4CAF50'
     });
   };
 
@@ -1028,10 +884,10 @@ const Dashboard: React.FC = () => {
       amount: goal.amount,
       current_amount: goal.current_amount,
       deadline: goal.deadline ? dayjs(goal.deadline) : null,
-      category: goal.category || "savings",
+      category: goal.category || 'savings',
       priority: goal.priority,
-      icon: goal.icon || "💰",
-      color: goal.color || "#4CAF50",
+      icon: goal.icon || '💰',
+      color: goal.color || '#4CAF50'
     });
     setIsEditGoalDialogOpen(true);
     setIsGoalDialogOpen(false); // Close the view dialog
@@ -1044,7 +900,7 @@ const Dashboard: React.FC = () => {
 
   const handleUpdateGoal = async () => {
     if (!editingGoal) return;
-
+    
     try {
       const goalData = {
         title: editingGoalForm.title,
@@ -1055,151 +911,106 @@ const Dashboard: React.FC = () => {
         category: editingGoalForm.category || undefined,
         priority: editingGoalForm.priority,
         icon: editingGoalForm.icon || undefined,
-        color: editingGoalForm.color || undefined,
+        color: editingGoalForm.color || undefined
       };
-
-      await savingsGoalsService.updateSavingsGoal(
-        editingGoal.id.toString(),
-        goalData
-      );
-
+      
+      await savingsGoalsService.updateSavingsGoal(editingGoal.id.toString(), goalData);
+      
       handleCloseEditGoalDialog();
-
+      
       // Refresh goals list
       await fetchSavingsGoals();
     } catch (err: any) {
-      console.error("Failed to update savings goal:", err);
-      setError(err.response?.data?.message || "Failed to update savings goal");
+      console.error('Failed to update savings goal:', err);
+      setError(err.response?.data?.message || 'Failed to update savings goal');
     }
   };
 
   // Helper for tab navigation
   const renderTabNavigation = () => (
-    <Box
-      sx={{
-        display: "flex",
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        mb: 3,
-      }}
-    >
+    <Box sx={{ display: 'flex', borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`, mb: 3 }}>
       <Button
-        onClick={() => setActiveTab("overview")}
+        onClick={() => setActiveTab('overview')}
         sx={{
           flex: 1,
           py: 2,
           borderRadius: 0,
-          textTransform: "none",
-          fontSize: "1rem",
+          textTransform: 'none',
+          fontSize: '1rem',
           fontWeight: 600,
-          color:
-            activeTab === "overview" ? "#2C1810" : theme.palette.text.secondary,
-          borderBottom:
-            activeTab === "overview"
-              ? `3px solid ${theme.palette.primary.main}`
-              : "none",
-          backgroundColor:
-            activeTab === "overview"
-              ? alpha(theme.palette.primary.main, 0.1)
-              : "transparent",
-          "&:hover": {
+          color: activeTab === 'overview' ? '#2C1810' : theme.palette.text.secondary,
+          borderBottom: activeTab === 'overview' ? `3px solid ${theme.palette.primary.main}` : 'none',
+          backgroundColor: activeTab === 'overview' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+          '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            color:
-              activeTab === "overview"
-                ? "#2C1810"
-                : theme.palette.text.secondary,
+            color: activeTab === 'overview' ? '#2C1810' : theme.palette.text.secondary,
             borderColor: theme.palette.primary.main,
-          },
+          }
         }}
       >
         Overview
       </Button>
       <Button
-        onClick={() => setActiveTab("goals")}
+        onClick={() => setActiveTab('goals')}
         sx={{
           flex: 1,
           py: 2,
           borderRadius: 0,
-          textTransform: "none",
-          fontSize: "1rem",
+          textTransform: 'none',
+          fontSize: '1rem',
           fontWeight: 600,
-          color:
-            activeTab === "goals" ? "#2C1810" : theme.palette.text.secondary,
-          borderBottom:
-            activeTab === "goals"
-              ? `3px solid ${theme.palette.primary.main}`
-              : "none",
-          backgroundColor:
-            activeTab === "goals"
-              ? alpha(theme.palette.primary.main, 0.1)
-              : "transparent",
-          "&:hover": {
+          color: activeTab === 'goals' ? '#2C1810' : theme.palette.text.secondary,
+          borderBottom: activeTab === 'goals' ? `3px solid ${theme.palette.primary.main}` : 'none',
+          backgroundColor: activeTab === 'goals' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+          '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            color:
-              activeTab === "goals" ? "#2C1810" : theme.palette.text.secondary,
+            color: activeTab === 'goals' ? '#2C1810' : theme.palette.text.secondary,
             borderColor: theme.palette.primary.main,
-          },
+          }
         }}
       >
         <FlagIcon sx={{ mr: 1, fontSize: 20 }} />
         Financial Goals
       </Button>
       <Button
-        onClick={() => setActiveTab("accounts")}
+        onClick={() => setActiveTab('accounts')}
         sx={{
           flex: 1,
           py: 2,
           borderRadius: 0,
-          textTransform: "none",
-          fontSize: "1rem",
+          textTransform: 'none',
+          fontSize: '1rem',
           fontWeight: 600,
-          color:
-            activeTab === "accounts" ? "#2C1810" : theme.palette.text.secondary,
-          borderBottom:
-            activeTab === "accounts"
-              ? `3px solid ${theme.palette.primary.main}`
-              : "none",
-          backgroundColor:
-            activeTab === "accounts"
-              ? alpha(theme.palette.primary.main, 0.1)
-              : "transparent",
-          "&:hover": {
+          color: activeTab === 'accounts' ? '#2C1810' : theme.palette.text.secondary,
+          borderBottom: activeTab === 'accounts' ? `3px solid ${theme.palette.primary.main}` : 'none',
+          backgroundColor: activeTab === 'accounts' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+          '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            color:
-              activeTab === "accounts"
-                ? "#2C1810"
-                : theme.palette.text.secondary,
+            color: activeTab === 'accounts' ? '#2C1810' : theme.palette.text.secondary,
             borderColor: theme.palette.primary.main,
-          },
+          }
         }}
       >
         <MonetizationOn sx={{ mr: 1, fontSize: 20 }} />
         Accounts
       </Button>
       <Button
-        onClick={() => setActiveTab("budget")}
+        onClick={() => setActiveTab('budget')}
         sx={{
           flex: 1,
           py: 2,
           borderRadius: 0,
-          textTransform: "none",
-          fontSize: "1rem",
+          textTransform: 'none',
+          fontSize: '1rem',
           fontWeight: 600,
-          color:
-            activeTab === "budget" ? "#2C1810" : theme.palette.text.secondary,
-          borderBottom:
-            activeTab === "budget"
-              ? `3px solid ${theme.palette.primary.main}`
-              : "none",
-          backgroundColor:
-            activeTab === "budget"
-              ? alpha(theme.palette.primary.main, 0.1)
-              : "transparent",
-          "&:hover": {
+          color: activeTab === 'budget' ? '#2C1810' : theme.palette.text.secondary,
+          borderBottom: activeTab === 'budget' ? `3px solid ${theme.palette.primary.main}` : 'none',
+          backgroundColor: activeTab === 'budget' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+          '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            color:
-              activeTab === "budget" ? "#2C1810" : theme.palette.text.secondary,
+            color: activeTab === 'budget' ? '#2C1810' : theme.palette.text.secondary,
             borderColor: theme.palette.primary.main,
-          },
+          }
         }}
       >
         <Receipt sx={{ mr: 1, fontSize: 20 }} />
@@ -1211,23 +1022,17 @@ const Dashboard: React.FC = () => {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: '100vh',
         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
         py: 4,
-        position: "relative",
+        position: 'relative'
       }}
     >
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box
                 component="img"
                 src={getCapyImage(personality)}
@@ -1235,11 +1040,8 @@ const Dashboard: React.FC = () => {
                 sx={{
                   width: 60,
                   height: 60,
-                  objectFit: "contain",
-                  boxShadow: `0 4px 12px ${alpha(
-                    theme.palette.primary.main,
-                    0.4
-                  )}`,
+                  objectFit: 'contain',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`
                 }}
               />
               <Box>
@@ -1251,34 +1053,11 @@ const Dashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                flex: 1,
-                justifyContent: "center",
-                mx: 4,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  width: "100%",
-                  justifyContent: "center",
-                }}
-              >
-                {" "}
-                <TextField
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center', mx: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'center' }}>                <TextField
                   variant="outlined"
-                  placeholder={
-                    isAskingCapy
-                      ? "Capy is thinking..."
-                      : "Ask capy a question about your finances"
-                  }
+                  placeholder={isAskingCapy ? "Capy is thinking..." : "Ask capy a question about your finances"}
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -1296,20 +1075,20 @@ const Dashboard: React.FC = () => {
                   sx={{
                     minWidth: { xs: 200, sm: 250, md: 300, lg: 400 },
                     maxWidth: { xs: 250, sm: 350, md: 450, lg: 600 },
-                    width: { xs: "100%", sm: "80%", md: "70%", lg: "60%" },
-                    outline: "none",
+                    width: { xs: '100%', sm: '80%', md: '70%', lg: '60%' },
+                    outline: 'none',
                     borderRadius: 2,
-                    border: "none",
+                    border: 'none',
                     backgroundColor: theme.palette.background.paper,
-                    "& .MuiOutlinedInput-root": {
-                      outline: "none",
+                    '& .MuiOutlinedInput-root': {
+                      outline: 'none',
                       borderRadius: 2,
                       border: `1px solid ${theme.palette.background.paper}`,
-                      borderInline: "none",
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "black",
-                      },
-                    },
+                      borderInline: 'none',
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'black',
+                      }
+                    }
                   }}
                 />
                 <Button
@@ -1318,42 +1097,36 @@ const Dashboard: React.FC = () => {
                   sx={{
                     minWidth: 40,
                     height: 40,
-                    borderRadius: "50%",
+                    borderRadius: '50%',
                     px: 0,
                     backgroundColor: theme.palette.background.paper,
                     border: `2px solid ${theme.palette.background.paper}`,
                     color: theme.palette.primary.main,
-                    "&:hover": {
+                    '&:hover': {
                       border: `2px solid ${theme.palette.common.black}`,
-                      transform: "scale(1.05)",
-                      boxShadow: `0 4px 12px ${alpha(
-                        theme.palette.primary.main,
-                        0.4
-                      )}`,
+                      transform: 'scale(1.05)',
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
                     },
-                    transition: "all 0.2s ease",
-                    boxShadow: `0 2px 8px ${alpha(
-                      theme.palette.common.black,
-                      0.1
-                    )}`,
+                    transition: 'all 0.2s ease',
+                    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,
                   }}
                 >
-                  <SearchIcon sx={{ fontSize: 20, color: "black" }} />
+                  <SearchIcon sx={{ fontSize: 20, color: 'black' }} />
                 </Button>
               </Box>
             </Box>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Tooltip title="Profile menu">
                 <IconButton
                   onClick={handleProfileMenuOpen}
                   onMouseEnter={handleProfileMenuOpen}
                   sx={{
                     p: 0,
-                    "&:hover": {
-                      transform: "scale(1.05)",
+                    '&:hover': {
+                      transform: 'scale(1.05)',
                     },
-                    transition: "transform 0.2s ease",
+                    transition: 'transform 0.2s ease'
                   }}
                 >
                   <Avatar
@@ -1361,18 +1134,15 @@ const Dashboard: React.FC = () => {
                       width: 50,
                       height: 50,
                       background: `linear-gradient(135deg, #8B4513 0%, #A0522D 100%)`,
-                      boxShadow: `0 4px 12px ${alpha(
-                        theme.palette.primary.main,
-                        0.4
-                      )}`,
-                      cursor: "pointer",
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                      cursor: 'pointer'
                     }}
                   >
-                    <PersonIcon sx={{ fontSize: 24, color: "#FFFFFF" }} />
+                    <PersonIcon sx={{ fontSize: 24, color: '#FFFFFF' }} />
                   </Avatar>
                 </IconButton>
               </Tooltip>
-
+              
               <Menu
                 anchorEl={profileMenuAnchor}
                 open={Boolean(profileMenuAnchor)}
@@ -1380,41 +1150,27 @@ const Dashboard: React.FC = () => {
                 onMouseLeave={handleProfileMenuClose}
                 disableScrollLock={true}
                 anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
+                  vertical: 'bottom',
+                  horizontal: 'right',
                 }}
                 transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
+                  vertical: 'top',
+                  horizontal: 'right',
                 }}
                 PaperProps={{
                   sx: {
                     mt: 1,
                     minWidth: 250,
                     background: alpha(theme.palette.background.paper, 0.95),
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${alpha(
-                      theme.palette.common.white,
-                      0.2
-                    )}`,
-                    boxShadow: `0 8px 32px ${alpha(
-                      theme.palette.common.black,
-                      0.1
-                    )}`,
-                  },
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.1)}`
+                  }
                 }}
               >
                 {/* User Info Section */}
-                <Box
-                  sx={{
-                    p: 2,
-                    borderBottom: `1px solid ${alpha(
-                      theme.palette.divider,
-                      0.1
-                    )}`,
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar
                       sx={{
                         width: 40,
@@ -1422,7 +1178,7 @@ const Dashboard: React.FC = () => {
                         background: `linear-gradient(135deg, #8B4513 0%, #A0522D 100%)`,
                       }}
                     >
-                      <PersonIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />
+                      <PersonIcon sx={{ fontSize: 20, color: '#FFFFFF' }} />
                     </Avatar>
                     <Box>
                       <Typography variant="subtitle2" fontWeight={600}>
@@ -1437,26 +1193,23 @@ const Dashboard: React.FC = () => {
                         sx={{
                           mt: 0.5,
                           ml: 2,
-                          fontSize: "0.7rem",
+                          fontSize: '0.7rem',
                           height: 20,
-                          backgroundColor: "#2C1810",
-                          color: "#FFFFFF",
+                          backgroundColor: '#2C1810',
+                          color: '#FFFFFF',
                           fontWeight: 600,
                         }}
                       />
                     </Box>
                   </Box>
                 </Box>
-
+                
                 <MenuItem onClick={handleSettingsClick} sx={{ py: 1.5 }}>
                   <SettingsIcon sx={{ mr: 2, fontSize: 20 }} />
                   Settings
                 </MenuItem>
                 <Divider />
-                <MenuItem
-                  onClick={handleLogoutClick}
-                  sx={{ py: 1.5, color: theme.palette.error.main }}
-                >
+                <MenuItem onClick={handleLogoutClick} sx={{ py: 1.5, color: theme.palette.error.main }}>
                   <LogoutIcon sx={{ mr: 2, fontSize: 20 }} />
                   Logout
                 </MenuItem>
@@ -1467,24 +1220,10 @@ const Dashboard: React.FC = () => {
 
         {/* Plaid linked status loading */}
         {isPlaidLinked === null && (
-          <Card
-            elevation={8}
-            sx={{
-              mb: 4,
-              borderRadius: 2,
-              background: alpha(theme.palette.background.paper, 0.95),
-              backdropFilter: "blur(20px)",
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-            }}
-          >
-            <CardContent sx={{ p: 4, textAlign: "center" }}>
+          <Card elevation={8} sx={{ mb: 4, borderRadius: 2, background: alpha(theme.palette.background.paper, 0.95), backdropFilter: 'blur(20px)', border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
+            <CardContent sx={{ p: 4, textAlign: 'center' }}>
               <CircularProgress size={40} sx={{ mb: 2 }} />
-              <Typography
-                variant="h6"
-                component="div"
-                fontWeight={700}
-                gutterBottom
-              >
+              <Typography variant="h6" component="div" fontWeight={700} gutterBottom>
                 Checking Plaid account status...
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1496,35 +1235,20 @@ const Dashboard: React.FC = () => {
 
         {/* Plaid not linked CTA */}
         {isPlaidLinked === false && (
-          <Card
-            elevation={8}
-            sx={{
-              mb: 4,
-              borderRadius: 2,
-              background: alpha(theme.palette.background.paper, 0.95),
-              backdropFilter: "blur(20px)",
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-            }}
-          >
-            <CardContent sx={{ p: 4, textAlign: "center" }}>
-              <Typography
-                variant="h6"
-                component="div"
-                fontWeight={700}
-                gutterBottom
-              >
+          <Card elevation={8} sx={{ mb: 4, borderRadius: 2, background: alpha(theme.palette.background.paper, 0.95), backdropFilter: 'blur(20px)', border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
+            <CardContent sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="h6" component="div" fontWeight={700} gutterBottom>
                 Link your bank account to get started
               </Typography>
               <Typography variant="body1" color="text.secondary" gutterBottom>
-                To see your financial summary, please link your account with
-                Plaid.
+                To see your financial summary, please link your account with Plaid.
               </Typography>
               <Button
                 variant="contained"
                 color="primary"
                 size="large"
                 sx={{ mt: 2, borderRadius: 2, px: 4, py: 1 }}
-                onClick={() => navigate("/settings")}
+                onClick={() => navigate('/settings')}
               >
                 Link with Plaid
               </Button>
@@ -1536,7 +1260,7 @@ const Dashboard: React.FC = () => {
         {isPlaidLinked && (
           <>
             {/* Overview Tab Content */}
-            {activeTab === "overview" && (
+            {activeTab === 'overview' && (
               <>
                 {/* Monthly Summary Header */}
                 <Card
@@ -1545,46 +1269,39 @@ const Dashboard: React.FC = () => {
                     mb: 3,
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${alpha(
-                      theme.palette.primary.main,
-                      0.2
-                    )}`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
                     {renderTabNavigation()}
 
                     {/* Stats Grid */}
-                    <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                       {/* Total Balance Card */}
                       <Card
                         elevation={4}
                         sx={{
-                          flex: "1 1 200px",
+                          flex: '1 1 200px',
                           borderRadius: 2,
-                          background: alpha(
-                            theme.palette.background.paper,
-                            0.95
-                          ),
-                          backdropFilter: "blur(20px)",
-                          transition:
-                            "transform 0.3s ease, box-shadow 0.3s ease",
-                          cursor: "pointer",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: theme.shadows[12],
-                          },
+                          background: alpha(theme.palette.background.paper, 0.95),
+                          backdropFilter: 'blur(20px)',
+                          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[12]
+                          }
                         }}
                       >
-                        <CardContent sx={{ p: 3, textAlign: "center" }}>
+                        <CardContent sx={{ p: 3, textAlign: 'center' }}>
                           <Avatar
                             sx={{
                               width: 50,
                               height: 50,
                               background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                              mx: "auto",
-                              mb: 2,
+                              mx: 'auto',
+                              mb: 2
                             }}
                           >
                             <MonetizationOn sx={{ fontSize: 25 }} />
@@ -1592,22 +1309,10 @@ const Dashboard: React.FC = () => {
                           {isBalancesLoading ? (
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
-                            <Typography
-                              variant="h6"
-                              component="div"
-                              fontWeight={700}
-                              gutterBottom
-                              color="primary.main"
-                            >
+                            <Typography variant="h6" component="div" fontWeight={700} gutterBottom color="primary.main">
                               {balances && balances.accounts
-                                ? formatCurrency(
-                                    balances.accounts.reduce(
-                                      (sum: number, acc: any) =>
-                                        sum + (acc.balances?.current || 0),
-                                      0
-                                    )
-                                  )
-                                : "--"}
+                                ? formatCurrency(balances.accounts.reduce((sum: number, acc: any) => sum + (acc.balances?.current || 0), 0))
+                                : '--'}
                             </Typography>
                           )}
                           <Typography variant="body2" color="text.secondary">
@@ -1618,28 +1323,27 @@ const Dashboard: React.FC = () => {
 
                       <Card
                         elevation={4}
-                        onClick={() => navigate("/income")}
+                        onClick={() => navigate('/income')}
                         sx={{
-                          flex: "1 1 200px",
+                          flex: '1 1 200px',
                           borderRadius: 2,
-                          backdropFilter: "blur(20px)",
-                          transition:
-                            "transform 0.3s ease, box-shadow 0.3s ease",
-                          cursor: "pointer",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: theme.shadows[12],
-                          },
+                          backdropFilter: 'blur(20px)',
+                          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[12]
+                          }
                         }}
                       >
-                        <CardContent sx={{ p: 3, textAlign: "center" }}>
+                        <CardContent sx={{ p: 3, textAlign: 'center' }}>
                           <Avatar
                             sx={{
                               width: 50,
                               height: 50,
                               background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
-                              mx: "auto",
-                              mb: 2,
+                              mx: 'auto',
+                              mb: 2
                             }}
                           >
                             <TrendingUp sx={{ fontSize: 25 }} />
@@ -1647,13 +1351,7 @@ const Dashboard: React.FC = () => {
                           {isLoading ? (
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
-                            <Typography
-                              variant="h6"
-                              component="div"
-                              fontWeight={700}
-                              gutterBottom
-                              color="success.main"
-                            >
+                            <Typography variant="h6" component="div" fontWeight={700} gutterBottom color="success.main">
                               {formatCurrency(monthlySummary.income)}
                             </Typography>
                           )}
@@ -1665,32 +1363,28 @@ const Dashboard: React.FC = () => {
 
                       <Card
                         elevation={4}
-                        onClick={() => navigate("/expenses")}
+                        onClick={() => navigate('/expenses')}
                         sx={{
-                          flex: "1 1 200px",
+                          flex: '1 1 200px',
                           borderRadius: 2,
-                          background: alpha(
-                            theme.palette.background.paper,
-                            0.95
-                          ),
-                          backdropFilter: "blur(20px)",
-                          transition:
-                            "transform 0.3s ease, box-shadow 0.3s ease",
-                          cursor: "pointer",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: theme.shadows[12],
-                          },
+                          background: alpha(theme.palette.background.paper, 0.95),
+                          backdropFilter: 'blur(20px)',
+                          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[12]
+                          }
                         }}
                       >
-                        <CardContent sx={{ p: 3, textAlign: "center" }}>
+                        <CardContent sx={{ p: 3, textAlign: 'center' }}>
                           <Avatar
                             sx={{
                               width: 50,
                               height: 50,
                               background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.light} 100%)`,
-                              mx: "auto",
-                              mb: 2,
+                              mx: 'auto',
+                              mb: 2
                             }}
                           >
                             <Receipt sx={{ fontSize: 25 }} />
@@ -1698,13 +1392,7 @@ const Dashboard: React.FC = () => {
                           {isLoading ? (
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
-                            <Typography
-                              variant="h6"
-                              component="div"
-                              fontWeight={700}
-                              gutterBottom
-                              color="warning.main"
-                            >
+                            <Typography variant="h6" component="div" fontWeight={700} gutterBottom color="warning.main">
                               {formatCurrency(monthlySummary.expenses)}
                             </Typography>
                           )}
@@ -1716,32 +1404,28 @@ const Dashboard: React.FC = () => {
 
                       <Card
                         elevation={4}
-                        onClick={() => navigate("/transactions")}
+                        onClick={() => navigate('/transactions')}
                         sx={{
-                          flex: "1 1 200px",
+                          flex: '1 1 200px',
                           borderRadius: 2,
-                          background: alpha(
-                            theme.palette.background.paper,
-                            0.95
-                          ),
-                          backdropFilter: "blur(20px)",
-                          transition:
-                            "transform 0.3s ease, box-shadow 0.3s ease",
-                          cursor: "pointer",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: theme.shadows[12],
-                          },
+                          background: alpha(theme.palette.background.paper, 0.95),
+                          backdropFilter: 'blur(20px)',
+                          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[12]
+                          }
                         }}
                       >
-                        <CardContent sx={{ p: 3, textAlign: "center" }}>
+                        <CardContent sx={{ p: 3, textAlign: 'center' }}>
                           <Avatar
                             sx={{
                               width: 50,
                               height: 50,
                               background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
-                              mx: "auto",
-                              mb: 2,
+                              mx: 'auto',
+                              mb: 2
                             }}
                           >
                             <MonetizationOn sx={{ fontSize: 25 }} />
@@ -1749,16 +1433,12 @@ const Dashboard: React.FC = () => {
                           {isLoading ? (
                             <CircularProgress size={30} sx={{ mb: 2 }} />
                           ) : (
-                            <Typography
-                              variant="h6"
+                            <Typography 
+                              variant="h6" 
                               component="div"
-                              fontWeight={700}
-                              gutterBottom
-                              color={
-                                monthlySummary.netChange >= 0
-                                  ? "success.main"
-                                  : "error.main"
-                              }
+                              fontWeight={700} 
+                              gutterBottom 
+                              color={monthlySummary.netChange >= 0 ? "success.main" : "error.main"}
                             >
                               {formatCurrency(monthlySummary.netChange)}
                             </Typography>
@@ -1780,41 +1460,20 @@ const Dashboard: React.FC = () => {
                       mb: 3,
                       borderRadius: 2,
                       background: alpha(theme.palette.background.paper, 0.95),
-                      backdropFilter: "blur(20px)",
-                      border: `1px solid ${alpha(
-                        theme.palette.primary.main,
-                        0.2
-                      )}`,
+                      backdropFilter: 'blur(20px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        fontWeight={600}
-                        gutterBottom
-                      >
+                      <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
                         Spending by Category
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 3 }}
-                      >
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                         Breakdown of your expenses this month
                       </Typography>
-
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: { xs: "column", md: "row" },
-                          gap: 3,
-                          alignItems: "center",
-                        }}
-                      >
-                        <Box
-                          sx={{ width: { xs: "100%", md: "50%" }, height: 300 }}
-                        >
+                      
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'center' }}>
+                        <Box sx={{ width: { xs: '100%', md: '50%' }, height: 300 }}>
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
@@ -1822,62 +1481,37 @@ const Dashboard: React.FC = () => {
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
-                                label={({ name, percent }) =>
-                                  `${name} ${(percent * 100).toFixed(0)}%`
-                                }
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
                               >
                                 {categoryData.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color}
-                                  />
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
                               </Pie>
-                              <RechartsTooltip
-                                formatter={(value: number) => [
-                                  formatCurrency(value),
-                                  "Amount",
-                                ]}
+                              <RechartsTooltip 
+                                formatter={(value: number) => [formatCurrency(value), 'Amount']}
                                 labelFormatter={(label) => `Category: ${label}`}
                               />
                             </PieChart>
                           </ResponsiveContainer>
                         </Box>
-
-                        <Box sx={{ flex: 1, width: { xs: "100%", md: "50%" } }}>
-                          <Typography
-                            variant="subtitle1"
-                            fontWeight={600}
-                            gutterBottom
-                          >
+                        
+                        <Box sx={{ flex: 1, width: { xs: '100%', md: '50%' } }}>
+                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                             Category Breakdown
                           </Typography>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 1,
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                             {categoryData.slice(0, 8).map((category, index) => (
-                              <Box
-                                key={index}
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                }}
-                              >
+                              <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Box
                                   sx={{
                                     width: 12,
                                     height: 12,
-                                    borderRadius: "50%",
+                                    borderRadius: '50%',
                                     backgroundColor: category.color,
-                                    flexShrink: 0,
+                                    flexShrink: 0
                                   }}
                                 />
                                 <Typography variant="body2" sx={{ flex: 1 }}>
@@ -1889,11 +1523,7 @@ const Dashboard: React.FC = () => {
                               </Box>
                             ))}
                             {categoryData.length > 8 && (
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ mt: 1 }}
-                              >
+                              <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
                                 +{categoryData.length - 8} more categories
                               </Typography>
                             )}
@@ -1906,8 +1536,8 @@ const Dashboard: React.FC = () => {
 
                 {/* Error Alert */}
                 {error && (
-                  <Alert
-                    severity="error"
+                  <Alert 
+                    severity="error" 
                     sx={{ mb: 3, borderRadius: 2 }}
                     onClose={() => setError(null)}
                   >
@@ -1921,57 +1551,38 @@ const Dashboard: React.FC = () => {
                   sx={{
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${alpha(
-                      theme.palette.common.white,
-                      0.2
-                    )}`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 4 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mb: 2,
-                      }}
-                    >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="div" fontWeight={600}>
                         Recent Activity
                       </Typography>
                       <Button
                         variant="text"
-                        onClick={() => navigate("/transactions")}
+                        onClick={() => navigate('/transactions')}
                         sx={{
                           color: theme.palette.primary.main,
-                          textTransform: "none",
-                          "&:hover": {
-                            backgroundColor: alpha(
-                              theme.palette.primary.main,
-                              0.1
-                            ),
-                          },
+                          textTransform: 'none',
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                          }
                         }}
                       >
                         View All Transactions
                       </Button>
                     </Box>
                     <Divider sx={{ mb: 3 }} />
-
+                    
                     {isLoading ? (
-                      <Box
-                        sx={{ display: "flex", justifyContent: "center", p: 4 }}
-                      >
+                      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                         <CircularProgress />
                       </Box>
                     ) : recentTransactions.length === 0 ? (
-                      <Box sx={{ textAlign: "center", py: 4 }}>
-                        <Typography
-                          variant="body1"
-                          color="text.secondary"
-                          gutterBottom
-                        >
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <Typography variant="body1" color="text.secondary" gutterBottom>
                           No recent transactions found
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -1979,42 +1590,17 @@ const Dashboard: React.FC = () => {
                         </Typography>
                       </Box>
                     ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 2,
-                        }}
-                      >
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {recentTransactions.map((transaction) => (
-                          <Box
-                            key={transaction.transaction_id}
-                            sx={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 2,
-                                flex: 1,
-                              }}
-                            >
+                          <Box key={transaction.transaction_id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                               {transaction.logo_url ? (
                                 <Avatar
                                   src={transaction.logo_url}
                                   sx={{
                                     width: 40,
                                     height: 40,
-                                    backgroundColor: alpha(
-                                      transaction.amount < 0
-                                        ? theme.palette.success.main
-                                        : theme.palette.error.main,
-                                      0.1
-                                    ),
+                                    backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1)
                                   }}
                                 />
                               ) : (
@@ -2022,68 +1608,39 @@ const Dashboard: React.FC = () => {
                                   sx={{
                                     width: 40,
                                     height: 40,
-                                    backgroundColor: alpha(
-                                      transaction.amount < 0
-                                        ? theme.palette.success.main
-                                        : theme.palette.error.main,
-                                      0.1
-                                    ),
-                                    color:
-                                      transaction.amount < 0
-                                        ? theme.palette.success.main
-                                        : theme.palette.error.main,
+                                    backgroundColor: alpha(transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main, 0.1),
+                                    color: transaction.amount < 0 ? theme.palette.success.main : theme.palette.error.main
                                   }}
                                 >
-                                  {transaction.personal_finance_category?.primary?.charAt(
-                                    0
-                                  ) || transaction.name.charAt(0)}
+                                  {transaction.personal_finance_category?.primary?.charAt(0) || transaction.name.charAt(0)}
                                 </Avatar>
                               )}
                               <Box sx={{ flex: 1 }}>
                                 <Typography variant="body1" fontWeight={500}>
-                                  {transaction.merchant_name ||
-                                    transaction.name}
+                                  {transaction.merchant_name || transaction.name}
                                 </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  {transaction.personal_finance_category
-                                    ?.primary ||
-                                    transaction.category?.join(", ") ||
-                                    "Uncategorized"}
+                                <Typography variant="body2" color="text.secondary">
+                                  {transaction.personal_finance_category?.primary || transaction.category?.join(', ') || 'Uncategorized'}
                                 </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
+                                <Typography variant="caption" color="text.secondary">
                                   {formatDate(transaction.date)}
                                 </Typography>
                               </Box>
                             </Box>
-                            <Box sx={{ textAlign: "right" }}>
-                              <Typography
-                                variant="body1"
-                                color={
-                                  transaction.amount < 0
-                                    ? "success.main"
-                                    : "error.main"
-                                }
+                            <Box sx={{ textAlign: 'right' }}>
+                              <Typography 
+                                variant="body1" 
+                                color={transaction.amount < 0 ? "success.main" : "error.main"} 
                                 fontWeight={600}
                               >
-                                {transaction.amount < 0 ? "+" : ""}
-                                {formatCurrency(Math.abs(transaction.amount))}
+                                {transaction.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
                               </Typography>
                               {transaction.pending && (
-                                <Chip
-                                  label="Pending"
-                                  size="small"
-                                  color="warning"
-                                  sx={{
-                                    fontSize: "0.7rem",
-                                    height: 20,
-                                    mt: 0.5,
-                                  }}
+                                <Chip 
+                                  label="Pending" 
+                                  size="small" 
+                                  color="warning" 
+                                  sx={{ fontSize: '0.7rem', height: 20, mt: 0.5 }}
                                 />
                               )}
                             </Box>
@@ -2097,7 +1654,7 @@ const Dashboard: React.FC = () => {
             )}
 
             {/* Goals Tab Content */}
-            {activeTab === "goals" && (
+            {activeTab === 'goals' && (
               <>
                 {/* Goals Header */}
                 <Card
@@ -2106,49 +1663,26 @@ const Dashboard: React.FC = () => {
                     mb: 3,
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${alpha(
-                      theme.palette.primary.main,
-                      0.2
-                    )}`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
                     {renderTabNavigation()}
 
                     {/* Goals Summary */}
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: 2,
-                        mb: 3,
-                      }}
-                    >
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 3 }}>
                       <Card
                         elevation={2}
                         sx={{
                           borderRadius: 2,
                           background: alpha(theme.palette.info.main, 0.1),
-                          border: `1px solid ${alpha(
-                            theme.palette.info.main,
-                            0.2
-                          )}`,
+                          border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                         }}
                       >
-                        <CardContent sx={{ p: 2, textAlign: "center" }}>
-                          <Typography
-                            variant="h6"
-                            fontWeight={700}
-                            color="info.main"
-                          >
-                            {formatCurrency(
-                              goals.reduce(
-                                (sum, goal) => sum + Number(goal.amount),
-                                0
-                              )
-                            )}
+                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                          <Typography variant="h6" fontWeight={700} color="info.main">
+                            {formatCurrency(goals.reduce((sum, goal) => sum + Number(goal.amount), 0))}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Total Target
@@ -2160,25 +1694,12 @@ const Dashboard: React.FC = () => {
                         sx={{
                           borderRadius: 2,
                           background: alpha(theme.palette.success.main, 0.1),
-                          border: `1px solid ${alpha(
-                            theme.palette.success.main,
-                            0.2
-                          )}`,
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
                         }}
                       >
-                        <CardContent sx={{ p: 2, textAlign: "center" }}>
-                          <Typography
-                            variant="h6"
-                            fontWeight={700}
-                            color="success.main"
-                          >
-                            {formatCurrency(
-                              goals.reduce(
-                                (sum, goal) =>
-                                  sum + Number(goal.current_amount),
-                                0
-                              )
-                            )}
+                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                          <Typography variant="h6" fontWeight={700} color="success.main">
+                            {formatCurrency(goals.reduce((sum, goal) => sum + Number(goal.current_amount), 0))}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Total Saved
@@ -2190,25 +1711,12 @@ const Dashboard: React.FC = () => {
                         sx={{
                           borderRadius: 2,
                           background: alpha(theme.palette.warning.main, 0.1),
-                          border: `1px solid ${alpha(
-                            theme.palette.warning.main,
-                            0.2
-                          )}`,
+                          border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
                         }}
                       >
-                        <CardContent sx={{ p: 2, textAlign: "center" }}>
-                          <Typography
-                            variant="h6"
-                            fontWeight={700}
-                            color="warning.main"
-                          >
-                            {
-                              goals.filter(
-                                (goal) =>
-                                  getDaysUntilDeadline(goal.deadline || "") <=
-                                  30
-                              ).length
-                            }
+                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                          <Typography variant="h6" fontWeight={700} color="warning.main">
+                            {goals.filter(goal => getDaysUntilDeadline(goal.deadline || '') <= 30).length}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Due Soon
@@ -2218,13 +1726,7 @@ const Dashboard: React.FC = () => {
                     </Box>
 
                     {/* Add Goal Button */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        mb: 3,
-                      }}
-                    >
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
                       <Button
                         variant="contained"
                         startIcon={<AddIcon />}
@@ -2239,81 +1741,61 @@ const Dashboard: React.FC = () => {
 
                 {/* Goals Grid */}
                 {isGoalsLoading ? (
-                  <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                     <CircularProgress size={40} />
                   </Box>
                 ) : goals.length > 0 ? (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                     {goals.map((goal) => (
                       <Card
                         key={goal.id}
                         elevation={4}
                         onClick={() => handleGoalClick(goal)}
                         sx={{
-                          flex: "1 1 350px",
+                          flex: '1 1 350px',
                           minWidth: 0,
                           borderRadius: 2,
-                          background: alpha(
-                            theme.palette.background.paper,
-                            0.95
-                          ),
-                          backdropFilter: "blur(20px)",
-                          border: `1px solid ${alpha(
-                            goal.color || "#FAC984",
-                            0.2
-                          )}`,
-                          cursor: "pointer",
-                          transition: "all 0.3s ease",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
+                          background: alpha(theme.palette.background.paper, 0.95),
+                          backdropFilter: 'blur(20px)',
+                          border: `1px solid ${alpha(goal.color || '#FAC984', 0.2)}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
                             boxShadow: theme.shadows[12],
-                            border: `1px solid ${goal.color || "#FAC984"}`,
-                          },
+                            border: `1px solid ${goal.color || '#FAC984'}`
+                          }
                         }}
                       >
                         <CardContent sx={{ p: 3 }}>
                           {/* Goal Header */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                              mb: 2,
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                             <Box
                               sx={{
                                 width: 50,
                                 height: 50,
                                 borderRadius: 2,
-                                background: alpha(goal.color || "#FAC984", 0.1),
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "24px",
+                                background: alpha(goal.color || '#FAC984', 0.1),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '24px'
                               }}
                             >
-                              {goal.icon || "💰"}
+                              {goal.icon || '💰'}
                             </Box>
                             <Box sx={{ flex: 1 }}>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                fontWeight={700}
-                              >
+                              <Typography variant="h6" component="div" fontWeight={700}>
                                 {goal.title}
                               </Typography>
                               <Chip
                                 label={goal.priority}
                                 size="small"
                                 sx={{
-                                  backgroundColor: alpha(
-                                    getPriorityColor(goal.priority),
-                                    0.1
-                                  ),
+                                  backgroundColor: alpha(getPriorityColor(goal.priority), 0.1),
                                   color: getPriorityColor(goal.priority),
                                   fontWeight: 600,
-                                  fontSize: "0.7rem",
+                                  fontSize: '0.7rem'
                                 }}
                               />
                             </Box>
@@ -2323,14 +1805,11 @@ const Dashboard: React.FC = () => {
                                 handleDeleteGoal(goal.id);
                               }}
                               sx={{
-                                color: "text.secondary",
-                                "&:hover": {
-                                  color: "error.main",
-                                  backgroundColor: alpha(
-                                    theme.palette.error.main,
-                                    0.1
-                                  ),
-                                },
+                                color: 'text.secondary',
+                                '&:hover': {
+                                  color: 'error.main',
+                                  backgroundColor: alpha(theme.palette.error.main, 0.1)
+                                }
                               }}
                             >
                               <DeleteIcon fontSize="small" />
@@ -2338,121 +1817,63 @@ const Dashboard: React.FC = () => {
                           </Box>
 
                           {/* Goal Description */}
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ mb: 2 }}
-                          >
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                             {goal.description}
                           </Typography>
 
                           {/* Progress Bar */}
                           <Box sx={{ mb: 2 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mb: 1,
-                              }}
-                            >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                               <Typography variant="body2" fontWeight={600}>
                                 Progress
                               </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {getProgressPercentage(
-                                  goal.current_amount,
-                                  goal.amount
-                                ).toFixed(1)}
-                                %
+                              <Typography variant="body2" color="text.secondary">
+                                {getProgressPercentage(goal.current_amount, goal.amount).toFixed(1)}%
                               </Typography>
                             </Box>
                             <LinearProgress
                               variant="determinate"
-                              value={getProgressPercentage(
-                                goal.current_amount,
-                                goal.amount
-                              )}
+                              value={getProgressPercentage(goal.current_amount, goal.amount)}
                               sx={{
                                 height: 8,
                                 borderRadius: 4,
-                                backgroundColor: alpha(
-                                  goal.color || "#FAC984",
-                                  0.2
-                                ),
-                                "& .MuiLinearProgress-bar": {
-                                  backgroundColor: goal.color || "#FAC984",
-                                  borderRadius: 4,
-                                },
+                                backgroundColor: alpha(goal.color || '#FAC984', 0.2),
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: goal.color || '#FAC984',
+                                  borderRadius: 4
+                                }
                               }}
                             />
                           </Box>
 
                           {/* Amount and Deadline */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              mb: 2,
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                             <Box>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
+                              <Typography variant="body2" color="text.secondary">
                                 Saved
                               </Typography>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                fontWeight={700}
-                                color={goal.color || "#FAC984"}
-                              >
+                              <Typography variant="h6" component="div" fontWeight={700} color={goal.color || '#FAC984'}>
                                 {formatCurrency(goal.current_amount)}
                               </Typography>
                             </Box>
-                            <Box sx={{ textAlign: "right" }}>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
+                            <Box sx={{ textAlign: 'right' }}>
+                              <Typography variant="body2" color="text.secondary">
                                 Target
                               </Typography>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                fontWeight={700}
-                              >
+                              <Typography variant="h6" component="div" fontWeight={700}>
                                 {formatCurrency(goal.amount)}
                               </Typography>
                             </Box>
                           </Box>
 
                           {/* Deadline */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <CalendarIcon
-                              sx={{ fontSize: 16, color: "text.secondary" }}
-                            />
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {getDaysUntilDeadline(goal.deadline || "") > 0
-                                ? `${getDaysUntilDeadline(
-                                    goal.deadline || ""
-                                  )} days left`
-                                : "Overdue"}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                            <Typography variant="caption" color="text.secondary">
+                              {getDaysUntilDeadline(goal.deadline || '') > 0 
+                                ? `${getDaysUntilDeadline(goal.deadline || '')} days left`
+                                : 'Overdue'
+                              }
                             </Typography>
                           </Box>
                         </CardContent>
@@ -2465,29 +1886,16 @@ const Dashboard: React.FC = () => {
                     sx={{
                       borderRadius: 2,
                       background: alpha(theme.palette.background.paper, 0.95),
-                      backdropFilter: "blur(20px)",
-                      border: `1px solid ${alpha(
-                        theme.palette.primary.main,
-                        0.2
-                      )}`,
+                      backdropFilter: 'blur(20px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                     }}
                   >
-                    <CardContent sx={{ p: 4, textAlign: "center" }}>
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        color="text.secondary"
-                        gutterBottom
-                      >
+                    <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="h6" component="div" color="text.secondary" gutterBottom>
                         No savings goals yet
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 3 }}
-                      >
-                        Create your first savings goal to start tracking your
-                        progress
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        Create your first savings goal to start tracking your progress
                       </Typography>
                       <Button
                         variant="contained"
@@ -2504,7 +1912,7 @@ const Dashboard: React.FC = () => {
             )}
 
             {/* Accounts Tab Content */}
-            {activeTab === "accounts" && (
+            {activeTab === 'accounts' && (
               <>
                 {/* Accounts Header */}
                 <Card
@@ -2513,11 +1921,8 @@ const Dashboard: React.FC = () => {
                     mb: 3,
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${alpha(
-                      theme.palette.primary.main,
-                      0.2
-                    )}`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
@@ -2530,37 +1935,20 @@ const Dashboard: React.FC = () => {
                         mb: 3,
                         borderRadius: 2,
                         background: alpha(theme.palette.success.main, 0.1),
-                        border: `1px solid ${alpha(
-                          theme.palette.success.main,
-                          0.2
-                        )}`,
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
                       }}
                     >
-                      <CardContent sx={{ p: 2, textAlign: "center" }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          gutterBottom
-                        >
+                      <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
                           Total Balance Across All Accounts
                         </Typography>
-                        <Typography
-                          variant="h4"
-                          fontWeight={700}
-                          color="success.main"
-                        >
+                        <Typography variant="h4" fontWeight={700} color="success.main">
                           {isBalancesLoading ? (
                             <CircularProgress size={30} />
-                          ) : balances && balances.accounts ? (
-                            formatCurrency(
-                              balances.accounts.reduce(
-                                (sum: number, acc: any) =>
-                                  sum + (acc.balances?.current || 0),
-                                0
-                              )
-                            )
                           ) : (
-                            "--"
+                            balances && balances.accounts
+                              ? formatCurrency(balances.accounts.reduce((sum: number, acc: any) => sum + (acc.balances?.current || 0), 0))
+                              : '--'
                           )}
                         </Typography>
                       </CardContent>
@@ -2570,47 +1958,32 @@ const Dashboard: React.FC = () => {
 
                 {/* Individual Accounts Grid */}
                 {isBalancesLoading ? (
-                  <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                     <CircularProgress size={40} />
                   </Box>
-                ) : balances &&
-                  balances.accounts &&
-                  balances.accounts.length > 0 ? (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                ) : balances && balances.accounts && balances.accounts.length > 0 ? (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                     {balances.accounts.map((account: any, index: number) => (
                       <Card
                         key={account.account_id}
                         elevation={4}
                         sx={{
-                          flex: "1 1 300px",
+                          flex: '1 1 300px',
                           minWidth: 0,
                           borderRadius: 2,
-                          background: alpha(
-                            theme.palette.background.paper,
-                            0.95
-                          ),
-                          backdropFilter: "blur(20px)",
-                          border: `1px solid ${alpha(
-                            theme.palette.primary.main,
-                            0.2
-                          )}`,
-                          transition: "all 0.3s ease",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: theme.shadows[12],
-                          },
+                          background: alpha(theme.palette.background.paper, 0.95),
+                          backdropFilter: 'blur(20px)',
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[12]
+                          }
                         }}
                       >
                         <CardContent sx={{ p: 3 }}>
                           {/* Account Header */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                              mb: 2,
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                             <Avatar
                               sx={{
                                 width: 50,
@@ -2621,26 +1994,18 @@ const Dashboard: React.FC = () => {
                               <MonetizationOn sx={{ fontSize: 25 }} />
                             </Avatar>
                             <Box sx={{ flex: 1 }}>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                fontWeight={600}
-                                gutterBottom
-                              >
+                              <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
                                 {account.name}
                               </Typography>
                               <Chip
                                 label={account.type}
                                 size="small"
                                 sx={{
-                                  backgroundColor: alpha(
-                                    theme.palette.primary.main,
-                                    0.1
-                                  ),
+                                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
                                   color: theme.palette.primary.main,
                                   fontWeight: 600,
-                                  fontSize: "0.7rem",
-                                  textTransform: "capitalize",
+                                  fontSize: '0.7rem',
+                                  textTransform: 'capitalize'
                                 }}
                               />
                             </Box>
@@ -2648,94 +2013,46 @@ const Dashboard: React.FC = () => {
 
                           {/* Account Details */}
                           <Box sx={{ mb: 2 }}>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              gutterBottom
-                            >
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
                               Account Number
                             </Typography>
-                            <Typography
-                              variant="body1"
-                              fontWeight={600}
-                              sx={{ fontFamily: "monospace" }}
-                            >
-                              ****{account.mask || "****"}
+                            <Typography variant="body1" fontWeight={600} sx={{ fontFamily: 'monospace' }}>
+                              ****{account.mask || '****'}
                             </Typography>
                           </Box>
 
                           {/* Balance Information */}
-                          <Box
-                            sx={{
-                              display: "grid",
-                              gridTemplateColumns: "1fr 1fr",
-                              gap: 2,
-                              mb: 2,
-                            }}
-                          >
+                          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
                             <Box>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                gutterBottom
-                              >
+                              <Typography variant="body2" color="text.secondary" gutterBottom>
                                 Current Balance
                               </Typography>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                fontWeight={700}
-                                color="success.main"
-                              >
+                              <Typography variant="h6" component="div" fontWeight={700} color="success.main">
                                 {formatCurrency(account.balances?.current || 0)}
                               </Typography>
                             </Box>
                             <Box>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                gutterBottom
-                              >
+                              <Typography variant="body2" color="text.secondary" gutterBottom>
                                 Available Balance
                               </Typography>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                fontWeight={700}
-                                color="info.main"
-                              >
-                                {formatCurrency(
-                                  account.balances?.available || 0
-                                )}
+                              <Typography variant="h6" component="div" fontWeight={700} color="info.main">
+                                {formatCurrency(account.balances?.available || 0)}
                               </Typography>
                             </Box>
                           </Box>
 
                           {/* Account Status */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Box
                               sx={{
                                 width: 8,
                                 height: 8,
-                                borderRadius: "50%",
-                                backgroundColor: account.balances?.current
-                                  ? theme.palette.success.main
-                                  : theme.palette.warning.main,
+                                borderRadius: '50%',
+                                backgroundColor: account.balances?.current ? theme.palette.success.main : theme.palette.warning.main
                               }}
                             />
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {account.balances?.current
-                                ? "Active"
-                                : "Inactive"}
+                            <Typography variant="caption" color="text.secondary">
+                              {account.balances?.current ? 'Active' : 'Inactive'}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -2748,25 +2065,16 @@ const Dashboard: React.FC = () => {
                     sx={{
                       borderRadius: 2,
                       background: alpha(theme.palette.background.paper, 0.95),
-                      backdropFilter: "blur(20px)",
-                      border: `1px solid ${alpha(
-                        theme.palette.primary.main,
-                        0.2
-                      )}`,
+                      backdropFilter: 'blur(20px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                     }}
                   >
-                    <CardContent sx={{ p: 4, textAlign: "center" }}>
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        color="text.secondary"
-                        gutterBottom
-                      >
+                    <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="h6" component="div" color="text.secondary" gutterBottom>
                         No accounts found
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        No linked accounts are available. Please check your
-                        Plaid connection.
+                        No linked accounts are available. Please check your Plaid connection.
                       </Typography>
                     </CardContent>
                   </Card>
@@ -2775,7 +2083,7 @@ const Dashboard: React.FC = () => {
             )}
 
             {/* Budget Tab Content */}
-            {activeTab === "budget" && (
+            {activeTab === 'budget' && (
               <>
                 {/* Budget Header */}
                 <Card
@@ -2784,26 +2092,17 @@ const Dashboard: React.FC = () => {
                     mb: 3,
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${alpha(
-                      theme.palette.primary.main,
-                      0.2
-                    )}`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
                     {renderTabNavigation()}
 
                     {/* Current Month Display */}
-                    <Box sx={{ mb: 3, textAlign: "center" }}>
-                      <Typography
-                        variant="h5"
-                        fontWeight={700}
-                        color="primary.main"
-                        gutterBottom
-                      >
-                        {getCurrentMonthRange().monthName}{" "}
-                        {getCurrentMonthRange().year}
+                    <Box sx={{ mb: 3, textAlign: 'center' }}>
+                      <Typography variant="h5" fontWeight={700} color="primary.main" gutterBottom>
+                        {getCurrentMonthRange().monthName} {getCurrentMonthRange().year}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Budget tracking based on your actual transactions
@@ -2811,32 +2110,17 @@ const Dashboard: React.FC = () => {
                     </Box>
 
                     {/* Budget Summary */}
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: 2,
-                        mb: 3,
-                      }}
-                    >
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 3 }}>
                       <Card
                         elevation={2}
                         sx={{
                           borderRadius: 2,
                           background: alpha(theme.palette.info.main, 0.1),
-                          border: `1px solid ${alpha(
-                            theme.palette.info.main,
-                            0.2
-                          )}`,
+                          border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                         }}
                       >
-                        <CardContent sx={{ p: 2, textAlign: "center" }}>
-                          <Typography
-                            variant="h6"
-                            fontWeight={700}
-                            color="info.main"
-                          >
+                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                          <Typography variant="h6" fontWeight={700} color="info.main">
                             {formatCurrency(calculateTotalBudget())}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
@@ -2849,18 +2133,11 @@ const Dashboard: React.FC = () => {
                         sx={{
                           borderRadius: 2,
                           background: alpha(theme.palette.warning.main, 0.1),
-                          border: `1px solid ${alpha(
-                            theme.palette.warning.main,
-                            0.2
-                          )}`,
+                          border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
                         }}
                       >
-                        <CardContent sx={{ p: 2, textAlign: "center" }}>
-                          <Typography
-                            variant="h6"
-                            fontWeight={700}
-                            color="warning.main"
-                          >
+                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                          <Typography variant="h6" fontWeight={700} color="warning.main">
                             {formatCurrency(calculateTotalSpent())}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
@@ -2873,21 +2150,12 @@ const Dashboard: React.FC = () => {
                         sx={{
                           borderRadius: 2,
                           background: alpha(theme.palette.success.main, 0.1),
-                          border: `1px solid ${alpha(
-                            theme.palette.success.main,
-                            0.2
-                          )}`,
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
                         }}
                       >
-                        <CardContent sx={{ p: 2, textAlign: "center" }}>
-                          <Typography
-                            variant="h6"
-                            fontWeight={700}
-                            color="success.main"
-                          >
-                            {formatCurrency(
-                              calculateTotalBudget() - calculateTotalSpent()
-                            )}
+                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                          <Typography variant="h6" fontWeight={700} color="success.main">
+                            {formatCurrency(calculateTotalBudget() - calculateTotalSpent())}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Remaining
@@ -2897,14 +2165,7 @@ const Dashboard: React.FC = () => {
                     </Box>
 
                     {/* Edit Budget Button */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        gap: 2,
-                        mb: 3,
-                      }}
-                    >
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 3 }}>
                       {isEditingBudget && (
                         <Button
                           variant="outlined"
@@ -2923,30 +2184,12 @@ const Dashboard: React.FC = () => {
                       )}
                       <Button
                         variant="contained"
-                        startIcon={
-                          isEditingBudget ? (
-                            isBudgetLoading ? (
-                              <CircularProgress size={20} />
-                            ) : (
-                              <CheckCircleIcon />
-                            )
-                          ) : (
-                            <EditIcon />
-                          )
-                        }
-                        onClick={
-                          isEditingBudget
-                            ? saveBudget
-                            : () => setIsEditingBudget(true)
-                        }
+                        startIcon={isEditingBudget ? (isBudgetLoading ? <CircularProgress size={20} /> : <CheckCircleIcon />) : <EditIcon />}
+                        onClick={isEditingBudget ? saveBudget : () => setIsEditingBudget(true)}
                         disabled={isBudgetLoading}
                         sx={{ borderRadius: 2 }}
                       >
-                        {isEditingBudget
-                          ? isBudgetLoading
-                            ? "Saving..."
-                            : "Save Budget"
-                          : "Edit Budget"}
+                        {isEditingBudget ? (isBudgetLoading ? 'Saving...' : 'Save Budget') : 'Edit Budget'}
                       </Button>
                     </Box>
                   </CardContent>
@@ -2954,95 +2197,58 @@ const Dashboard: React.FC = () => {
 
                 {/* Budget Categories Grid */}
                 {isBudgetLoading && !currentBudget ? (
-                  <Box
-                    sx={{ display: "flex", justifyContent: "center", py: 4 }}
-                  >
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                     <CircularProgress />
                   </Box>
                 ) : (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                     {budgetCategories.map((category) => (
                       <Card
                         key={category.id}
                         elevation={4}
                         sx={{
-                          flex: "1 1 350px",
+                          flex: '1 1 350px',
                           minWidth: 0,
                           borderRadius: 2,
-                          background: alpha(
-                            theme.palette.background.paper,
-                            0.95
-                          ),
-                          backdropFilter: "blur(20px)",
-                          border: `1px solid ${alpha(
-                            theme.palette.primary.main,
-                            0.2
-                          )}`,
-                          transition: "all 0.3s ease",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: theme.shadows[12],
-                          },
+                          background: alpha(theme.palette.background.paper, 0.95),
+                          backdropFilter: 'blur(20px)',
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[12]
+                          }
                         }}
                       >
                         <CardContent sx={{ p: 3 }}>
                           {/* Category Header */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                              mb: 2,
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                             <Box
                               sx={{
                                 width: 50,
                                 height: 50,
                                 borderRadius: 2,
-                                background: alpha(
-                                  getBudgetStatusColor(
-                                    category.spent,
-                                    category.amount
-                                  ),
-                                  0.1
-                                ),
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "24px",
+                                background: alpha(getBudgetStatusColor(category.spent, category.amount), 0.1),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '24px'
                               }}
                             >
                               {category.icon}
                             </Box>
                             <Box sx={{ flex: 1 }}>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                fontWeight={600}
-                              >
+                              <Typography variant="h6" component="div" fontWeight={600}>
                                 {category.name}
                               </Typography>
                               <Chip
-                                label={`${getBudgetProgress(
-                                  category.spent,
-                                  category.amount
-                                ).toFixed(1)}%`}
+                                label={`${getBudgetProgress(category.spent, category.amount).toFixed(1)}%`}
                                 size="small"
                                 sx={{
-                                  backgroundColor: alpha(
-                                    getBudgetStatusColor(
-                                      category.spent,
-                                      category.amount
-                                    ),
-                                    0.1
-                                  ),
-                                  color: getBudgetStatusColor(
-                                    category.spent,
-                                    category.amount
-                                  ),
+                                  backgroundColor: alpha(getBudgetStatusColor(category.spent, category.amount), 0.1),
+                                  color: getBudgetStatusColor(category.spent, category.amount),
                                   fontWeight: 600,
-                                  fontSize: "0.7rem",
+                                  fontSize: '0.7rem'
                                 }}
                               />
                             </Box>
@@ -3055,128 +2261,72 @@ const Dashboard: React.FC = () => {
                                 fullWidth
                                 label="Budget Amount"
                                 type="text"
-                                value={
-                                  category.amount === 0
-                                    ? ""
-                                    : category.amount.toString()
-                                }
+                                value={category.amount === 0 ? '' : category.amount.toString()}
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   // Allow empty string or valid numbers
-                                  if (
-                                    value === "" ||
-                                    /^\d*\.?\d*$/.test(value)
-                                  ) {
-                                    const numValue =
-                                      value === "" ? 0 : Number(value);
+                                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                    const numValue = value === '' ? 0 : Number(value);
                                     if (!isNaN(numValue) && numValue >= 0) {
-                                      const newCategories =
-                                        budgetCategories.map((cat) =>
-                                          cat.id === category.id
-                                            ? { ...cat, amount: numValue }
-                                            : cat
-                                        );
+                                      const newCategories = budgetCategories.map(cat =>
+                                        cat.id === category.id
+                                          ? { ...cat, amount: numValue }
+                                          : cat
+                                      );
                                       setBudgetCategories(newCategories);
                                     }
                                   }
                                 }}
                                 InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      $
-                                    </InputAdornment>
-                                  ),
+                                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                                 }}
                                 sx={{ mb: 1 }}
                               />
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                              >
-                                Spent amount is automatically calculated from
-                                your transactions
+                              <Typography variant="caption" color="text.secondary">
+                                Spent amount is automatically calculated from your transactions
                               </Typography>
                             </Box>
                           )}
 
                           {/* Budget Progress */}
                           <Box sx={{ mb: 2 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mb: 1,
-                              }}
-                            >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                               <Typography variant="body2" fontWeight={600}>
                                 Progress
                               </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {formatCurrency(category.spent)} /{" "}
-                                {formatCurrency(category.amount)}
+                              <Typography variant="body2" color="text.secondary">
+                                {formatCurrency(category.spent)} / {formatCurrency(category.amount)}
                               </Typography>
                             </Box>
                             <LinearProgress
                               variant="determinate"
-                              value={getBudgetProgress(
-                                category.spent,
-                                category.amount
-                              )}
+                              value={getBudgetProgress(category.spent, category.amount)}
                               sx={{
                                 height: 8,
                                 borderRadius: 4,
-                                backgroundColor: alpha(
-                                  getBudgetStatusColor(
-                                    category.spent,
-                                    category.amount
-                                  ),
-                                  0.2
-                                ),
-                                "& .MuiLinearProgress-bar": {
-                                  backgroundColor: getBudgetStatusColor(
-                                    category.spent,
-                                    category.amount
-                                  ),
-                                  borderRadius: 4,
-                                },
+                                backgroundColor: alpha(getBudgetStatusColor(category.spent, category.amount), 0.2),
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: getBudgetStatusColor(category.spent, category.amount),
+                                  borderRadius: 4
+                                }
                               }}
                             />
                           </Box>
 
                           {/* Budget Status */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Box
                               sx={{
                                 width: 8,
                                 height: 8,
-                                borderRadius: "50%",
-                                backgroundColor: getBudgetStatusColor(
-                                  category.spent,
-                                  category.amount
-                                ),
+                                borderRadius: '50%',
+                                backgroundColor: getBudgetStatusColor(category.spent, category.amount)
                               }}
                             />
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {category.amount === 0
-                                ? "No budget set"
-                                : category.spent >= category.amount
-                                ? "Over budget"
-                                : category.spent >= category.amount * 0.9
-                                ? "Near limit"
-                                : "On track"}
+                            <Typography variant="caption" color="text.secondary">
+                              {category.amount === 0 ? 'No budget set' :
+                               category.spent >= category.amount ? 'Over budget' :
+                               category.spent >= category.amount * 0.9 ? 'Near limit' : 'On track'}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -3192,136 +2342,76 @@ const Dashboard: React.FC = () => {
                     mt: 4,
                     borderRadius: 2,
                     background: alpha(theme.palette.background.paper, 0.95),
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${alpha(
-                      theme.palette.primary.main,
-                      0.2
-                    )}`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
                     <Typography variant="h6" fontWeight={700} gutterBottom>
                       Transactions This Month
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 3 }}
-                    >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                       Showing expenses categorized into your budget categories
                     </Typography>
-
+                    
                     {allMonthlyTransactions.length > 0 ? (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 1,
-                        }}
-                      >
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         {allMonthlyTransactions
-                          .filter((transaction) => transaction.amount > 0) // Only show expenses
-                          .sort(
-                            (a, b) =>
-                              new Date(b.date).getTime() -
-                              new Date(a.date).getTime()
-                          ) // Sort by date, newest first
+                          .filter(transaction => transaction.amount > 0) // Only show expenses
+                          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by date, newest first
                           .map((transaction, index) => (
                             <Box
                               key={`${transaction.transaction_id}-${index}`}
                               sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
                                 p: 2,
                                 borderRadius: 1,
-                                backgroundColor: alpha(
-                                  theme.palette.background.default,
-                                  0.5
-                                ),
-                                border: `1px solid ${alpha(
-                                  theme.palette.divider,
-                                  0.1
-                                )}`,
-                                "&:hover": {
-                                  backgroundColor: alpha(
-                                    theme.palette.background.default,
-                                    0.8
-                                  ),
-                                },
+                                backgroundColor: alpha(theme.palette.background.default, 0.5),
+                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                                '&:hover': {
+                                  backgroundColor: alpha(theme.palette.background.default, 0.8),
+                                }
                               }}
                             >
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                  flex: 1,
-                                }}
-                              >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                                 <Box
                                   sx={{
                                     width: 40,
                                     height: 40,
                                     borderRadius: 1,
-                                    background: alpha(
-                                      getBudgetStatusColor(0, 100),
-                                      0.1
-                                    ),
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: "16px",
+                                    background: alpha(getBudgetStatusColor(0, 100), 0.1),
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '16px'
                                   }}
                                 >
-                                  {budgetCategories.find(
-                                    (cat) =>
-                                      cat.name ===
-                                      (transaction.budget_category ||
-                                        categorizeTransaction(transaction))
-                                  )?.icon || "💰"}
+                                  {budgetCategories.find(cat => cat.name === (transaction.budget_category || categorizeTransaction(transaction)))?.icon || '💰'}
                                 </Box>
                                 <Box sx={{ flex: 1 }}>
                                   <Typography variant="body2" fontWeight={600}>
                                     {transaction.name}
                                   </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                  >
+                                  <Typography variant="caption" color="text.secondary">
                                     {formatDate(transaction.date)}
                                   </Typography>
                                 </Box>
                               </Box>
-
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                }}
-                              >
+                              
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Chip
-                                  label={
-                                    transaction.budget_category ||
-                                    categorizeTransaction(transaction)
-                                  }
+                                  label={transaction.budget_category || categorizeTransaction(transaction)}
                                   size="small"
                                   sx={{
-                                    backgroundColor: alpha(
-                                      theme.palette.primary.main,
-                                      0.1
-                                    ),
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
                                     color: theme.palette.primary.main,
                                     fontWeight: 600,
-                                    fontSize: "0.7rem",
+                                    fontSize: '0.7rem'
                                   }}
                                 />
-                                <Typography
-                                  variant="body2"
-                                  fontWeight={600}
-                                  color="error.main"
-                                >
+                                <Typography variant="body2" fontWeight={600} color="error.main">
                                   {formatCurrency(transaction.amount)}
                                 </Typography>
                               </Box>
@@ -3329,7 +2419,7 @@ const Dashboard: React.FC = () => {
                           ))}
                       </Box>
                     ) : (
-                      <Box sx={{ textAlign: "center", py: 4 }}>
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
                         <Typography variant="body2" color="text.secondary">
                           No transactions found for this month
                         </Typography>
@@ -3347,19 +2437,19 @@ const Dashboard: React.FC = () => {
       {isAskingCapy && (
         <Box
           sx={{
-            position: "fixed",
+            position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
             backgroundColor: alpha(theme.palette.background.default, 0.8),
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             zIndex: theme.zIndex.modal,
-            flexDirection: "column",
-            gap: 2,
+            flexDirection: 'column',
+            gap: 2
           }}
         >
           <Box
@@ -3369,25 +2459,20 @@ const Dashboard: React.FC = () => {
             sx={{
               width: 80,
               height: 80,
-              animation: "pulse 1.5s ease-in-out infinite",
-              "@keyframes pulse": {
-                "0%, 100%": {
+              animation: 'pulse 1.5s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
                   opacity: 0.8,
-                  transform: "scale(1)",
+                  transform: 'scale(1)'
                 },
-                "50%": {
+                '50%': {
                   opacity: 1,
-                  transform: "scale(1.05)",
-                },
-              },
+                  transform: 'scale(1.05)'
+                }
+              }
             }}
           />
-          <Typography
-            variant="h6"
-            component="div"
-            color="text.primary"
-            textAlign="center"
-          >
+          <Typography variant="h6" component="div" color="text.primary" textAlign="center">
             Capy is thinking...
           </Typography>
           <CircularProgress size={40} thickness={4} />
@@ -3404,24 +2489,24 @@ const Dashboard: React.FC = () => {
           sx: {
             borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: "blur(20px)",
-          },
+            backdropFilter: 'blur(20px)'
+          }
         }}
       >
         {selectedGoal && (
           <>
             <DialogTitle sx={{ pb: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box
                   sx={{
                     width: 60,
                     height: 60,
                     borderRadius: 2,
-                    background: alpha(selectedGoal.color || "", 0.1),
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "32px",
+                    background: alpha(selectedGoal.color || '', 0.1),
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '32px'
                   }}
                 >
                   {selectedGoal.icon}
@@ -3430,33 +2515,30 @@ const Dashboard: React.FC = () => {
                   <Typography variant="h6" component="div" fontWeight={700}>
                     {selectedGoal.title}
                   </Typography>
-                  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                     <Chip
                       label={selectedGoal.category}
                       size="small"
                       sx={{
-                        backgroundColor: alpha(selectedGoal.color || "", 0.1),
+                        backgroundColor: alpha(selectedGoal.color || '', 0.1),
                         color: selectedGoal.color,
-                        fontWeight: 600,
+                        fontWeight: 600
                       }}
                     />
                     <Chip
                       label={selectedGoal.priority}
                       size="small"
                       sx={{
-                        backgroundColor: alpha(
-                          getPriorityColor(selectedGoal.priority),
-                          0.1
-                        ),
+                        backgroundColor: alpha(getPriorityColor(selectedGoal.priority), 0.1),
                         color: getPriorityColor(selectedGoal.priority),
-                        fontWeight: 600,
+                        fontWeight: 600
                       }}
                     />
                   </Box>
                 </Box>
               </Box>
             </DialogTitle>
-
+            
             <DialogContent sx={{ pt: 2 }}>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 {selectedGoal.description}
@@ -3464,85 +2546,44 @@ const Dashboard: React.FC = () => {
 
               {/* Progress Section */}
               <Box sx={{ mb: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 1,
-                  }}
-                >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                   <Typography variant="h6" component="div" fontWeight={600}>
                     Progress
                   </Typography>
-                  <Typography
-                    variant="h6"
-                    component="div"
-                    fontWeight={700}
-                    color={selectedGoal.color || "#FAC984"}
-                  >
-                    {getProgressPercentage(
-                      selectedGoal.current_amount,
-                      selectedGoal.amount
-                    ).toFixed(1)}
-                    %
+                  <Typography variant="h6" component="div" fontWeight={700} color={selectedGoal.color || '#FAC984'}>
+                    {getProgressPercentage(selectedGoal.current_amount, selectedGoal.amount).toFixed(1)}%
                   </Typography>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={getProgressPercentage(
-                    selectedGoal.current_amount,
-                    selectedGoal.amount
-                  )}
+                  value={getProgressPercentage(selectedGoal.current_amount, selectedGoal.amount)}
                   sx={{
                     height: 12,
                     borderRadius: 6,
-                    backgroundColor: alpha(
-                      selectedGoal.color || "#FAC984",
-                      0.2
-                    ),
-                    "& .MuiLinearProgress-bar": {
+                    backgroundColor: alpha(selectedGoal.color || '#FAC984', 0.2),
+                    '& .MuiLinearProgress-bar': {
                       backgroundColor: selectedGoal.color,
-                      borderRadius: 6,
-                    },
+                      borderRadius: 6
+                    }
                   }}
                 />
               </Box>
 
               {/* Amount Details */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 3,
-                  mb: 3,
-                }}
-              >
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, mb: 3 }}>
                 <Card
                   elevation={2}
                   sx={{
                     borderRadius: 2,
                     background: alpha(theme.palette.success.main, 0.1),
-                    border: `1px solid ${alpha(
-                      theme.palette.success.main,
-                      0.2
-                    )}`,
+                    border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
                   }}
                 >
-                  <CardContent sx={{ p: 2, textAlign: "center" }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
+                  <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
                       Current Amount
                     </Typography>
-                    <Typography
-                      variant="h6"
-                      component="div"
-                      fontWeight={700}
-                      color="success.main"
-                    >
+                    <Typography variant="h6" component="div" fontWeight={700} color="success.main">
                       {formatCurrency(selectedGoal.current_amount)}
                     </Typography>
                   </CardContent>
@@ -3553,23 +2594,14 @@ const Dashboard: React.FC = () => {
                   sx={{
                     borderRadius: 2,
                     background: alpha(theme.palette.info.main, 0.1),
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                   }}
                 >
-                  <CardContent sx={{ p: 2, textAlign: "center" }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
+                  <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
                       Target Amount
                     </Typography>
-                    <Typography
-                      variant="h6"
-                      component="div"
-                      fontWeight={700}
-                      color="info.main"
-                    >
+                    <Typography variant="h6" component="div" fontWeight={700} color="info.main">
                       {formatCurrency(selectedGoal.amount)}
                     </Typography>
                   </CardContent>
@@ -3583,69 +2615,40 @@ const Dashboard: React.FC = () => {
                   borderRadius: 2,
                   background: alpha(theme.palette.warning.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
-                  mb: 3,
+                  mb: 3
                 }}
               >
-                <CardContent sx={{ p: 2, textAlign: "center" }}>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
+                <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
                     Remaining to Save
                   </Typography>
-                  <Typography
-                    variant="h6"
-                    component="div"
-                    fontWeight={700}
-                    color="warning.main"
-                  >
-                    {formatCurrency(
-                      selectedGoal.amount - selectedGoal.current_amount
-                    )}
+                  <Typography variant="h6" component="div" fontWeight={700} color="warning.main">
+                    {formatCurrency(selectedGoal.amount - selectedGoal.current_amount)}
                   </Typography>
                 </CardContent>
               </Card>
 
               {/* Deadline Info */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  p: 2,
-                  borderRadius: 2,
-                  background: alpha(theme.palette.grey[100], 0.5),
-                }}
-              >
-                <CalendarIcon sx={{ color: "text.secondary" }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, background: alpha(theme.palette.grey[100], 0.5) }}>
+                <CalendarIcon sx={{ color: 'text.secondary' }} />
                 <Box>
                   <Typography variant="body2" fontWeight={600}>
                     Deadline
                   </Typography>
                   <Typography variant="body1">
-                    {selectedGoal.deadline
-                      ? new Date(selectedGoal.deadline).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )
-                      : "No deadline"}
+                    {selectedGoal.deadline ? new Date(selectedGoal.deadline).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    }) : 'No deadline'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {selectedGoal.deadline
-                      ? `${getDaysUntilDeadline(
-                          selectedGoal.deadline
-                        )} days remaining`
-                      : "No deadline"}
+                    {selectedGoal.deadline ? `${getDaysUntilDeadline(selectedGoal.deadline)} days remaining` : 'No deadline'}
                   </Typography>
                 </Box>
               </Box>
             </DialogContent>
-
+            
             <DialogActions sx={{ p: 3, pt: 1 }}>
               <Button onClick={handleCloseGoalDialog} color="inherit">
                 Close
@@ -3653,9 +2656,7 @@ const Dashboard: React.FC = () => {
               <Button
                 variant="contained"
                 startIcon={<EditIcon />}
-                onClick={() =>
-                  selectedGoal && handleOpenEditGoalDialog(selectedGoal)
-                }
+                onClick={() => selectedGoal && handleOpenEditGoalDialog(selectedGoal)}
                 sx={{ borderRadius: 2 }}
               >
                 Edit Goal
@@ -3675,8 +2676,8 @@ const Dashboard: React.FC = () => {
           sx: {
             borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: "blur(20px)",
-          },
+            backdropFilter: 'blur(20px)'
+          }
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
@@ -3687,102 +2688,72 @@ const Dashboard: React.FC = () => {
             Set up a new financial goal with custom tracking and automation
           </Typography>
         </DialogTitle>
-
+        
         <DialogContent sx={{ pt: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              gap: 3,
-              mt: 2,
-            }}
-          >
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mt: 2 }}>
             {/* Basic Information */}
             <Box sx={{ flex: 1 }}>
               <TextField
                 fullWidth
                 label="Goal Title"
                 value={newGoal.title}
-                onChange={(e) =>
-                  setNewGoal({ ...newGoal, title: e.target.value })
-                }
+                onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
                 sx={{ mb: 2 }}
               />
-
+              
               <TextField
                 fullWidth
                 label="Description"
                 multiline
                 rows={3}
                 value={newGoal.description}
-                onChange={(e) =>
-                  setNewGoal({ ...newGoal, description: e.target.value })
-                }
+                onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
                 sx={{ mb: 2 }}
               />
-
+              
               <TextField
                 fullWidth
                 label="Target Amount"
                 type="number"
                 value={newGoal.amount}
-                onChange={(e) =>
-                  setNewGoal({
-                    ...newGoal,
-                    amount: parseFloat(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => setNewGoal({ ...newGoal, amount: parseFloat(e.target.value) || 0 })}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
                 sx={{ mb: 2 }}
               />
-
+              
               <TextField
                 fullWidth
                 label="Current Progress"
                 type="number"
                 value={newGoal.current_amount}
-                onChange={(e) =>
-                  setNewGoal({
-                    ...newGoal,
-                    current_amount: parseFloat(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => setNewGoal({ ...newGoal, current_amount: parseFloat(e.target.value) || 0 })}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
                 helperText="How much you've already saved towards this goal"
                 sx={{ mb: 2 }}
               />
-
+              
               <DatePicker
                 label="Deadline"
                 value={newGoal.deadline}
-                onChange={(newValue) =>
-                  setNewGoal({ ...newGoal, deadline: newValue })
-                }
+                onChange={(newValue) => setNewGoal({ ...newGoal, deadline: newValue })}
                 minDate={dayjs()}
                 slotProps={{
                   textField: {
                     fullWidth: true,
                     sx: { mb: 2 },
-                    error: newGoal.deadline
-                      ? !isDateValid(newGoal.deadline)
-                      : false,
-                    helperText:
-                      newGoal.deadline && !isDateValid(newGoal.deadline)
-                        ? "Deadline cannot be in the past"
-                        : "",
-                  },
+                    error: newGoal.deadline ? !isDateValid(newGoal.deadline) : false,
+                    helperText: newGoal.deadline && !isDateValid(newGoal.deadline) 
+                      ? 'Deadline cannot be in the past' 
+                      : ''
+                  }
                 }}
               />
             </Box>
-
+            
             {/* Category and Priority */}
             <Box sx={{ flex: 1 }}>
               <FormControl fullWidth sx={{ mb: 2 }}>
@@ -3790,12 +2761,7 @@ const Dashboard: React.FC = () => {
                 <Select
                   value={newGoal.category}
                   label="Category"
-                  onChange={(e) =>
-                    setNewGoal({
-                      ...newGoal,
-                      category: e.target.value as string,
-                    })
-                  }
+                  onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value as string })}
                 >
                   <MenuItem value="savings">💰 Savings</MenuItem>
                   <MenuItem value="debt">💳 Debt Repayment</MenuItem>
@@ -3804,102 +2770,60 @@ const Dashboard: React.FC = () => {
                   <MenuItem value="emergency">🛡️ Emergency Fund</MenuItem>
                 </Select>
               </FormControl>
-
+              
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={newGoal.priority}
                   label="Priority"
-                  onChange={(e) =>
-                    setNewGoal({
-                      ...newGoal,
-                      priority: e.target.value as "low" | "medium" | "high",
-                    })
-                  }
+                  onChange={(e) => setNewGoal({ ...newGoal, priority: e.target.value as 'low' | 'medium' | 'high' })}
                 >
                   <MenuItem value="low">Low Priority</MenuItem>
                   <MenuItem value="medium">Medium Priority</MenuItem>
                   <MenuItem value="high">High Priority</MenuItem>
                 </Select>
               </FormControl>
-
+              
               {/* Icon Selection */}
               <Typography variant="subtitle2" gutterBottom>
                 Choose an Icon
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
-                {[
-                  "💰",
-                  "🏠",
-                  "✈️",
-                  "💻",
-                  "📈",
-                  "💳",
-                  "🛡️",
-                  "🎓",
-                  "🚗",
-                  "🏥",
-                  "🎯",
-                  "⭐",
-                ].map((icon) => (
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['💰', '🏠', '✈️', '💻', '📈', '💳', '🛡️', '🎓', '🚗', '🏥', '🎯', '⭐'].map((icon) => (
                   <IconButton
                     key={icon}
-                    onClick={() =>
-                      setNewGoal({ ...newGoal, icon: icon as string })
-                    }
+                    onClick={() => setNewGoal({ ...newGoal, icon: icon as string })}
                     sx={{
-                      fontSize: "24px",
-                      border:
-                        newGoal.icon === icon
-                          ? `2px solid ${theme.palette.primary.main}`
-                          : "2px solid transparent",
-                      "&:hover": {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      },
+                      fontSize: '24px',
+                      border: newGoal.icon === icon ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                      }
                     }}
                   >
                     {icon}
                   </IconButton>
                 ))}
               </Box>
-
+              
               {/* Color Selection */}
               <Typography variant="subtitle2" gutterBottom>
                 Choose a Color
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
-                {[
-                  "#4CAF50",
-                  "#2196F3",
-                  "#FF9800",
-                  "#F44336",
-                  "#9C27B0",
-                  "#00BCD4",
-                  "#FF5722",
-                  "#795548",
-                  "#607D8B",
-                  "#E91E63",
-                ].map((color) => (
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['#4CAF50', '#2196F3', '#FF9800', '#F44336', '#9C27B0', '#00BCD4', '#FF5722', '#795548', '#607D8B', '#E91E63'].map((color) => (
                   <IconButton
                     key={color}
-                    onClick={() =>
-                      setNewGoal({ ...newGoal, color: color as string })
-                    }
+                    onClick={() => setNewGoal({ ...newGoal, color: color as string })}
                     sx={{
                       backgroundColor: color,
                       width: 40,
                       height: 40,
-                      border:
-                        newGoal.color === color
-                          ? `3px solid ${theme.palette.common.white}`
-                          : "3px solid transparent",
-                      boxShadow:
-                        newGoal.color === color
-                          ? `0 0 0 2px ${theme.palette.primary.main}`
-                          : "none",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
+                      border: newGoal.color === color ? `3px solid ${theme.palette.common.white}` : '3px solid transparent',
+                      boxShadow: newGoal.color === color ? `0 0 0 2px ${theme.palette.primary.main}` : 'none',
+                      '&:hover': {
+                        transform: 'scale(1.1)'
+                      }
                     }}
                   />
                 ))}
@@ -3907,7 +2831,7 @@ const Dashboard: React.FC = () => {
             </Box>
           </Box>
         </DialogContent>
-
+        
         <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button onClick={handleCloseAddGoalDialog} color="inherit">
             Cancel
@@ -3915,12 +2839,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleAddGoal}
-            disabled={
-              !newGoal.title ||
-              !newGoal.description ||
-              newGoal.amount <= 0 ||
-              !newGoal.deadline
-            }
+            disabled={!newGoal.title || !newGoal.description || newGoal.amount <= 0 || !newGoal.deadline}
             sx={{ borderRadius: 2 }}
           >
             Create Goal
@@ -3938,8 +2857,8 @@ const Dashboard: React.FC = () => {
           sx: {
             borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: "blur(20px)",
-          },
+            backdropFilter: 'blur(20px)'
+          }
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
@@ -3950,109 +2869,72 @@ const Dashboard: React.FC = () => {
             Update your financial goal with custom tracking and automation
           </Typography>
         </DialogTitle>
-
+        
         <DialogContent sx={{ pt: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              gap: 3,
-              mt: 2,
-            }}
-          >
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mt: 2 }}>
             {/* Basic Information */}
             <Box sx={{ flex: 1 }}>
               <TextField
                 fullWidth
                 label="Goal Title"
                 value={editingGoalForm.title}
-                onChange={(e) =>
-                  setEditingGoalForm({
-                    ...editingGoalForm,
-                    title: e.target.value,
-                  })
-                }
+                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, title: e.target.value })}
                 sx={{ mb: 2 }}
               />
-
+              
               <TextField
                 fullWidth
                 label="Description"
                 multiline
                 rows={3}
                 value={editingGoalForm.description}
-                onChange={(e) =>
-                  setEditingGoalForm({
-                    ...editingGoalForm,
-                    description: e.target.value,
-                  })
-                }
+                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, description: e.target.value })}
                 sx={{ mb: 2 }}
               />
-
+              
               <TextField
                 fullWidth
                 label="Target Amount"
                 type="number"
                 value={editingGoalForm.amount}
-                onChange={(e) =>
-                  setEditingGoalForm({
-                    ...editingGoalForm,
-                    amount: parseFloat(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, amount: parseFloat(e.target.value) || 0 })}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
                 sx={{ mb: 2 }}
               />
-
+              
               <TextField
                 fullWidth
                 label="Current Progress"
                 type="number"
                 value={editingGoalForm.current_amount}
-                onChange={(e) =>
-                  setEditingGoalForm({
-                    ...editingGoalForm,
-                    current_amount: parseFloat(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => setEditingGoalForm({ ...editingGoalForm, current_amount: parseFloat(e.target.value) || 0 })}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
                 helperText="How much you've already saved towards this goal"
                 sx={{ mb: 2 }}
               />
-
+              
               <DatePicker
                 label="Deadline"
                 value={editingGoalForm.deadline}
-                onChange={(newValue) =>
-                  setEditingGoalForm({ ...editingGoalForm, deadline: newValue })
-                }
+                onChange={(newValue) => setEditingGoalForm({ ...editingGoalForm, deadline: newValue })}
                 minDate={dayjs()}
                 slotProps={{
                   textField: {
                     fullWidth: true,
                     sx: { mb: 2 },
-                    error: editingGoalForm.deadline
-                      ? !isDateValid(editingGoalForm.deadline)
-                      : false,
-                    helperText:
-                      editingGoalForm.deadline &&
-                      !isDateValid(editingGoalForm.deadline)
-                        ? "Deadline cannot be in the past"
-                        : "",
-                  },
+                    error: editingGoalForm.deadline ? !isDateValid(editingGoalForm.deadline) : false,
+                    helperText: editingGoalForm.deadline && !isDateValid(editingGoalForm.deadline) 
+                      ? 'Deadline cannot be in the past' 
+                      : ''
+                  }
                 }}
               />
             </Box>
-
+            
             {/* Category and Priority */}
             <Box sx={{ flex: 1 }}>
               <FormControl fullWidth sx={{ mb: 2 }}>
@@ -4060,12 +2942,7 @@ const Dashboard: React.FC = () => {
                 <Select
                   value={editingGoalForm.category}
                   label="Category"
-                  onChange={(e) =>
-                    setEditingGoalForm({
-                      ...editingGoalForm,
-                      category: e.target.value as string,
-                    })
-                  }
+                  onChange={(e) => setEditingGoalForm({ ...editingGoalForm, category: e.target.value as string })}
                 >
                   <MenuItem value="savings">💰 Savings</MenuItem>
                   <MenuItem value="debt">💳 Debt Repayment</MenuItem>
@@ -4074,115 +2951,67 @@ const Dashboard: React.FC = () => {
                   <MenuItem value="emergency">🛡️ Emergency Fund</MenuItem>
                 </Select>
               </FormControl>
-
+              
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={editingGoalForm.priority}
                   label="Priority"
-                  onChange={(e) =>
-                    setEditingGoalForm({
-                      ...editingGoalForm,
-                      priority: e.target.value as "low" | "medium" | "high",
-                    })
-                  }
+                  onChange={(e) => setEditingGoalForm({ ...editingGoalForm, priority: e.target.value as 'low' | 'medium' | 'high' })}
                 >
                   <MenuItem value="low">Low Priority</MenuItem>
                   <MenuItem value="medium">Medium Priority</MenuItem>
                   <MenuItem value="high">High Priority</MenuItem>
                 </Select>
               </FormControl>
-
+              
               {/* Icon Selection */}
               <Typography variant="subtitle2" gutterBottom>
                 Choose an Icon
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
-                {[
-                  "💰",
-                  "🏠",
-                  "✈️",
-                  "💻",
-                  "📈",
-                  "💳",
-                  "🛡️",
-                  "🎓",
-                  "🚗",
-                  "🏥",
-                  "🎯",
-                  "⭐",
-                ].map((icon) => (
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['💰', '🏠', '✈️', '💻', '📈', '💳', '🛡️', '🎓', '🚗', '🏥', '🎯', '⭐'].map((icon) => (
                   <IconButton
                     key={icon}
-                    onClick={() =>
-                      setEditingGoalForm({
-                        ...editingGoalForm,
-                        icon: icon as string,
-                      })
-                    }
+                    onClick={() => setEditingGoalForm({ ...editingGoalForm, icon: icon as string })}
                     sx={{
-                      fontSize: "24px",
-                      border:
-                        editingGoalForm.icon === icon
-                          ? `2px solid ${theme.palette.primary.main}`
-                          : "2px solid transparent",
-                      "&:hover": {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      },
+                      fontSize: '24px',
+                      border: editingGoalForm.icon === icon ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                      }
                     }}
                   >
                     {icon}
                   </IconButton>
                 ))}
               </Box>
-
+              
               {/* Color Selection */}
               <Typography variant="subtitle2" gutterBottom>
                 Choose a Color
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
-                {[
-                  "#4CAF50",
-                  "#2196F3",
-                  "#FF9800",
-                  "#F44336",
-                  "#9C27B0",
-                  "#00BCD4",
-                  "#FF5722",
-                  "#795548",
-                  "#607D8B",
-                  "#E91E63",
-                ].map((color) => (
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {['#4CAF50', '#2196F3', '#FF9800', '#F44336', '#9C27B0', '#00BCD4', '#FF5722', '#795548', '#607D8B', '#E91E63'].map((color) => (
                   <IconButton
                     key={color}
-                    onClick={() =>
-                      setEditingGoalForm({
-                        ...editingGoalForm,
-                        color: color as string,
-                      })
-                    }
+                    onClick={() => setEditingGoalForm({ ...editingGoalForm, color: color as string })}
                     sx={{
                       backgroundColor: color,
                       width: 40,
                       height: 40,
-                      border:
-                        editingGoalForm.color === color
-                          ? `3px solid ${theme.palette.common.white}`
-                          : "3px solid transparent",
-                      boxShadow:
-                        editingGoalForm.color === color
-                          ? `0 0 0 2px ${theme.palette.primary.main}`
-                          : "none",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
+                      border: editingGoalForm.color === color ? `3px solid ${theme.palette.common.white}` : '3px solid transparent',
+                      boxShadow: editingGoalForm.color === color ? `0 0 0 2px ${theme.palette.primary.main}` : 'none',
+                      '&:hover': {
+                        transform: 'scale(1.1)'
+                      }
                     }}
                   />
                 ))}
               </Box>
             </Box>
           </Box>
-
+          
           {/* Automation Suggestions */}
           <Box sx={{ mt: 3 }}>
             <Card
@@ -4190,60 +3019,31 @@ const Dashboard: React.FC = () => {
               sx={{
                 borderRadius: 2,
                 background: alpha(theme.palette.info.main, 0.05),
-                border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
               }}
             >
               <CardContent>
-                <Typography
-                  variant="h6"
-                  component="div"
-                  fontWeight={600}
-                  gutterBottom
-                >
+                <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
                   🤖 Automation Suggestions
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
-                >
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Capy can help automate your goal progress tracking:
                 </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    <CheckCircleIcon
-                      sx={{ fontSize: 16, color: "success.main" }}
-                    />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
                     Track savings from specific income sources
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    <CheckCircleIcon
-                      sx={{ fontSize: 16, color: "success.main" }}
-                    />
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
                     Monitor spending in related categories
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    <CheckCircleIcon
-                      sx={{ fontSize: 16, color: "success.main" }}
-                    />
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
                     Send reminders when off track
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    <CheckCircleIcon
-                      sx={{ fontSize: 16, color: "success.main" }}
-                    />
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
                     Suggest budget adjustments
                   </Typography>
                 </Box>
@@ -4251,7 +3051,7 @@ const Dashboard: React.FC = () => {
             </Card>
           </Box>
         </DialogContent>
-
+        
         <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button onClick={handleCloseEditGoalDialog} color="inherit">
             Cancel
@@ -4259,12 +3059,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleUpdateGoal}
-            disabled={
-              !editingGoalForm.title ||
-              !editingGoalForm.description ||
-              editingGoalForm.amount <= 0 ||
-              !editingGoalForm.deadline
-            }
+            disabled={!editingGoalForm.title || !editingGoalForm.description || editingGoalForm.amount <= 0 || !editingGoalForm.deadline}
             sx={{ borderRadius: 2 }}
           >
             Update Goal
