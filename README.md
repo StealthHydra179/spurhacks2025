@@ -1,5 +1,6 @@
 # CapySpend 
 ![Capy the Capybara On The Landing Page](https://github.com/StealthHydra179/spurhacks2025/raw/main/devpost_images/landing_page.png)
+CapySpend is a smart, AI-powered personal finance platform designed to make money management easier through conversation with your finance buddy, Capy the Capybara.
 
 ## Inspiration
 Managing personal finances can be incredibly overwhelming, especially when trying to create and maintain a budget manually. Many people struggle with:
@@ -27,7 +28,7 @@ CapySpend allows users to:
 - create and manage budgets
 - set financial goals
 - view reports
-- and talk to an AI assistant that provides personalized financial advice and insights.
+- and talk to an AI assistant that provides personalized financial advice and insights. 
 
 ## How Does CapySpend Work?
 CapySpend works by integrating with Plaid and the OpenAI API to provide a comprehensive personal finance management solution. Users can securely connect their bank accounts through Plaid, allowing the application to access transaction data, account balances, and other financial information. The AI assistant uses this data to analyze spending patterns, suggest budget adjustments, and provide personalized financial advice. The application also features a user-friendly interface for managing budgets, tracking expenses, and visualizing financial health.
