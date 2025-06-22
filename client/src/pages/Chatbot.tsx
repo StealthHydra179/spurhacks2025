@@ -49,7 +49,7 @@ import communistCapy from '../assets/communist-capy.svg';
 import babyCapy from '../assets/baby-capy.svg';
 import conservativeCapy from '../assets/conservative-capy.svg';
 import riskyCapy from '../assets/risky-capy.svg';
-import neutralCapy from '../assets/neutral-capy.svg';
+import neutralCapy from '../assets/capyy.svg';
 import { botConversationService, plaidService, authService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
