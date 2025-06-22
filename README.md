@@ -120,20 +120,9 @@ The database consists of 7 tables:
 **Modern, Responsive UI**: Built a beautiful, intuitive interface using Material-UI that works seamlessly across desktop and mobile devices, providing an excellent user experience.
 
 ## What We Learned
+There are a variety of things we learned while creating CapySpend. The following are 3 of the most notable:
 
-**Agentic AI and Tool Calls**: We gained deep insights into implementing agentic AI systems that can take action on user data:
-
-- **Tool Call Architecture**: Learned how to design and implement structured tool calls that allow AI to execute specific actions while maintaining security and data integrity. This involved creating function definitions with proper parameter validation and error handling.
-
-- **Context Management**: Discovered the importance of providing rich context to AI models, including user financial data, transaction history, and current goals, enabling the AI to make informed decisions and take appropriate actions.
-
-- **Security Considerations**: Understood the critical importance of validating all AI-generated actions before execution, implementing proper authentication and authorization checks, and ensuring that tool calls can only modify data for the authenticated user.
-
-- **User Experience Design**: Learned how to balance automation with user control - the AI can take actions automatically, but users always have visibility into what's happening and can override or modify decisions.
-
-- **Error Handling**: Developed robust error handling for tool calls, ensuring that failed AI actions don't break the user experience and providing meaningful feedback when operations can't be completed.
-
-- **Conversation Flow**: Mastered the art of designing conversational interfaces where AI actions feel natural and contextual, rather than jarring or unexpected.
+**Agentic AI and Tool Calls**: We gained insights into implementing agentic AI systems that can take action on user data. We learned how to design and implement structured tool calls that allow AI to execute specific actions. We discovered the importance of providing rich context to AI models, including user financial data, transaction history, and current goals, enabling the AI to make informed decisions and take appropriate actions. We also learned about designing conversational interfaces where AI actions feel natural and contextual.
 
 **Financial Data Integration**: Gained expertise in securely handling sensitive financial information:
 
@@ -143,21 +132,7 @@ The database consists of 7 tables:
 
 - **Privacy and Security**: Developed best practices for storing and processing sensitive financial information while maintaining user privacy and regulatory compliance.
 
-**AI-Powered Categorization**: Discovered the nuances of using AI for transaction categorization:
-
-- **Pattern Recognition**: Learned how to train and fine-tune AI models to recognize spending patterns and assign appropriate categories to transactions.
-
-- **Fallback Strategies**: Implemented robust fallback mechanisms when AI categorization fails, ensuring users always have categorized transactions.
-
-- **User Feedback Integration**: Developed systems to learn from user corrections and improve categorization accuracy over time.
-
-**Modern Web Development**: Enhanced our skills in building complex web applications:
-
-- **State Management**: Learned effective techniques for managing complex application state, especially when dealing with real-time financial data and AI interactions.
-
-- **Real-time Updates**: Implemented systems for updating the UI in real-time as AI actions are performed, providing immediate feedback to users.
-
-- **Responsive Design**: Mastered creating interfaces that work seamlessly across different devices and screen sizes while maintaining functionality and usability.
+**Modern Web Development**: Enhanced our skills in building complex web applications by learning effective techniques for managing complex application state, especially when dealing with real-time financial data and AI interactions. We also mastered creating responsive interfaces that work seamlessly across different devices and screen sizes while maintaining functionality and usability throughout the user experience.
 
 ## CapySpend's Future
 
