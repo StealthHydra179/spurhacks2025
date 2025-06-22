@@ -49,7 +49,7 @@ import communistCapy from '../assets/communist-capy.svg';
 import babyCapy from '../assets/baby-capy.svg';
 import conservativeCapy from '../assets/conservative-capy.svg';
 import riskyCapy from '../assets/risky-capy.svg';
-import neutralCapy from '../assets/capyy.svg';
+import neutralCapy from '../assets/neutral-capy.svg';
 import { botConversationService, plaidService, authService } from '../services/api';
 import type { ConversationSummary, Conversation } from '../types';
 
@@ -849,9 +849,10 @@ const Chatbot: React.FC = () => {
                     py: 2,
                     px: (!isMobile && sidebarCollapsed) ? 1 : 2,
                     justifyContent: (!isMobile && sidebarCollapsed) ? 'center' : 'flex-start',
+                    borderLeft: `5px solid transparent`,
                     '&.Mui-selected': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      borderRight: `3px solid ${theme.palette.primary.main}`
+                      borderLeft: `5px solid ${theme.palette.primary.main}`
                     }
                   }}
                 >
@@ -1319,7 +1320,8 @@ const Chatbot: React.FC = () => {
       }}
       sx={{
         borderRadius: 2,
-        background: '#FFE2B6',
+        background: alpha('#FFE2B6', 0.5),
+        backdropFilter: 'blur(10px)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         px: 2,
         py: 1.5

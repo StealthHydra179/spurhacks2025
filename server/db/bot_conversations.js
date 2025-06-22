@@ -613,6 +613,8 @@ Please provide a helpful response.`;    logger.info(
         }
       } else if(name === "update_goal") {
         logger.info(`${TAG} Updating savings goal with args:`, args);
+        logger.info(`${TAG} Current amount from args:`, args.current_amount);
+        logger.info(`${TAG} Current amount type:`, typeof args.current_amount);
         
         try {
           // Map the tool call arguments to the database format
@@ -625,10 +627,14 @@ Please provide a helpful response.`;    logger.info(
             priority: args.priority,
             icon: args.icon,
             color: args.color,
-            current_amount: args.current_amount
+            current_amount: args.current_amount !== undefined ? args.current_amount : 0
           };
           
+          logger.info(`${TAG} Update data being sent to database:`, updateData);
+          
           const result = await savingsGoalsDb.update(args.goal_id, userId, updateData);
+          
+          logger.info(`${TAG} Database update result:`, result);
           
           input.push({
             type: "function_call_output",
