@@ -1,6 +1,12 @@
 # CapySpend 
 ![Capy the Capybara On The Landing Page](https://github.com/StealthHydra179/spurhacks2025/raw/main/devpost_images/landing_page.png)
 
+## Elevator Pitch
+
+**CapySpend: AI-powered personal finance that takes action.** Connect your bank, let our agentic AI automatically create budgets and savings goals. No spreadsheets, just smart automation.
+
+**CapySpend: Your AI-powered financial companion that turns financial chaos into financial clarity.**
+
 ## Inspiration
 Managing personal finances can be incredibly overwhelming, especially when trying to create and maintain a budget manually. Many people struggle with:
 
@@ -152,5 +158,16 @@ There are a variety of things we learned while creating CapySpend. The following
 - **Behavioral Analysis**: Use machine learning to identify spending triggers and help users develop better financial habits
 - **Goal Achievement Predictions**: Provide realistic timelines for achieving financial goals based on current spending patterns
 
+## How to Run CapySpend Locally
+1. Clone the repository
+2. Create an .env file in the main directory and add the following environment variables:
+   PGHOST, PGUSER, PGPASSWORD, PGPORT, PGDATABASE, JWT_SECRET, PLAID_CLIENT_ID, PLAID_SECRET, OPENAI_API_KEY
+3. Create a PostgreSQL database and run the SQL scripts in the `db` directory to set up the schema
+4. Install the required dependencies for both the client and server:
+   - For the client, run `npm install` in the `client` directory
+   - For the server, run `npm install` in the `root` directory
+5. Start the server by running `npm run server` in the `main` directory
+6. Start the client by running `npm run dev` in the `client` directory
+7. Open your browser and navigate to `http://localhost:5173` to access the CapySpend application
 
 > Authors: [Aiden Ma](https://github.com/StealthHydra179), [Darren Chu](https://github.com/darren10101), [Daniel Zhang](https://github.com/zdann15), and [Feiyang Xu](https://github.com/Feiyang0303)
