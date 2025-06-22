@@ -25,7 +25,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  DialogContentText
+  DialogContentText,
+  Card,
+  CardContent,
+  Chip,
+  LinearProgress
 } from '@mui/material';
 import {
   Send as SendIcon,
@@ -37,7 +41,8 @@ import {
   Chat as ChatIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import capySVG from '../assets/capyy.svg';
 import capyImage from '../assets/capy.png';
@@ -135,9 +140,11 @@ const Chatbot: React.FC = () => {
     } catch (error) {
       console.error('Error fetching conversation:', error);
       setBotTyping(false); // Clear typing indicator on error
-    }  };const createNewConversation = async () => {
+    }  };
+
+  const createNewConversation = async () => {
     if (creatingConversation) return; // Prevent multiple simultaneous requests
-      setCreatingConversation(true);
+    setCreatingConversation(true);
     
     // Clear current conversation immediately to hide old chat
     setSelectedConversation(null);
@@ -145,7 +152,7 @@ const Chatbot: React.FC = () => {
     
     // Close mobile drawer if open
     setMobileDrawerOpen(false);
-      const question = 'Hello! I\'d like to start a new conversation about my finances.';    
+    const question = 'Hello! I\'d like to start a new conversation about my finances.';    
     try {
       if (!user) {
         console.error('User not authenticated');
@@ -164,7 +171,7 @@ const Chatbot: React.FC = () => {
       // Then refresh conversations list and load conversation data
       await fetchConversations();
       await fetchConversation(newConversationId);
-        // Check if conversation has messages, if not wait a bit longer
+      // Check if conversation has messages, if not wait a bit longer
       let attempts = 0;
       const maxAttempts = 10; // Maximum 5 seconds (10 * 500ms)
       
@@ -189,7 +196,9 @@ const Chatbot: React.FC = () => {
       console.error('Error creating conversation:', error);
       setCreatingConversation(false);
     }
-  };const sendMessage = async () => {
+  };
+
+  const sendMessage = async () => {
     if (!newMessage.trim() || sending || !currentConversationId) return;
 
     setSending(true);
@@ -210,7 +219,9 @@ const Chatbot: React.FC = () => {
     } finally {
       setSending(false);
     }
-  };  const addBotResponse = async (userMessage: string) => {
+  };
+
+  const addBotResponse = async (userMessage: string) => {
     if (!currentConversationId) return;
 
     try {
@@ -234,6 +245,271 @@ const Chatbot: React.FC = () => {
       sendMessage();
     }
   };
+
+  // Function to detect if a goal was created from the bot message
+  const detectAction = (message: string) => {
+    // Look for patterns that indicate a goal was created
+    const goalCreatedPattern = /Savings goal "([^"]+)" created successfully! Target amount: \$([\d,]+), Deadline: ([^\.]+)/;
+    const goalUpdatedPattern = /Savings goal "([^"]+)" updated successfully! Target amount: \$([\d,]+), Current progress: \$([\d,]+), Deadline: ([^\.]+)/;
+    const budgetUpdatedPattern = /Budget (created|updated) successfully! Total monthly budget: \$([\d,]+)\. Breakdown: Housing \$([\d,]+), Food \$([\d,]+), Transportation \$([\d,]+), Health \$([\d,]+), Personal \$([\d,]+), Entertainment \$([\d,]+), Financial \$([\d,]+), Gifts \$([\d,]+)/;
+    
+    const createdMatch = message.match(goalCreatedPattern);
+    const updatedMatch = message.match(goalUpdatedPattern);
+    const budgetMatch = message.match(budgetUpdatedPattern);
+    
+    if (createdMatch) {
+      return {
+        type: 'goal',
+        title: createdMatch[1],
+        amount: parseFloat(createdMatch[2].replace(/,/g, '')),
+        deadline: createdMatch[3] === 'No deadline' ? null : createdMatch[3],
+        isCreated: true,
+        isUpdated: false
+      };
+    }
+    
+    if (updatedMatch) {
+      return {
+        type: 'goal',
+        title: updatedMatch[1],
+        amount: parseFloat(updatedMatch[2].replace(/,/g, '')),
+        currentAmount: parseFloat(updatedMatch[3].replace(/,/g, '')),
+        deadline: updatedMatch[4] === 'No deadline' ? null : updatedMatch[4],
+        isCreated: false,
+        isUpdated: true
+      };
+    }
+    
+    if (budgetMatch) {
+      return {
+        type: 'budget',
+        action: budgetMatch[1],
+        total: parseFloat(budgetMatch[2].replace(/,/g, '')),
+        housing: parseFloat(budgetMatch[3].replace(/,/g, '')),
+        food: parseFloat(budgetMatch[4].replace(/,/g, '')),
+        transportation: parseFloat(budgetMatch[5].replace(/,/g, '')),
+        health: parseFloat(budgetMatch[6].replace(/,/g, '')),
+        personal: parseFloat(budgetMatch[7].replace(/,/g, '')),
+        entertainment: parseFloat(budgetMatch[8].replace(/,/g, '')),
+        financial: parseFloat(budgetMatch[9].replace(/,/g, '')),
+        gifts: parseFloat(budgetMatch[10].replace(/,/g, ''))
+      };
+    }
+    
+    return null;
+  };
+
+  // Goal Card Component
+  const GoalCard = ({ goal }: { goal: any }) => (
+    <Card
+      elevation={2}
+      sx={{
+        mt: 2,
+        borderRadius: 2,
+        background: goal.isUpdated 
+          ? alpha(theme.palette.info.main, 0.05)
+          : alpha(theme.palette.success.main, 0.05),
+        border: `1px solid ${
+          goal.isUpdated 
+            ? alpha(theme.palette.info.main, 0.2)
+            : alpha(theme.palette.success.main, 0.2)
+        }`,
+        maxWidth: '400px'
+      }}
+    >
+      <CardContent sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: 2,
+              background: goal.isUpdated 
+                ? alpha(theme.palette.info.main, 0.1)
+                : alpha(theme.palette.success.main, 0.1),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}
+          >
+            💰
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h6" component="div" fontWeight={600}>
+              {goal.title}
+            </Typography>
+            <Chip
+              label={goal.isUpdated ? "Goal Updated" : "New Goal Created"}
+              size="small"
+              icon={<CheckCircleIcon />}
+              sx={{
+                backgroundColor: goal.isUpdated 
+                  ? alpha(theme.palette.info.main, 0.1)
+                  : alpha(theme.palette.success.main, 0.1),
+                color: goal.isUpdated 
+                  ? theme.palette.info.main
+                  : theme.palette.success.main,
+                fontWeight: 600,
+                fontSize: '0.7rem'
+              }}
+            />
+          </Box>
+        </Box>
+        
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Target Amount
+          </Typography>
+          <Typography variant="h6" fontWeight={700} color={goal.isUpdated ? "info.main" : "success.main"}>
+            ${goal.amount.toLocaleString()}
+          </Typography>
+        </Box>
+        
+        {goal.isUpdated && goal.currentAmount !== undefined && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Current Progress
+            </Typography>
+            <Typography variant="h6" fontWeight={700} color="primary.main">
+              ${goal.currentAmount.toLocaleString()}
+            </Typography>
+            <LinearProgress 
+              variant="determinate" 
+              value={(goal.currentAmount / goal.amount) * 100}
+              sx={{ mt: 1, height: 8, borderRadius: 4 }}
+            />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              {((goal.currentAmount / goal.amount) * 100).toFixed(1)}% complete
+            </Typography>
+          </Box>
+        )}
+        
+        {goal.deadline && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Deadline
+            </Typography>
+            <Typography variant="body1" fontWeight={500}>
+              {goal.deadline}
+            </Typography>
+          </Box>
+        )}
+        
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => navigate('/dashboard')}
+          sx={{ borderRadius: 2 }}
+        >
+          View in Dashboard
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
+  // Budget Card Component
+  const BudgetCard = ({ budget }: { budget: any }) => (
+    <Card
+      elevation={2}
+      sx={{
+        mt: 2,
+        borderRadius: 2,
+        background: alpha(theme.palette.primary.main, 0.05),
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+        maxWidth: '500px'
+      }}
+    >
+      <CardContent sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: 2,
+              background: alpha(theme.palette.primary.main, 0.1),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}
+          >
+            📊
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h6" component="div" fontWeight={600}>
+              Monthly Budget
+            </Typography>
+            <Chip
+              label={`Budget ${budget.action === 'created' ? 'Created' : 'Updated'}`}
+              size="small"
+              icon={<CheckCircleIcon />}
+              sx={{
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                color: theme.palette.primary.main,
+                fontWeight: 600,
+                fontSize: '0.7rem'
+              }}
+            />
+          </Box>
+        </Box>
+        
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Total Monthly Budget
+          </Typography>
+          <Typography variant="h6" fontWeight={700} color="primary.main">
+            ${budget.total.toLocaleString()}
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Housing</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.housing.toLocaleString()}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Food</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.food.toLocaleString()}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Transportation</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.transportation.toLocaleString()}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Health</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.health.toLocaleString()}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Personal</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.personal.toLocaleString()}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Entertainment</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.entertainment.toLocaleString()}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Financial</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.financial.toLocaleString()}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Gifts</Typography>
+            <Typography variant="body2" fontWeight={500}>${budget.gifts.toLocaleString()}</Typography>
+          </Box>
+        </Box>
+        
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => navigate('/dashboard')}
+          sx={{ borderRadius: 2 }}
+        >
+          View in Dashboard
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
   const handleConversationSelect = async (conversation: ConversationSummary) => {
     await fetchConversation(conversation.id.toString());
   };
@@ -803,6 +1079,20 @@ const Chatbot: React.FC = () => {
                         }}                        >
                           {message.message}
                         </ReactMarkdown>
+                        
+                        {/* Display goal card if a goal was created */}
+                        {(() => {
+                          const action = detectAction(message.message);
+                          if (!action) return null;
+                          
+                          if (action.type === 'goal') {
+                            return <GoalCard goal={action} />;
+                          } else if (action.type === 'budget') {
+                            return <BudgetCard budget={action} />;
+                          }
+                          
+                          return null;
+                        })()}
                       </Box>
                     ) : (
                       <Typography variant="body1">{message.message}</Typography>

@@ -67,6 +67,32 @@ const budgetsDb = {
     }
   },
 
+  // Get the current budget for a user (most recent)
+  getCurrentByUserId: async (userId) => {
+    try {
+      const query = `
+        SELECT * FROM budgets 
+        WHERE user_id = $1 
+        ORDER BY created_at DESC
+        LIMIT 1
+      `;
+      
+      logger.info(`${TAG} Fetching current budget for user ${userId}`);
+      const result = await sql.unsafe(query, [userId]);
+      
+      if (result.length > 0) {
+        logger.info(`${TAG} Found current budget for user ${userId}`);
+        return result[0];
+      }
+      
+      logger.info(`${TAG} No current budget found for user ${userId}`);
+      return null;
+    } catch (error) {
+      logger.error(`${TAG} Error fetching current budget for user ${userId}: ${error.message}`);
+      throw error;
+    }
+  },
+
   // Get a specific budget by ID
   getById: async (budgetId) => {
     try {

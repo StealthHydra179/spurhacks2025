@@ -4,6 +4,7 @@ const { logger } = require("../logger");
 const usersDb = require("./users");
 const plaid = require("../plaid/plaid");
 const savingsGoalsDb = require("./savings_goals");
+const budgetsDb = require("./budgets");
 
 const TAG = "bot_conversations";
 
@@ -141,6 +142,20 @@ async function generateAIResponse(userMessage, userContext = {}, userId = null) 
       }
     }
 
+    // Fetch current budget data if user is available
+    let currentBudget = null;
+    if (userId) {
+      try {
+        logger.info(`${TAG} Fetching current budget for user ${userId}`);
+        const budgetData = await budgetsDb.getCurrentByUserId(userId);
+        currentBudget = budgetData;
+        logger.info(`${TAG} Retrieved current budget for user ${userId}`);
+      } catch (error) {
+        logger.warn(`${TAG} Could not fetch current budget for user ${userId}: ${error.message}`);
+        currentBudget = null;
+      }
+    }
+
     // Set personality description and behavior based on mode
     switch (personalityMode) {
       case -1:
@@ -208,6 +223,9 @@ TRANSACTION DATA FORMATTING RULES:
 - When analyzing spending patterns, focus on positive values (outflows)
 - When discussing income, focus on negative values (inflows)
 
+OTHER FORMATTING RULES:
+- Whenever there is a value that is a dollar amount, format it as \`$100.00\` for clarity. Or use the corresponding currency symbol for the given currency
+
 ${accountBalances.length > 0 ? `
 Current Account Balances:
 ${JSON.stringify(accountBalances, null, 2)}
@@ -223,6 +241,12 @@ CREATE_GOAL FUNCTION:
 - the tool call will create a new savings goal with the provided details
 - after doing the tool call, return a message confirming the goal was created successfully and that the user can see it in their dashboard
 
+UPDATE_BUDGET FUNCTION:
+- use this tool call when the user seeks help for designing their budget
+- analyze the user's transactions to potentially determine their monthly income and spending patterns
+- suggest a budget personalized to these transactions
+- use the tool call ONLY after you propose a budget with exact numbers for each category and the user accepts this budget
+
 GOALS GUIDANCE:
 - Use the progress_percentage to understand how close the user is to their goals
 - Consider days_until_deadline when giving advice about urgency
@@ -231,6 +255,11 @@ GOALS GUIDANCE:
 - Celebrate progress they've made on their goals
 - Help them adjust goals if they seem unrealistic based on their financial situation
 ` : 'No savings goals set up yet. Consider suggesting they create financial goals.'}
+
+${currentBudget ? `
+Current Budget:
+${JSON.stringify(currentBudget, null, 2)}
+` : 'No current budget data available.'}
 
 Recent Transaction Data (positive is an outflow of money, negative is an inflow):
 ${userContext.transactionData ? JSON.stringify(format(userContext.transactionData), null, 2) : 'No transaction data available.'}
@@ -343,6 +372,109 @@ Please provide a helpful response.`;    logger.info(
           "additionalProperties": false
         },
         "strict": true
+      },
+      {
+        "type": "function",
+        "name": "update_goal",
+        "description": "Updates an existing savings goal when the user wants to modify goal details like amount, deadline, or progress.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "goal_id": {
+              "type": "number",
+              "description": "ID of the goal to update (required)"
+            },
+            "title": {
+              "type": "string",
+              "description": "New name of the savings goal (required)"
+            },
+            "amount": {
+              "type": "number",
+              "description": "New target amount for the savings goal (required, must be greater than 0)"
+            },
+            "description": {
+              "type": "string",
+              "description": "New description of the savings goal (required)"
+            },
+            "deadline": {
+              "type": "string",
+              "description": "New end date for the savings goal in YYYY-MM-DD format (required)"
+            },
+            "category": {
+              "type": "string",
+              "description": "New category of the goal: savings, debt, investment, purchase, emergency (required)"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "New priority level (required)"
+            },
+            "icon": {
+              "type": "string",
+              "description": "New icon for the goal. Must be one of: 💰 (money), 🏠 (house), ✈️ (travel), 💻 (technology), 📈 (investment), 💳 (debt), 🛡️ (emergency), 🎓 (education), 🚗 (car), 🏥 (health), 🎯 (target), ⭐ (star) (required)"
+            },
+            "color": {
+              "type": "string",
+              "description": "New color for the goal (hex color code like #4CAF50) (required)"
+            },
+            "current_amount": {
+              "type": "number",
+              "description": "New current progress amount (required)"
+            }
+          },
+          "required": ["goal_id", "title", "amount", "description", "deadline", "category", "priority", "icon", "color", "current_amount"],
+          "additionalProperties": false
+        },
+        "strict": true
+      },
+      {
+        "type": "function",
+        "name": "update_budget",
+        "description": "Updates the user's budget when they ask for help creating or adjusting a reasonable budget based on their financial situation. Provide the user with a suggested budget based on the information you know about them. Only do the tool call if the user accepts the budget with numbers that you provide.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "overall": {
+              "type": "number",
+              "description": "Total monthly budget amount (required, must be greater than 0)"
+            },
+            "housing": {
+              "type": "number",
+              "description": "Monthly budget for housing and utilities (required, must be greater than or equal to 0)"
+            },
+            "food": {
+              "type": "number",
+              "description": "Monthly budget for food and dining (required, must be greater than or equal to 0)"
+            },
+            "transportation": {
+              "type": "number",
+              "description": "Monthly budget for transportation (required, must be greater than or equal to 0)"
+            },
+            "health": {
+              "type": "number",
+              "description": "Monthly budget for health and insurance (required, must be greater than or equal to 0)"
+            },
+            "personal": {
+              "type": "number",
+              "description": "Monthly budget for personal and lifestyle expenses (required, must be greater than or equal to 0)"
+            },
+            "entertainment": {
+              "type": "number",
+              "description": "Monthly budget for entertainment and leisure (required, must be greater than or equal to 0)"
+            },
+            "financial": {
+              "type": "number",
+              "description": "Monthly budget for financial and savings (required, must be greater than or equal to 0)"
+            },
+            "gifts": {
+              "type": "number",
+              "description": "Monthly budget for gifts and donations (required, must be greater than or equal to 0)"
+            }
+          },
+          "required": ["overall", "housing", "food", "transportation", "health", "personal", "entertainment", "financial", "gifts"],
+          "additionalProperties": false
+        },
+        "strict": true
       }
     ]
     const completion = await openai.responses.create({
@@ -389,7 +521,7 @@ Please provide a helpful response.`;    logger.info(
           input.push({
             type: "function_call_output",
             call_id: toolCall.call_id,
-            output: `Savings goal "${result.title}" created successfully with ID: ${result.id}. Target amount: $${result.amount}, Deadline: ${result.deadline ? new Date(result.deadline).toLocaleDateString() : 'No deadline'}`
+            output: `Savings goal "${result.title}" created successfully! Target amount: $${result.amount}, Deadline: ${result.deadline ? new Date(result.deadline).toLocaleDateString() : 'No deadline'}`
           });
           
           logger.info(`${TAG} Savings goal created successfully with ID: ${result.id}`);
@@ -399,6 +531,86 @@ Please provide a helpful response.`;    logger.info(
             type: "function_call_output",
             call_id: toolCall.call_id,
             output: `Failed to create savings goal: ${error.message}`
+          });
+        }
+      } else if(name === "update_goal") {
+        logger.info(`${TAG} Updating savings goal with args:`, args);
+        
+        try {
+          // Map the tool call arguments to the database format
+          const updateData = {
+            title: args.title,
+            description: args.description,
+            amount: args.amount,
+            deadline: args.deadline,
+            category: args.category,
+            priority: args.priority,
+            icon: args.icon,
+            color: args.color,
+            current_amount: args.current_amount
+          };
+          
+          const result = await savingsGoalsDb.update(args.goal_id, userId, updateData);
+          
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: `Savings goal "${result.title}" updated successfully! Target amount: $${result.amount}, Current progress: $${result.current_amount}, Deadline: ${result.deadline ? new Date(result.deadline).toLocaleDateString() : 'No deadline'}`
+          });
+          
+          logger.info(`${TAG} Savings goal updated successfully with ID: ${result.id}`);
+        } catch (error) {
+          logger.error(`${TAG} Error updating savings goal: ${error.message}`);
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: `Failed to update savings goal: ${error.message}`
+          });
+        }
+      } else if(name === "update_budget") {
+        logger.info(`${TAG} Updating budget with args:`, args);
+        
+        try {
+          // Map the tool call arguments to the database format
+          const budgetData = {
+            overall: args.overall,
+            housing: args.housing,
+            food: args.food,
+            transportation: args.transportation,
+            health: args.health,
+            personal: args.personal,
+            entertainment: args.entertainment,
+            financial: args.financial,
+            gifts: args.gifts
+          };
+          
+          // Check if user already has a budget
+          const existingBudget = await budgetsDb.getCurrentByUserId(userId);
+          
+          let result;
+          if (existingBudget) {
+            // Update existing budget
+            result = await budgetsDb.update(existingBudget.id, budgetData);
+            logger.info(`${TAG} Updated existing budget with ID: ${result.id}`);
+          } else {
+            // Create new budget
+            result = await budgetsDb.create(userId, budgetData);
+            logger.info(`${TAG} Created new budget with ID: ${result.id}`);
+          }
+          
+          const action = existingBudget ? "updated" : "created";
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: `Budget ${action} successfully! Total monthly budget: $${result.overall.toLocaleString()}. Breakdown: Housing $${result.housing.toLocaleString()}, Food $${result.food.toLocaleString()}, Transportation $${result.transportation.toLocaleString()}, Health $${result.health.toLocaleString()}, Personal $${result.personal.toLocaleString()}, Entertainment $${result.entertainment.toLocaleString()}, Financial $${result.financial.toLocaleString()}, Gifts $${result.gifts.toLocaleString()}`
+          });
+          
+        } catch (error) {
+          logger.error(`${TAG} Error updating budget: ${error.message}`);
+          input.push({
+            type: "function_call_output",
+            call_id: toolCall.call_id,
+            output: `Failed to update budget: ${error.message}`
           });
         }
       }
