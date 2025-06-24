@@ -56,6 +56,7 @@ import {
   authService,
 } from "../services/api";
 import type { ConversationSummary, Conversation } from "../types";
+import TransactionTableCard from "../components/TransactionTableCard";
 
 const DRAWER_WIDTH = 320;
 const COLLAPSED_DRAWER_WIDTH = 80;
@@ -80,6 +81,20 @@ const getCapyImage = (personality: number) => {
       return capySVG;
   }
 };
+
+// Helper to extract transaction table from markdown
+function extractTransactionTable(markdown: string): string | null {
+  // Look for a markdown table with the expected header
+  const tableRegex = /\|\s*Date\s*\|\s*Amount\s*\|\s*Merchant\s*\|\s*Category\s*\|[\s\S]+?(\n\s*\n|$)/;
+  const match = markdown.match(tableRegex);
+  return match ? match[0].trim() : null;
+}
+
+// Helper to remove the transaction table from markdown
+function removeTransactionTable(markdown: string): string {
+  const tableRegex = /\|\s*Date\s*\|\s*Amount\s*\|\s*Merchant\s*\|\s*Category\s*\|[\s\S]+?(\n\s*\n|$)/;
+  return markdown.replace(tableRegex, '').trim();
+}
 
 const Chatbot: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
@@ -489,147 +504,161 @@ const Chatbot: React.FC = () => {
   );
 
   // Budget Card Component
-  const BudgetCard = ({ budget }: { budget: any }) => (
-    <Card
-      elevation={2}
-      sx={{
-        mt: 2,
-        borderRadius: 2,
-        background: alpha(theme.palette.primary.main, 0.05),
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-        maxWidth: "500px",
-      }}
-    >
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+  const BudgetCard = ({ budget }: { budget: any }) => {
+    // Compute the total as the sum of all categories
+    const computedTotal = [
+      budget.housing,
+      budget.food,
+      budget.transportation,
+      budget.health,
+      budget.personal,
+      budget.entertainment,
+      budget.financial,
+      budget.gifts
+    ].reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+
+    return (
+      <Card
+        elevation={2}
+        sx={{
+          mt: 2,
+          borderRadius: 2,
+          background: alpha(theme.palette.primary.main, 0.05),
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+          maxWidth: "500px",
+        }}
+      >
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: 2,
+                background: alpha(theme.palette.primary.main, 0.1),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+              }}
+            >
+              📊
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="h6" component="div" fontWeight={600}>
+                Monthly Budget
+              </Typography>
+              <Chip
+                label={`Budget ${
+                  budget.action === "created" ? "Created" : "Updated"
+                }`}
+                size="small"
+                icon={<CheckCircleIcon />}
+                sx={{
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  color: theme.palette.primary.main,
+                  fontWeight: 600,
+                  fontSize: "0.7rem",
+                }}
+              />
+            </Box>
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Total Monthly Budget
+            </Typography>
+            <Typography variant="h6" fontWeight={700} color="primary.main">
+              ${computedTotal.toLocaleString()}
+            </Typography>
+          </Box>
+
           <Box
             sx={{
-              width: 40,
-              height: 40,
-              borderRadius: 2,
-              background: alpha(theme.palette.primary.main, 0.1),
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "20px",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 1,
+              mb: 2,
             }}
           >
-            📊
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Housing
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.housing.toLocaleString()}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Food
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.food.toLocaleString()}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Transportation
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.transportation.toLocaleString()}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Health
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.health.toLocaleString()}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Personal
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.personal.toLocaleString()}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Entertainment
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.entertainment.toLocaleString()}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Financial
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.financial.toLocaleString()}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Gifts
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                ${budget.gifts.toLocaleString()}
+              </Typography>
+            </Box>
           </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" component="div" fontWeight={600}>
-              Monthly Budget
-            </Typography>
-            <Chip
-              label={`Budget ${
-                budget.action === "created" ? "Created" : "Updated"
-              }`}
-              size="small"
-              icon={<CheckCircleIcon />}
-              sx={{
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                color: theme.palette.primary.main,
-                fontWeight: 600,
-                fontSize: "0.7rem",
-              }}
-            />
-          </Box>
-        </Box>
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Total Monthly Budget
-          </Typography>
-          <Typography variant="h6" fontWeight={700} color="primary.main">
-            ${budget.total.toLocaleString()}
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 1,
-            mb: 2,
-          }}
-        >
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Housing
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.housing.toLocaleString()}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Food
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.food.toLocaleString()}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Transportation
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.transportation.toLocaleString()}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Health
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.health.toLocaleString()}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Personal
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.personal.toLocaleString()}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Entertainment
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.entertainment.toLocaleString()}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Financial
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.financial.toLocaleString()}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Gifts
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
-              ${budget.gifts.toLocaleString()}
-            </Typography>
-          </Box>
-        </Box>
-
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => navigate("/dashboard")}
-          sx={{ borderRadius: 2 }}
-        >
-          View in Dashboard
-        </Button>
-      </CardContent>
-    </Card>
-  );
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => navigate("/dashboard")}
+            sx={{ borderRadius: 2 }}
+          >
+            View in Dashboard
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  };
 
   // Budget Proposal Card Component
   const BudgetProposalCard = ({ proposal }: { proposal: any }) => {
@@ -670,7 +699,7 @@ const Chatbot: React.FC = () => {
                 fontSize: "20px",
               }}
             >
-              ��
+              📊
             </Box>
             <Box sx={{ flex: 1 }}>
               <Typography variant="h6" component="div" fontWeight={600}>
@@ -1314,6 +1343,15 @@ const Chatbot: React.FC = () => {
                     >
                       {message.sender === "bot" ? (
                         <Box className="markdown-content">
+                          {/* Render Transaction Table Card if present */}
+                          {(() => {
+                            const table = extractTransactionTable(message.message);
+                            if (table) {
+                              return <TransactionTableCard markdownTable={table} />;
+                            }
+                            return null;
+                          })()}
+                          {/* Render markdown, but remove the table if present */}
                           <ReactMarkdown
                             components={{
                               p: ({ children }) => (
@@ -1443,9 +1481,21 @@ const Chatbot: React.FC = () => {
                                   {children}
                                 </Box>
                               ),
+                              table: ({node, ...props}) => {
+                                // Hide the table if we already rendered it as a card
+                                const table = extractTransactionTable(message.message);
+                                if (table) return null;
+                                return <table {...props} />;
+                              },
                             }}
                           >
-                            {message.message}
+                            {(() => {
+                              const table = extractTransactionTable(message.message);
+                              if (table) {
+                                return removeTransactionTable(message.message);
+                              }
+                              return message.message;
+                            })()}
                           </ReactMarkdown>
 
                           {/* Display goal card if a goal was created */}
