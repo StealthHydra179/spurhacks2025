@@ -1012,4 +1012,8 @@ module.exports = {
   addMessageToConversation: addMessageToConversation,
   deleteConversation: deleteConversation,
   generateAIResponse: generateAIResponse,
+  // Export helper formatters for unit testing
+  format: format,
+  formatAccountBalances: formatAccountBalances,
+  formatSavingsGoals: formatSavingsGoals,
 };
